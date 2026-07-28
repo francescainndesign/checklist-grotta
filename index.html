@@ -367,19 +367,58 @@
   .mv-go{border:none;background:var(--ink);color:#fff}
   .mv-go:disabled{opacity:.4;cursor:default}
   .mvhint{font-size:11px;color:#1e4fb0;margin-top:8px}
+
+  .modetag{font-size:10.5px;padding:2px 9px;border-radius:99px;margin-left:4px;vertical-align:1px}
+  .modetag.cena{background:#eaf1ff;color:#1e4fb0}
+  .modetag.pranzo{background:#fbf1de;color:#8a5d10}
+  .modetag.chiuso{background:#f0e3e3;color:#a3355a}
+  .showall{padding:8px 16px 0}
+  .showall button{border:0.5px solid var(--line);background:var(--card);color:var(--tx-2);border-radius:99px;
+    padding:6px 13px;font:inherit;font-size:12px;cursor:pointer;display:inline-flex;align-items:center;gap:6px}
+  .showall button:hover{border-color:#c3c9d2;color:var(--tx)}
+  .ph-opt{display:flex;align-items:center;gap:14px;flex-wrap:wrap;padding:10px 0 2px;margin-top:10px;border-top:0.5px solid var(--line-2)}
+  .ph-time{font-size:12px;color:var(--tx-2);display:flex;align-items:center;gap:7px}
+  .ph-time input{border:0.5px solid var(--line);border-radius:6px;padding:5px 8px;font:inherit;font-size:12.5px;background:var(--card);color:var(--tx)}
+  .svlist{padding:4px 16px 20px;display:flex;flex-direction:column;gap:8px;max-width:640px}
+  .svrow{border:0.5px solid var(--line);border-radius:var(--r-s);padding:10px 12px;background:var(--card)}
+  .svrow.today{border-color:var(--ink);box-shadow:0 0 0 2px rgba(19,26,39,.05)}
+  .svd{display:flex;align-items:center;gap:8px;margin-bottom:9px}
+  .svdow{font-size:12.5px;font-weight:600;text-transform:capitalize}
+  .svnum{font-size:12.5px;color:var(--tx-2)}
+  .svtoday{font-size:10px;background:var(--ink);color:#fff;border-radius:99px;padding:1px 8px}
+  .svunset{font-size:10.5px;color:var(--warn);background:var(--warn-bg);border-radius:99px;padding:1px 8px;margin-left:auto}
+  .svbtns{display:flex;gap:6px;flex-wrap:wrap}
+  .svm{flex:1;min-width:92px;font-size:12px;padding:8px 6px;border-radius:var(--r-s);border:0.5px solid var(--line);
+    background:var(--card);color:var(--tx-2);cursor:pointer}
+  .svm:hover{border-color:#c3c9d2}
+  .svm.on{color:#fff;font-weight:500}
+  .svm.on.full{background:var(--ok);border-color:var(--ok)}
+  .svm.on.cena{background:var(--acc);border-color:var(--acc)}
+  .svm.on.pranzo{background:var(--warn);border-color:var(--warn)}
+  .svm.on.chiuso{background:#a3355a;border-color:#a3355a}
   /* ---- editor checklist ---- */
   .edit2{display:flex;flex-direction:column;gap:16px;padding:0 16px 20px}
   .ecol{min-width:0}
   .alist{display:flex;gap:8px;overflow-x:auto;padding-bottom:4px}
   .alist::-webkit-scrollbar{height:0}
-  .ae{flex:0 0 auto;text-align:left;background:var(--card);border:0.5px solid var(--line);border-radius:var(--r-s);
-    padding:9px 12px;cursor:pointer;min-width:150px}
+  .ae{flex:0 0 auto;display:flex;align-items:stretch;gap:6px;background:var(--card);border:0.5px solid var(--line);
+    border-radius:var(--r-s);min-width:190px;overflow:hidden}
   .ae:hover{border-color:#c3c9d2}
   .ae.on{background:var(--ink);border-color:var(--ink)}
+  .ae-main{flex:1;min-width:0;text-align:left;cursor:pointer;padding:9px 0 9px 12px}
   .ae .an{display:block;font-size:13px;font-weight:500;color:var(--tx)}
   .ae.on .an{color:#fff}
   .ae .as{display:block;font-size:11px;color:var(--tx-3);margin-top:2px}
   .ae.on .as{color:#8b97ab}
+  .ae-ord{display:flex;flex-direction:column;border-left:0.5px solid var(--line);flex:0 0 auto}
+  .ae.on .ae-ord{border-color:#2b3648}
+  .ae-ord button{flex:1;width:30px;border:none;background:transparent;color:var(--tx-3);cursor:pointer;font-size:14px;padding:0}
+  .ae-ord button:hover:not(:disabled){color:var(--tx);background:var(--page)}
+  .ae.on .ae-ord button{color:#8b97ab}
+  .ae.on .ae-ord button:hover:not(:disabled){color:#fff;background:#26324a}
+  .ae-ord button:disabled{opacity:.3;cursor:default}
+  .ae-ord button+button{border-top:0.5px solid var(--line)}
+  .ae.on .ae-ord button+button{border-color:#2b3648}
   .ahd{display:flex;gap:8px;align-items:center;margin-bottom:10px;flex-wrap:wrap}
   .asec{flex:1 1 120px;min-width:110px;max-width:170px;font:inherit;font-size:12.5px;color:var(--tx-2);
     border:0.5px solid var(--line);background:var(--card);border-radius:var(--r-s);padding:8px 10px}
@@ -478,14 +517,14 @@
 <input type="file" id="filePick" style="display:none" multiple>
 
 <script>
-let db=null,AREAS={},USERS=[],MSGS=[],CHECKS=[],ROOMS=[],RMEM=[],FILES=[],FOLDERS=[],ROLES=[],SET={},PHASES=[],READS=[];
+let db=null,AREAS={},USERS=[],MSGS=[],CHECKS=[],ROOMS=[],RMEM=[],FILES=[],FOLDERS=[],ROLES=[],SET={},PHASES=[],READS=[],SDAYS={};
 let S={screen:'load',selUser:null,pin:'',user:null,tab:'check',area:null,phase:null,err:'',
   room:'comune',bacView:'feed',bacFilter:'all',calMode:'month',calAnchor:null,calSel:null,
   composeTags:[],editing:null,ctrlDate:null,archChecks:null,fq:'',fext:'all',uploading:false,adminTab:'utenti',
   pendingFile:null,pendFolder:null,pendVis:'room',pickMode:'library',sending:false,folder:null,
   edArea:null,edPhase:null,moveOpen:null,moveArea:null,movePhase:null,
   viewer:null,viewerState:'idle',viewerPages:[],viewerErr:'',logFor:null,
-  draft:{},tagEditing:null,justRead:[],checking:false};
+  draft:{},tagEditing:null,justRead:[],checking:false,showAllPhases:false,planWeek:null};
 const $=id=>document.getElementById(id);
 const PALETTE=['e6f1fb|185fa5','e7f4ee|0f6e56','fbf1de|b5730f','f2ecfb|6a4bb0','fbe9ef|a3355a'];
 const fill=a=>{const[bg,fg]=(a||'e6f1fb|185fa5').split('|');return`background:#${bg};color:#${fg}`;};
@@ -509,6 +548,17 @@ const phaseIds=()=>PHASES.map(p=>p.id);
 const phaseName=id=>(PHASES.find(p=>p.id===id)||{name:id}).name;
 // fasi che hanno almeno una voce in quest'area (per non mostrare schede vuote allo staff)
 const areaPhases=aid=>phaseIds().filter(ph=>(AREAS[aid]&&AREAS[aid].phases[ph]||[]).length);
+const phaseObj=id=>PHASES.find(x=>x.id===id)||{};
+const phaseFromTime=id=>{const p=phaseObj(id);return (p&&p.from_time)?p.from_time:'00:00';};
+const todayMode=()=>SDAYS[serviceDate()]||'full';       // full | cena | pranzo | chiuso | (non impostato→full)
+// sezioni che valgono per l'area OGGI (nasconde le "solo pranzo e cena" nei giorni non pieni)
+const availablePhases=aid=>{const full=todayMode()==='full';
+  return areaPhases(aid).filter(ph=>!(phaseObj(ph).only_full && !full));};
+const nowHHMM=()=>{const d=new Date();return String(d.getHours()).padStart(2,'0')+':'+String(d.getMinutes()).padStart(2,'0');};
+// la sezione da aprire in base all'ora: l'ultima (in ordine cronologico) la cui "dalle ore" è già passata
+function defaultPhaseFor(aid){const av=availablePhases(aid);if(!av.length)return areaPhases(aid)[0]||null;
+  const now=nowHHMM();let pick=av[0];for(const ph of av){if(phaseFromTime(ph)<=now)pick=ph;}return pick;}
+const MODE_LBL={full:'Pranzo e Cena',cena:'Solo cena',pranzo:'Solo pranzo',chiuso:'Chiuso'};
 const cutoff=()=>{const n=parseInt(SET.day_cutoff,10);return isNaN(n)?5:Math.min(12,Math.max(0,n));};
 const editWin=()=>{const n=parseInt(SET.edit_window,10);return (isNaN(n)?15:n)*60*1000;};
 const tagLabel=t=>t==='tutti'?'@tutti':('#'+(AREAS[t]?AREAS[t].nm:t));
@@ -549,14 +599,17 @@ async function loadAll(){
   ROLES=ro.data||[];SET={};(se.data||[]).forEach(x=>SET[x.key]=x.value);
   PHASES=(ph.data||[]);
   AREAS={};a.data.forEach(x=>{const ps={};phaseIds().forEach(id=>ps[id]=[]);
-    AREAS[x.id]={id:x.id,nm:x.name,sec:x.sector,phases:ps};});
+    AREAS[x.id]={id:x.id,nm:x.name,sec:x.sector,sort:x.sort,phases:ps};});
   t.data.forEach(x=>{const ar=AREAS[x.area_id];if(ar&&ar.phases[x.phase])
     ar.phases[x.phase].push({id:x.id,t:x.body,shift:x.split?'split':'single',late:x.late,dl:x.deadline||''});});
   USERS=u.data.map(x=>({id:x.id,nm:x.name,ini:x.initials,role:x.role,c:x.color,
     powers:x.powers||[],areas:ua.data.filter(y=>y.user_id===x.id).map(y=>y.area_id)}));
   ROOMS=r.data||[];RMEM=rm.data||[];FOLDERS=fo.data||[];
-  await loadMessages();await loadFiles();await loadChecks();applyChecks();
+  await loadMessages();await loadFiles();await loadChecks();applyChecks();await loadServiceDays();
 }
+async function loadServiceDays(){
+  const {data}=await db.from('service_days').select('*');
+  SDAYS={};(data||[]).forEach(r=>SDAYS[r.date]=r.mode);}
 async function loadFolders(){const {data}=await db.from('folders').select('*').order('sort');FOLDERS=data||[];}
 async function loadMessages(){const {data}=await db.from('messages').select('*').order('created_at',{ascending:false});
   MSGS=(data||[]).map(r=>({id:r.id,uid:r.user_id,nm:r.author,ini:r.initials,c:r.color,room:r.room_id||'comune',
@@ -629,6 +682,7 @@ async function init(){
             if(un.length){S.justRead=Array.from(new Set([...S.justRead,...un.map(m=>m.id)]));await markRead(S.room);}}
           render();})
       .on('postgres_changes',{event:'*',schema:'public',table:'files'},async()=>{await loadFiles();render();})
+      .on('postgres_changes',{event:'*',schema:'public',table:'service_days'},async()=>{await loadServiceDays();render();})
       .subscribe(st=>{if(st==='SUBSCRIBED'){$('live').classList.add('on');$('liveTxt').textContent='dal vivo';}});
     S.screen='login';render();
   }catch(e){S.screen='error';S.err=e.message||String(e);render();}
@@ -661,7 +715,7 @@ async function enter(){const u=USERS.find(x=>x.id===S.selUser);if(!u)return;
   S.checking=false;
   if(error){S.pin='';S.err=error.message||'Errore di verifica';render();return;}
   if(!data||!data.length){S.pin='';S.err='PIN errato';render();return;}
-  S.user=u;S.screen='app';S.tab='check';S.area=u.areas[0]||Object.keys(AREAS)[0];S.phase=null;
+  S.user=u;S.screen='app';S.tab='check';S.area=u.areas[0]||Object.keys(AREAS)[0];S.phase=defaultPhaseFor(S.area);
   S.pin='';S.selUser=null;S.err='';S.ctrlDate=serviceDate();S.archChecks=null;
   S.room=(myRooms()[0]||{id:'comune'}).id;S.bacView='feed';S.calAnchor=serviceDate();S.calSel=serviceDate();
   S.justRead=[];render();loadReads().then(render);}
@@ -710,8 +764,11 @@ function phaseProg(aid,ph){let d=0,tot=0;(AREAS[aid].phases[ph]||[]).forEach(t=>
   if(t.shift==='split'){tot+=2;if(t.pBy)d++;if(t.cBy)d++;}else{tot++;if(t.by)d++;}});return{d,tot};}
 function checkView(){
   const u=S.user;
-  const avail=areaPhases(S.area);
-  if(!avail.includes(S.phase))S.phase=avail[0]||phaseIds()[0]||null;
+  const all=areaPhases(S.area);
+  const dayAvail=availablePhases(S.area);
+  const avail=S.showAllPhases?all:dayAvail;
+  const hidden=all.length-dayAvail.length;
+  if(!avail.includes(S.phase))S.phase=defaultPhaseFor(S.area)||avail[0]||phaseIds()[0]||null;
   const {d,tot}=S.phase?phaseProg(S.area,S.phase):{d:0,tot:0};const pct=tot?d/tot:0;
   const segs=u.areas.map(a=>`<button class="seg ${S.area===a?'on':''}" onclick="setArea('${a}')">${AREAS[a].nm}</button>`).join('');
   const ts=(S.phase&&AREAS[S.area].phases[S.phase])||[];
@@ -720,9 +777,12 @@ function checkView(){
   const bar=`<div class="prog"><div class="prog-track"><div class="prog-fill" style="width:${Math.round(pct*100)}%;background:${pctColor(pct)}"></div></div><div class="prog-n">${d}/${tot}</div></div>`;
   const ptabs=avail.length>1?`<div class="phase-row">${avail.map(ph=>
       `<div class="phase ${S.phase===ph?'on':''}" onclick="setPhase('${ph}')">${esc(phaseName(ph))}</div>`).join('')}</div>`:'';
+  const mode=todayMode();
+  const modeTag=mode!=='full'?`<span class="modetag ${mode}">${MODE_LBL[mode]}</span>`:'';
+  const allLink=(!S.showAllPhases&&hidden>0)?`<div class="showall"><button onclick="S.showAllPhases=true;render()"><i class="ti ti-eye"></i> Mostra tutte le sezioni</button></div>`:'';
   return hdr(`<i class="ti ti-map-pin"></i>${AREAS[S.area].sec} · ${esc(roleName(u.role))}`,AREAS[S.area].nm,
-      `${S.phase?esc(phaseName(S.phase))+' · ':''}${new Date().toLocaleDateString('it-IT',{weekday:'long',day:'numeric',month:'long'})}`,bar)
-    +`<div class="pane"><div class="segs">${segs}</div>${ptabs}
+      `${S.phase?esc(phaseName(S.phase))+' · ':''}${new Date().toLocaleDateString('it-IT',{weekday:'long',day:'numeric',month:'long'})} ${modeTag}`,bar)
+    +`<div class="pane"><div class="segs">${segs}</div>${ptabs}${allLink}
       <div class="list max">${rows}${ts.length?'<div class="foot-note">Se non è stato possibile eseguire un\u2019operazione, avvisa i manager e scrivilo in bacheca.</div>':''}</div></div>`;
 }
 function rowHtml(t){
@@ -747,7 +807,7 @@ async function tickPC(id,f){const t=findTask(id),u=S.user,done=f==='pranzo'?t.pB
     await db.from('checks').delete().eq('task_id',id).eq('shift',f).eq('service_date',serviceDate());}
   else{if(f==='pranzo'){t.pBy=u.nm;t.pTm=fmt(new Date());}else{t.cBy=u.nm;t.cTm=fmt(new Date());}render();
     await db.from('checks').insert({task_id:id,shift:f,user_id:u.id,user_name:u.nm,service_date:serviceDate()});}}
-function setArea(a){S.area=a;S.phase=areaPhases(a)[0]||phaseIds()[0]||null;render();}
+function setArea(a){S.area=a;S.showAllPhases=false;S.phase=defaultPhaseFor(a)||areaPhases(a)[0]||null;render();}
 function setPhase(p){S.phase=p;render();}
 
 /* ---------- BACHECA: stanze / feed / calendario / file ---------- */
@@ -1226,11 +1286,12 @@ function adminView(){
     <button class="st ${t==='ruoli'?'on':''}" onclick="S.adminTab='ruoli';render()"><i class="ti ti-id-badge-2"></i>Ruoli</button>
     <button class="st ${t==='aree'?'on':''}" onclick="S.adminTab='aree';render()"><i class="ti ti-checklist"></i>Checklist</button>
     <button class="st ${t==='fasi'?'on':''}" onclick="S.adminTab='fasi';render()"><i class="ti ti-clock-hour-4"></i>Fasi</button>
+    <button class="st ${t==='servizio'?'on':''}" onclick="S.adminTab='servizio';render()"><i class="ti ti-calendar-week"></i>Servizio</button>
     <button class="st ${t==='stanze'?'on':''}" onclick="S.adminTab='stanze';render()"><i class="ti ti-lock"></i>Stanze</button>
     <button class="st ${t==='cartelle'?'on':''}" onclick="S.adminTab='cartelle';render()"><i class="ti ti-folder"></i>Cartelle</button>
     <button class="st ${t==='locale'?'on':''}" onclick="S.adminTab='locale';render()"><i class="ti ti-building-store"></i>Locale</button></div>`;
   const pane=t==='utenti'?usersPane():t==='ruoli'?rolesPane():t==='aree'?areePane()
-    :t==='fasi'?fasiPane():t==='stanze'?roomsPane():t==='cartelle'?foldersPane():localePane();
+    :t==='fasi'?fasiPane():t==='servizio'?servizioPane():t==='stanze'?roomsPane():t==='cartelle'?foldersPane():localePane();
   return hdr(`<i class="ti ti-settings"></i>Amministrazione`,'Gestione',
       'Persone, ruoli, checklist, stanze, cartelle e impostazioni')
     +`<div class="pane">${sub}${pane}</div>`;
@@ -1293,10 +1354,16 @@ async function toggleRoleArea(id,a){
 function areePane(){
   const ids=Object.keys(AREAS);
   if(!S.edArea||!AREAS[S.edArea])S.edArea=ids[0]||null;
-  const list=ids.map(a=>`<button class="ae ${S.edArea===a?'on':''}" onclick="S.edArea='${a}';render()">
-      <span class="an">${esc(AREAS[a].nm)}</span>
-      <span class="as">${esc(AREAS[a].sec)} · ${phaseIds().reduce((n,ph)=>n+(AREAS[a].phases[ph]||[]).length,0)} voci</span>
-    </button>`).join('')||'<div class="dayp-empty">Nessuna area. Creane una qui sopra.</div>';
+  const list=ids.map((a,i)=>`<div class="ae ${S.edArea===a?'on':''}">
+      <div class="ae-main" onclick="S.edArea='${a}';S.moveOpen=null;render()">
+        <span class="an">${esc(AREAS[a].nm)}</span>
+        <span class="as">${esc(AREAS[a].sec)} · ${phaseIds().reduce((n,ph)=>n+(AREAS[a].phases[ph]||[]).length,0)} voci</span>
+      </div>
+      <div class="ae-ord">
+        <button onclick="moveArea('${a}',-1)" ${i===0?'disabled':''} aria-label="Su"><i class="ti ti-chevron-up"></i></button>
+        <button onclick="moveArea('${a}',1)" ${i===ids.length-1?'disabled':''} aria-label="Giù"><i class="ti ti-chevron-down"></i></button>
+      </div>
+    </div>`).join('')||'<div class="dayp-empty">Nessuna area. Creane una qui sopra.</div>';
 
   const add=`<div class="rm-add"><input id="naNm" placeholder="Nome della nuova area (es. Sala Dehoor)">
       <input id="naSec" placeholder="Reparto (Sala, Bar…)" style="max-width:150px">
@@ -1347,6 +1414,17 @@ function areePane(){
         <button class="mbtn" onclick="openMove('phase')"><i class="ti ti-arrows-move"></i> Sposta tutte le ${ts.length} voci di «${esc(phaseName(S.edPhase))}» in un'altra area o fase</button>
         ${S.moveOpen==='phase'?movePanel(true):''}</div>`:''}
     </div></div>`;
+}
+async function moveArea(id,dir){
+  const ids=Object.keys(AREAS);
+  const i=ids.indexOf(id), j=i+dir;
+  if(i<0||j<0||j>=ids.length)return;
+  ids.splice(j,0,ids.splice(i,1)[0]);
+  render();
+  for(let k=0;k<ids.length;k++){
+    await save(db.from('areas').update({sort:k+1}).eq('id',ids[k]),'riordinare le aree');
+  }
+  await loadAll();render();
 }
 async function createArea(){
   const nm=$('naNm').value.trim(),sec=($('naSec').value.trim()||'Generale');
@@ -1442,6 +1520,12 @@ function fasiPane(){
       <button class="eb" onclick="movePhase('${p.id}',-1)" ${i===0?'disabled':''} aria-label="Su"><i class="ti ti-chevron-up"></i></button>
       <button class="eb" onclick="movePhase('${p.id}',1)" ${i===PHASES.length-1?'disabled':''} aria-label="Giù"><i class="ti ti-chevron-down"></i></button>
       <button class="u-del" onclick="delPhase('${p.id}')" aria-label="Elimina"><i class="ti ti-trash"></i></button>
+    </div>
+    <div class="ph-opt">
+      <label class="tog"><input type="checkbox" ${p.only_full?'checked':''} onchange="togglePhaseFull('${p.id}',this.checked)">
+        <span>Solo nei giorni con pranzo e cena</span></label>
+      <label class="ph-time">Predefinita dalle
+        <input type="time" value="${p.from_time||''}" onchange="setPhaseTime('${p.id}',this.value)"></label>
     </div></div>`;}).join('')||'<div class="dayp-empty">Nessuna fase: creane almeno una, altrimenti le checklist non possono avere voci.</div>';
   return `<div class="rm-add"><input id="nphNm" placeholder="Nome della nuova fase (es. Metà servizio)">
       <button onclick="createPhase()">Crea</button></div>
@@ -1450,6 +1534,12 @@ function fasiPane(){
       L'ordine qui è l'ordine in cui appaiono.</span></div>
     <div class="u-grid">${cards}</div>`;
 }
+async function togglePhaseFull(id,on){
+  const p=phaseObj(id);p.only_full=on;render();
+  await save(db.from('phases').update({only_full:on}).eq('id',id),'aggiornare la sezione');}
+async function setPhaseTime(id,val){
+  const p=phaseObj(id);p.from_time=val||null;render();
+  await save(db.from('phases').update({from_time:val||null}).eq('id',id),'aggiornare l\'orario');}
 async function createPhase(){const el=$('nphNm'),nm=el.value.trim();if(!nm)return;
   if(PHASES.some(p=>p.name.toLowerCase()===nm.toLowerCase())){alert('Esiste già una fase con questo nome.');return;}
   if(!await save(db.from('phases').insert({id:'ph'+Date.now(),name:nm,sort:PHASES.length+1}),'creare la fase'))return;
@@ -1471,6 +1561,37 @@ async function movePhase(id,dir){
   const a=PHASES[i],b=PHASES[j];PHASES[i]=b;PHASES[j]=a;render();
   await Promise.all(PHASES.map((p,k)=>db.from('phases').update({sort:k+1}).eq('id',p.id)));
   await loadAll();render();}
+
+
+/* ---------- SERVIZIO (pianificazione settimanale) ---------- */
+const SVC_MODES=[['full','Pranzo e Cena'],['cena','Solo cena'],['pranzo','Solo pranzo'],['chiuso','Chiuso']];
+function servizioPane(){
+  if(!S.planWeek)S.planWeek=serviceDate();
+  const anc=parseYmd(S.planWeek);
+  const off=(anc.getDay()+6)%7;const mon=new Date(anc);mon.setDate(anc.getDate()-off);
+  const days=[];for(let i=0;i<7;i++){const d=new Date(mon);d.setDate(mon.getDate()+i);days.push(d);}
+  const end=new Date(mon);end.setDate(mon.getDate()+6);
+  const label=mon.getDate()+' '+mon.toLocaleDateString('it-IT',{month:'short'})+' – '+end.getDate()+' '+end.toLocaleDateString('it-IT',{month:'short'});
+  const today=serviceDate();
+  const rows=days.map(d=>{const ds=ymdOf(d);const mode=SDAYS[ds]||null;const isToday=ds===today;
+    const btns=SVC_MODES.map(([m,l])=>`<button class="svm ${mode===m?'on '+m:''}" onclick="setDayMode('${ds}','${m}')">${l}</button>`).join('');
+    return `<div class="svrow ${isToday?'today':''}">
+      <div class="svd"><span class="svdow">${d.toLocaleDateString('it-IT',{weekday:'short'})}</span>
+        <span class="svnum">${d.getDate()}</span>${isToday?'<span class="svtoday">oggi</span>':''}
+        ${!mode?'<span class="svunset">da impostare</span>':''}</div>
+      <div class="svbtns">${btns}</div></div>`;}).join('');
+  return `<div class="calhead" style="max-width:none"><span class="cal-lbl" style="text-transform:none">${label}</span>
+      <span class="cal-nav"><i class="ti ti-chevron-left" onclick="planNav(-1)"></i><i class="ti ti-chevron-right" onclick="planNav(1)"></i></span></div>
+    <div class="hintbox" style="margin-top:6px"><i class="ti ti-info-circle"></i><span>Segna qui, in anticipo, come apre ogni giorno.
+      Nei giorni «Solo cena» lo staff non vedrà il Riassetto. I giorni «da impostare» mostrano tutte le sezioni.</span></div>
+    <div class="svlist">${rows}</div>`;
+}
+function planNav(dir){const a=parseYmd(S.planWeek);a.setDate(a.getDate()+7*dir);S.planWeek=ymdOf(a);render();}
+async function setDayMode(ds,mode){
+  if(SDAYS[ds]===mode){delete SDAYS[ds];render();await save(db.from('service_days').delete().eq('date',ds),'aggiornare il giorno');return;}
+  SDAYS[ds]=mode;render();
+  await save(db.from('service_days').upsert({date:ds,mode},{onConflict:'date'}),'salvare il giorno');
+}
 
 /* ---------- LOCALE ---------- */
 function localePane(){
