@@ -351,6 +351,22 @@
   .lg-tx{flex:1;min-width:0;font-size:12.5px}
   .lg-tx small{display:block;color:var(--tx-3);font-size:11px;margin-top:1px}
   .lg-tm{font-size:11.5px;color:var(--tx-3);text-align:right;flex:0 0 auto}
+
+  .movebulk{margin-top:14px;padding-top:12px;border-top:0.5px solid var(--line-2)}
+  .mbtn{width:100%;text-align:left;border:0.5px dashed var(--line);background:var(--card);color:var(--tx-2);
+    border-radius:var(--r-s);padding:10px 12px;cursor:pointer;font-size:12.5px;display:flex;align-items:center;gap:7px}
+  .mbtn:hover{border-color:var(--acc);color:var(--acc)}
+  .mvpanel{margin-top:10px;padding:12px;background:var(--acc-bg);border:0.5px solid #bcd3fb;border-radius:var(--r-s)}
+  .mvrow{display:flex;gap:10px;flex-wrap:wrap}
+  .mvrow label{flex:1;min-width:140px;font-size:11.5px;color:#1e4fb0;display:flex;flex-direction:column;gap:5px}
+  .mvrow select{height:38px;border:0.5px solid #bcd3fb;border-radius:var(--r-s);background:var(--card);
+    font:inherit;font-size:13px;color:var(--tx);padding:0 9px}
+  .mvact{display:flex;gap:8px;margin-top:10px}
+  .mvact button{flex:1;height:36px;border-radius:var(--r-s);font:inherit;font-size:12.5px;cursor:pointer}
+  .mv-x{border:0.5px solid var(--line);background:var(--card);color:var(--tx-2)}
+  .mv-go{border:none;background:var(--ink);color:#fff}
+  .mv-go:disabled{opacity:.4;cursor:default}
+  .mvhint{font-size:11px;color:#1e4fb0;margin-top:8px}
   /* ---- editor checklist ---- */
   .edit2{display:flex;flex-direction:column;gap:16px;padding:0 16px 20px}
   .ecol{min-width:0}
@@ -467,7 +483,7 @@ let S={screen:'load',selUser:null,pin:'',user:null,tab:'check',area:null,phase:n
   room:'comune',bacView:'feed',bacFilter:'all',calMode:'month',calAnchor:null,calSel:null,
   composeTags:[],editing:null,ctrlDate:null,archChecks:null,fq:'',fext:'all',uploading:false,adminTab:'utenti',
   pendingFile:null,pendFolder:null,pendVis:'room',pickMode:'library',sending:false,folder:null,
-  edArea:null,edPhase:null,
+  edArea:null,edPhase:null,moveOpen:null,moveArea:null,movePhase:null,
   viewer:null,viewerState:'idle',viewerPages:[],viewerErr:'',logFor:null,
   draft:{},tagEditing:null,justRead:[],checking:false};
 const $=id=>document.getElementById(id);
@@ -677,7 +693,7 @@ function appView(){
     <div class="main">${c}</div></div>
     <div class="tabs">${tabs}</div>`;
 }
-function go(t){S.tab=t;S.editing=null;S.tagEditing=null;
+function go(t){S.tab=t;S.editing=null;S.tagEditing=null;S.moveOpen=null;
   if(t==='archivio'){S.folder=null;S.fq='';S.fext='all';}
   if(t==='check'&&!S.user.areas.includes(S.area))S.area=S.user.areas[0]||S.area;
   render();
@@ -1297,8 +1313,10 @@ function areePane(){
         <input class="et" value="${esc(t.t)}" onchange="updTask('${t.id}',this.value)">
         <button class="eb" onclick="moveTask('${t.id}',-1)" ${i===0?'disabled':''} aria-label="Su"><i class="ti ti-chevron-up"></i></button>
         <button class="eb" onclick="moveTask('${t.id}',1)" ${i===ts.length-1?'disabled':''} aria-label="Giù"><i class="ti ti-chevron-down"></i></button>
+        <button class="eb" onclick="openMove('${t.id}')" aria-label="Sposta"><i class="ti ti-arrows-move"></i></button>
         <button class="eb del" onclick="delTask('${t.id}')" aria-label="Elimina"><i class="ti ti-trash"></i></button>
       </div>
+      ${S.moveOpen===t.id?movePanel():''}
       <div class="eo">
         <label class="tog"><input type="checkbox" ${t.shift==='split'?'checked':''} onchange="togSplit('${t.id}',this.checked)">
           <span>Da spuntare a pranzo e a cena</span></label>
@@ -1325,6 +1343,9 @@ function areePane(){
       <div class="rm-add" style="margin:12px 0 0">
         <input id="ntBody" placeholder="Nuova voce per ${esc((phaseName(S.edPhase)||'').toLowerCase())}…" onkeydown="if(event.key==='Enter')addTask()">
         <button onclick="addTask()">Aggiungi</button></div>
+      ${ts.length?`<div class="movebulk">
+        <button class="mbtn" onclick="openMove('phase')"><i class="ti ti-arrows-move"></i> Sposta tutte le ${ts.length} voci di «${esc(phaseName(S.edPhase))}» in un'altra area o fase</button>
+        ${S.moveOpen==='phase'?movePanel(true):''}</div>`:''}
     </div></div>`;
 }
 async function createArea(){
@@ -1363,6 +1384,51 @@ async function moveTask(id,dir){
   await Promise.all(ts.map((t,k)=>db.from('tasks').update({sort:k+1}).eq('id',t.id)));
   await loadAll();render();}
 
+
+
+/* ---------- SPOSTAMENTO VOCI ---------- */
+function openMove(target){
+  S.moveOpen = (S.moveOpen===target)?null:target;
+  S.moveArea = S.edArea; S.movePhase = S.edPhase;
+  render();
+}
+function closeMove(){S.moveOpen=null;render();}
+function setMoveArea(a){S.moveArea=a;render();}
+function setMovePhase(ph){S.movePhase=ph;render();}
+function movePanel(bulk){
+  const areas=Object.keys(AREAS).map(a=>`<option value="${a}" ${S.moveArea===a?'selected':''}>${esc(AREAS[a].nm)}</option>`).join('');
+  const phases=phaseIds().map(ph=>`<option value="${ph}" ${S.movePhase===ph?'selected':''}>${esc(phaseName(ph))}</option>`).join('');
+  const same=S.moveArea===S.edArea&&S.movePhase===S.edPhase;
+  return `<div class="mvpanel">
+    <div class="mvrow">
+      <label>Area<select onchange="setMoveArea(this.value)">${areas}</select></label>
+      <label>Fase<select onchange="setMovePhase(this.value)">${phases}</select></label>
+    </div>
+    <div class="mvact">
+      <button class="mv-x" onclick="closeMove()">Annulla</button>
+      <button class="mv-go" ${same?'disabled':''} onclick="doMove(${bulk?'true':'false'})">
+        ${bulk?'Sposta tutte qui':'Sposta qui'}</button>
+    </div>
+    ${same?'<div class="mvhint">Scegli un\'area o una fase diversa da quella attuale.</div>':''}
+  </div>`;
+}
+async function doMove(bulk){
+  const ta=S.moveArea, tp=S.movePhase;
+  if(ta===S.edArea && tp===S.edPhase){closeMove();return;}
+  const dest=(AREAS[ta]&&AREAS[ta].phases[tp])||[];
+  let base=dest.length;
+  let toMove;
+  if(bulk){ toMove=(AREAS[S.edArea].phases[S.edPhase]||[]).slice(); }
+  else { const t=(AREAS[S.edArea].phases[S.edPhase]||[]).find(x=>x.id===S.moveOpen); toMove=t?[t]:[]; }
+  if(!toMove.length){closeMove();return;}
+  S.moveOpen=null;render();
+  for(let i=0;i<toMove.length;i++){
+    await save(db.from('tasks').update({area_id:ta,phase:tp,sort:base+i+1}).eq('id',toMove[i].id),'spostare la voce');
+  }
+  await loadAll();
+  if(!AREAS[S.edArea])S.edArea=ta;
+  render();
+}
 
 /* ---------- FASI ---------- */
 function taskCountInPhase(ph){return Object.values(AREAS).reduce((n,a)=>n+((a.phases[ph]||[]).length),0);}
