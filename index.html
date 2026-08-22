@@ -729,7 +729,7 @@ function loginView(){
     <div class="dots">${dots}</div><div class="keys">${keys}
     <button class="key util" onclick="tap('c')">Canc</button><button class="key" onclick="tap('0')">0</button>
     <button class="key util" onclick="enter()">Entra</button></div>
-    <div class="err">${S.err||''}</div><div class="hint">Inserisci il PIN a 6 cifre</div></div>`;
+    <div class="err">${S.err||''}</div><div class="hint">PIN da 4 a 6 cifre</div></div>`;
   return `<div class="login"><div class="${wide?'login-wide':'login-in'}">${left}${right}</div></div>`;
 }
 function pick(id){S.selUser=id;S.pin='';S.err='';render();}
@@ -1696,7 +1696,7 @@ function usersPane(){
       <button class="u-key" onclick="openResetPin('${u.id}')" aria-label="Reimposta PIN"><i class="ti ti-key"></i></button>
       <button class="u-del" onclick="delUser('${u.id}')" aria-label="Rimuovi"><i class="ti ti-trash"></i></button></div>
       ${S.resetPinFor===u.id?`<div class="pinreset">
-        <input id="rp-${u.id}" type="text" inputmode="numeric" maxlength="6" placeholder="Nuovo PIN (6 cifre)">
+        <input id="rp-${u.id}" type="text" inputmode="numeric" maxlength="6" placeholder="Nuovo PIN (4-6 cifre)">
         <button class="prs" onclick="doResetPin('${u.id}')">Salva</button>
         <button class="prx" onclick="closeResetPin()">Annulla</button></div>`:''}
       <div class="u-lbl">Checklist visibili</div><div class="chips">${ac}</div>
@@ -1704,7 +1704,7 @@ function usersPane(){
       <div class="u-lbl">Stanze private</div><div class="chips">${rc}</div></div>`;}).join('');
   return `${S.pinMsg?`<div class="okbanner"><i class="ti ti-check"></i> ${esc(S.pinMsg)}</div>`:''}
     <div class="u-add-form"><div class="ff-row">
-      <input id="nuNm" placeholder="Nome"><input id="nuPin" placeholder="PIN (6 cifre)" maxlength="6" inputmode="numeric"></div>
+      <input id="nuNm" placeholder="Nome"><input id="nuPin" placeholder="PIN (4-6 cifre)" maxlength="6" inputmode="numeric"></div>
       <div class="ff-row"><select id="nuRole">${ROLES.map(r=>`<option value="${r.id}">${esc(r.name)}</option>`).join('')}</select></div>
       <button class="go" onclick="createUser()">Aggiungi persona</button></div>
     <div class="pinnote"><i class="ti ti-shield-lock"></i> I PIN sono cifrati e non sono visibili a nessuno. Se qualcuno lo dimentica, usa «Reimposta PIN» sulla sua scheda.</div>
@@ -1728,7 +1728,7 @@ function roomsPane(){
 async function createUser(){
   const nm=$('nuNm').value.trim(),pin=$('nuPin').value.trim(),role=$('nuRole').value;
   if(!nm){alert('Inserisci il nome.');return;}
-  if(!/^\d{6}$/.test(pin)){alert('Il PIN deve essere di 6 cifre.');return;}
+  if(!/^\d{4,6}$/.test(pin)){alert('Il PIN deve avere da 4 a 6 cifre.');return;}
   const id='u'+Date.now();
   const ini=nm.split(/\s+/).map(w=>w[0]).join('').slice(0,2).toUpperCase();
   if(!await save(db.from('app_users').insert({id,name:nm,initials:ini,role,color:PALETTE[USERS.length%PALETTE.length],powers:[]}),'aggiungere la persona'))return;
@@ -1740,7 +1740,7 @@ function openResetPin(id){S.resetPinFor=(S.resetPinFor===id?null:id);render();}
 function closeResetPin(){S.resetPinFor=null;render();}
 async function doResetPin(id){
   const el=$('rp-'+id);const pin=el?el.value.trim():'';
-  if(!/^\d{6}$/.test(pin)){alert('Il PIN deve essere di 6 cifre.');return;}
+  if(!/^\d{4,6}$/.test(pin)){alert('Il PIN deve avere da 4 a 6 cifre.');return;}
   const ok=await save(db.rpc('set_pin',{p_id:id,p_pin:pin}),'reimpostare il PIN');
   if(ok!==false){const u=USERS.find(x=>x.id===id);S.resetPinFor=null;S.pinMsg='PIN di '+(u?u.nm:'')+' aggiornato';render();
     setTimeout(()=>{S.pinMsg='';render();},2500);}
