@@ -419,6 +419,23 @@
     border-radius:var(--r-s);padding:9px 12px;margin:12px 0 4px;line-height:1.45}
   .okbanner{display:flex;align-items:center;gap:7px;font-size:12.5px;color:#0f6e56;background:var(--ok-bg);
     border-radius:var(--r-s);padding:9px 13px;margin-bottom:12px}
+
+  .acov{position:fixed;inset:0;background:rgba(15,20,30,.5);display:flex;align-items:center;justify-content:center;z-index:80;padding:16px}
+  .acbox{background:var(--card);border-radius:var(--r);width:100%;max-width:460px;max-height:86vh;display:flex;flex-direction:column;overflow:hidden;box-shadow:0 16px 44px rgba(0,0,0,.22)}
+  .achd{display:flex;align-items:center;gap:10px;padding:14px 16px;border-bottom:0.5px solid var(--line)}
+  .achd b{flex:1;font-size:13.5px;font-weight:600;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+  .achd button{background:none;border:none;color:var(--tx-2);cursor:pointer;font-size:18px;padding:0}
+  .acbody{padding:14px 16px;overflow-y:auto}
+  .acseg{display:flex;gap:8px}
+  .acseg button{flex:1;height:38px;border:0.5px solid var(--line);background:var(--card);color:var(--tx-2);border-radius:var(--r-s);font:inherit;font-size:13px;cursor:pointer}
+  .acseg button.on{background:var(--ink);color:#fff;border-color:var(--ink)}
+  .aclbl{font-size:10.5px;color:var(--tx-3);text-transform:uppercase;letter-spacing:.05em;margin:15px 0 7px}
+  .achint{font-size:11.5px;color:var(--tx-2);margin-top:15px;line-height:1.45;background:var(--acc-bg);border-radius:var(--r-s);padding:9px 11px}
+  .muted{font-size:11.5px;color:var(--tx-3)}
+  .acact{display:flex;gap:8px;padding:12px 16px;border-top:0.5px solid var(--line)}
+  .acact button{flex:1;height:40px;border-radius:var(--r-s);font:inherit;font-size:13px;cursor:pointer}
+  .acact .ax{border:0.5px solid var(--line);background:var(--card);color:var(--tx-2)}
+  .acact .ag{border:none;background:var(--ink);color:#fff}
   /* ---- editor checklist ---- */
   .edit2{display:flex;flex-direction:column;gap:16px;padding:0 16px 20px}
   .ecol{min-width:0}
@@ -545,6 +562,7 @@ let S={screen:'load',selUser:null,pin:'',user:null,tab:'check',area:null,phase:n
   room:'comune',bacView:'feed',bacFilter:'all',calMode:'month',calAnchor:null,calSel:null,
   composeTags:[],editing:null,ctrlDate:null,archChecks:null,fq:'',fext:'all',uploading:false,adminTab:'utenti',
   pendingFile:null,pendFolder:null,pendVis:'room',pickMode:'library',sending:false,folder:null,
+  accessFor:null,accVis:'all',accU:[],accR:[],accRm:[],pendUploadFiles:null,
   edArea:null,edPhase:null,moveOpen:null,moveArea:null,movePhase:null,
   viewer:null,viewerState:'idle',viewerPages:[],viewerErr:'',logFor:null,
   draft:{},tagEditing:null,justRead:[],checking:false,showAllPhases:false,planWeek:null,resetPinFor:null,pinMsg:''};
@@ -597,7 +615,16 @@ const isMention=m=>S.user&&forMe(m)&&m.uid!==S.user.id;
 const unreadIn=r=>visibleIn(r).filter(m=>isMention(m)&&!isRead(m.id));
 const unreadTotal=()=>myRooms().reduce((n,r)=>n+unreadIn(r.id).length,0);
 // un file si vede se è "per tutti", oppure se ho accesso alla stanza da cui è partito
-const canSeeFile=f=>f.vis==='all'||myRooms().some(r=>r.id===f.room);
+const canSeeFile=f=>{
+  if(f.vis==='all')return true;
+  if(!S.user)return false;
+  if(can('bacheca_admin'))return true;
+  if(f.byId===S.user.id)return true;
+  if(f.vis==='room'&&f.room&&myRooms().some(r=>r.id===f.room))return true;
+  if((f.allowU||[]).includes(S.user.id))return true;
+  if((f.allowR||[]).includes(S.user.role))return true;
+  if((f.allowRm||[]).some(rid=>myRooms().some(r=>r.id===rid)))return true;
+  return false;};
 const myFiles=()=>FILES.filter(canSeeFile);
 const folderFiles=fid=>myFiles().filter(f=>f.folder===fid);
 const meCount=()=>unreadTotal();
@@ -652,7 +679,8 @@ async function loadReads(){
   READS=(data||[]).map(r=>r.message_id);}
 async function loadFiles(){const {data}=await db.from('files').select('*').order('created_at',{ascending:false});
   FILES=(data||[]).map(f=>({id:f.id,room:f.room_id,path:f.path,name:f.name,ext:(f.ext||'').toLowerCase(),
-    folder:f.folder_id||null,vis:f.visibility||'all',
+    folder:f.folder_id||null,vis:f.visibility||'all',byId:f.user_id,
+    allowU:f.allow_users||[],allowR:f.allow_roles||[],allowRm:f.allow_rooms||[],
     size:f.size,by:f.user_name,ts:f.created_at,tsFull:new Date(f.created_at).toLocaleDateString('it-IT',{day:'numeric',month:'short',year:'numeric'})}));}
 async function loadChecks(){const {data}=await db.from('checks').select('*').eq('service_date',serviceDate());CHECKS=data||[];}
 function applyChecks(){const map={};CHECKS.forEach(c=>{(map[c.task_id]=map[c.task_id]||[]).push(c);});
@@ -1053,14 +1081,15 @@ function archivioView(){
 const fnOf=id=>(FOLDERS.find(f=>f.id===id)||{}).name||'';
 function fileRow(f){
   const [ic,col]=EXT_ICON[f.ext]||['ti-file','eef0f3|697180'];
-  const priv=f.vis==='room';
+  const priv=f.vis!=='all';
   const adm=can('bacheca_admin');
   return `<div class="frow"><div class="fic" style="${fill(col)}" onclick="openFile('${f.id}')"><i class="ti ${ic}"></i></div>
     <div class="fmain" style="cursor:pointer" onclick="openFile('${f.id}')"><div class="fname">${esc(f.name)}</div>
       <div class="fmeta">${esc(f.by||'')} · ${f.tsFull} · ${kb(f.size||0)}${f.folder?' · '+esc(fnOf(f.folder)):''}
         ${priv?' · <i class="ti ti-lock" style="font-size:11px;vertical-align:-1px"></i> riservato':''}</div></div>
     <button class="fdl" onclick="openFile('${f.id}')" aria-label="Apri"><i class="ti ti-eye"></i></button>
-    ${adm?`<button class="fdl" onclick="showLog('${f.id}')" aria-label="Chi l'ha aperto"><i class="ti ti-history"></i></button>
+    ${adm?`<button class="fdl" onclick="openAccess('${f.id}')" aria-label="Chi può vederlo"><i class="ti ti-user-cog"></i></button>
+      <button class="fdl" onclick="showLog('${f.id}')" aria-label="Chi l'ha aperto"><i class="ti ti-history"></i></button>
       <button class="fdl" onclick="dlFile('${f.path}','${esc(f.name)}')" aria-label="Scarica"><i class="ti ti-download"></i></button>
       <button class="fdl fdel" onclick="delFile('${f.id}','${f.path}')" aria-label="Elimina"><i class="ti ti-trash"></i></button>`:''}
   </div>`;
@@ -1069,9 +1098,10 @@ function setFext(k){S.fext=k;render();}
 function pickFiles(){
   if(!FOLDERS.length){alert('Crea prima una cartella da Gestione.');return;}
   S.pickMode='library';const el=$('filePick');el.multiple=true;el.value='';el.click();}
-async function uploadFiles(files){
+async function uploadFiles(files,access){
   if(!files.length)return;
   const fid=S.folder||FOLDERS[0].id;
+  const acc=access||{visibility:'all',allow_users:[],allow_roles:[],allow_rooms:[]};
   S.uploading=true;render();
   for(const f of files){
     try{
@@ -1080,11 +1110,55 @@ async function uploadFiles(files){
       const {error}=await db.storage.from('documenti').upload(path,f);
       if(error)throw error;
       await db.from('files').insert({room_id:'comune',path,name:f.name,ext,size:f.size,
-        folder_id:fid,visibility:'all',user_id:S.user.id,user_name:S.user.nm});
+        folder_id:fid,visibility:acc.visibility,allow_users:acc.allow_users,allow_roles:acc.allow_roles,
+        allow_rooms:acc.allow_rooms,user_id:S.user.id,user_name:S.user.nm});
     }catch(e){alert('Errore nel caricare '+f.name+': '+(e.message||e));}
   }
   S.uploading=false;await loadFiles();render();
 }
+/* ---------- ACCESSI AI FILE ---------- */
+function openAccess(fid){const f=FILES.find(x=>x.id===fid);if(!f)return;
+  S.accessFor=fid;S.accVis=f.vis==='all'?'all':'restricted';
+  S.accU=(f.allowU||[]).slice();S.accR=(f.allowR||[]).slice();
+  S.accRm=(f.allowRm&&f.allowRm.length)?f.allowRm.slice():(f.vis==='room'&&f.room?[f.room]:[]);
+  render();}
+function openUploadAccess(files){S.pendUploadFiles=files;S.accessFor='upload';
+  S.accVis='all';S.accU=[];S.accR=[];S.accRm=[];render();}
+function closeAccess(){S.accessFor=null;S.pendUploadFiles=null;render();}
+function setAccVis(v){S.accVis=v;render();}
+function toggleAcc(kind,id){const arr=kind==='u'?S.accU:kind==='r'?S.accR:S.accRm;
+  const i=arr.indexOf(id);if(i>=0)arr.splice(i,1);else arr.push(id);render();}
+async function saveAccess(){
+  const r=S.accVis==='restricted';
+  const payload={visibility:r?'restricted':'all',allow_users:r?S.accU:[],allow_roles:r?S.accR:[],allow_rooms:r?S.accRm:[]};
+  if(S.accessFor==='upload'){const files=S.pendUploadFiles||[];S.accessFor=null;S.pendUploadFiles=null;await uploadFiles(files,payload);return;}
+  const fid=S.accessFor;S.accessFor=null;render();
+  await save(db.from('files').update(payload).eq('id',fid),'aggiornare gli accessi');
+  await loadFiles();render();}
+function accessHtml(){
+  if(!S.accessFor)return '';
+  const isUp=S.accessFor==='upload';
+  const f=isUp?null:FILES.find(x=>x.id===S.accessFor);
+  const n=S.pendUploadFiles?S.pendUploadFiles.length:0;
+  const title=isUp?(n+' file da caricare'):esc(f?f.name:'');
+  const r=S.accVis==='restricted';
+  const users=USERS.map(u=>`<span class="chip ${S.accU.includes(u.id)?'on':''}" onclick="toggleAcc('u','${u.id}')">${esc(u.nm)}</span>`).join('')||'<span class="muted">Nessuna persona</span>';
+  const roles=ROLES.map(x=>`<span class="chip ${S.accR.includes(x.id)?'on':''}" onclick="toggleAcc('r','${x.id}')">${esc(x.name)}</span>`).join('');
+  const rooms=ROOMS.filter(x=>x.private).map(x=>`<span class="chip ${S.accRm.includes(x.id)?'on':''}" onclick="toggleAcc('rm','${x.id}')">${esc(x.name)}</span>`).join('')||'<span class="muted">Nessuna stanza privata</span>';
+  return `<div class="acov" onclick="if(event.target===this)closeAccess()"><div class="acbox">
+    <div class="achd"><b>Chi può vedere · ${title}</b><button onclick="closeAccess()"><i class="ti ti-x"></i></button></div>
+    <div class="acbody">
+      <div class="acseg"><button class="${!r?'on':''}" onclick="setAccVis('all')">Tutti</button>
+        <button class="${r?'on':''}" onclick="setAccVis('restricted')">Solo alcuni</button></div>
+      ${r?`<div class="aclbl">Persone</div><div class="chips">${users}</div>
+        <div class="aclbl">Ruoli</div><div class="chips">${roles}</div>
+        <div class="aclbl">Stanze</div><div class="chips">${rooms}</div>
+        <div class="achint">Vedrà il file chi rientra in almeno una delle scelte qui sopra. Chi lo carica e la direzione lo vedono comunque.</div>`
+      :`<div class="achint">Il file sarà visibile a tutto lo staff.</div>`}
+    </div>
+    <div class="acact"><button class="ax" onclick="closeAccess()">Annulla</button>
+      <button class="ag" onclick="saveAccess()">${isUp?'Carica':'Salva'}</button></div>
+  </div></div>`;}
 async function saveEdit(id){const el=$('edit_'+id);if(!el)return;const v=el.value.trim();if(!v){S.editing=null;render();return;}
   const m=MSGS.find(x=>x.id===id);if(m){m.tx=v;m.edited=true;}S.editing=null;render();
   await db.from('messages').update({body:v,edited_at:new Date().toISOString()}).eq('id',id);}
@@ -1234,7 +1308,7 @@ function viewerHtml(){
       <button class="x" onclick="closeFile()" aria-label="Chiudi"><i class="ti ti-x"></i></button>
       <div class="vw-nm"><div class="t">${esc(f.name)}</div>
         <div class="s">${f.folder?esc(fnOf(f.folder))+' · ':''}${kb(f.size||0)}${S.viewerPages.length>1?' · '+S.viewerPages.length+' pagine':''}</div></div>
-      ${f.vis==='room'?'<span class="vw-lock"><i class="ti ti-lock"></i>riservato</span>':''}
+      ${f.vis!=='all'?'<span class="vw-lock"><i class="ti ti-lock"></i>riservato</span>':''}
       ${canDownload()?`<button class="vw-dl" onclick="dlFile('${f.path}','${esc(f.name)}')">
         <i class="ti ti-download"></i>Scarica</button>`:''}
     </div>
@@ -1794,7 +1868,7 @@ function render(){
   if(S.screen==='error'){app.innerHTML=`<div class="center"><i class="ti ti-alert-circle"></i><h3>Qualcosa non torna</h3>
     <p style="white-space:pre-line">${esc(S.err)}</p>
     <button onclick="location.reload()" style="margin-top:16px;height:40px;padding:0 20px;border:0.5px solid var(--line);background:var(--card);border-radius:9px;color:var(--tx);font:inherit;font-size:13.5px;cursor:pointer">Riprova</button></div>`;return;}
-  app.innerHTML=(S.screen==='login'?loginView():appView())+viewerHtml()+logHtml();
+  app.innerHTML=(S.screen==='login'?loginView():appView())+viewerHtml()+logHtml()+accessHtml();
 }
 function renderKeepFocus(id){const el=$(id);const pos=el?el.selectionStart:null;render();
   const n=$(id);if(n){n.focus();const p=(pos===null?n.value.length:pos);
@@ -1803,7 +1877,7 @@ $('filePick').addEventListener('change',e=>{
   const files=Array.from(e.target.files||[]);
   if(!files.length)return;
   if(S.pickMode==='attach'){S.pendingFile=files[0];render();}
-  else uploadFiles(files);
+  else openUploadAccess(files);
 });
 let rt;window.addEventListener('resize',()=>{clearTimeout(rt);rt=setTimeout(render,150);});
 init();
