@@ -51,7 +51,11 @@
   .login h1{font-family:var(--fd);font-weight:600;font-size:29px;margin:8px 0 3px}
   .login .sub{color:#8b97ab;font-size:14px;margin-bottom:24px}
   .who-lbl{font-size:12px;color:#8b97ab;margin:0 0 10px}
-  .who{display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:8px;padding-bottom:12px}
+    .who{padding-bottom:14px}
+  .who-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:8px}
+  .who-group{display:flex;align-items:center;gap:9px;font-size:10.5px;color:#7a8698;text-transform:uppercase;letter-spacing:.06em;font-weight:500;margin:18px 0 9px}
+  .who-group::after{content:'';flex:1;height:1px;background:var(--line-ink)}
+  .who-group:first-child{margin-top:2px}
   .who-card{display:flex;align-items:center;gap:9px;background:var(--ink-soft);border:1px solid var(--line-ink);border-radius:var(--r);padding:9px 11px;cursor:pointer;text-align:left;color:#fff}
   .who-card:hover{border-color:#3f4d63}
   .who-card.sel{border-color:#fff}
@@ -757,12 +761,7 @@ async function init(){
 function loginView(){
   const wide=window.innerWidth>=840;
   const q=(S.loginQ||'').toLowerCase().trim();
-  const list=USERS.filter(u=>!q||u.nm.toLowerCase().includes(q)||roleName(u.role).toLowerCase().includes(q))
-    .slice().sort((a,b)=>a.nm.localeCompare(b.nm,'it'));
-  const cards=list.map(u=>`<button class="who-card ${S.selUser===u.id?'sel':''}" onclick="pick('${u.id}')">
-      <div class="av" style="${fill(u.c)}">${u.ini}</div>
-      <div class="who-t"><div class="nm">${esc(u.nm)}</div><div class="rl">${esc(roleName(u.role))}</div></div>
-    </button>`).join('')||'<div class="who-none">Nessun profilo con questo nome.</div>';
+  const cards=loginCards();
   const u=USERS.find(x=>x.id===S.selUser);
   const dots=[0,1,2,3,4,5].map(i=>`<div class="dot ${i<S.pin.length?'f':''}"></div>`).join('');
   const keys=['1','2','3','4','5','6','7','8','9'].map(k=>`<button class="key" onclick="tap('${k}')">${k}</button>`).join('');
@@ -785,7 +784,22 @@ function loginView(){
   }
   return `<div class="login"><div class="login-in">${S.selUser?padPane:listPane}</div></div>`;
 }
-function setLoginQ(v){S.loginQ=v;renderKeepFocus('loginQ');}
+function whoCardHtml(u){return `<button class="who-card ${S.selUser===u.id?'sel':''}" onclick="pick('${u.id}')">
+    <div class="av" style="${fill(u.c)}">${u.ini}</div>
+    <div class="who-t"><div class="nm">${esc(u.nm)}</div></div></button>`;}
+function loginCards(){
+  const q=(S.loginQ||'').toLowerCase().trim();
+  const list=USERS.filter(u=>!q||u.nm.toLowerCase().includes(q)||roleName(u.role).toLowerCase().includes(q));
+  if(!list.length)return '<div class="who-none">Nessun profilo con questo nome.</div>';
+  const order={};ROLES.forEach((r,i)=>order[r.id]=i);
+  const byRole={};list.forEach(u=>{(byRole[u.role]=byRole[u.role]||[]).push(u);});
+  const roleIds=Object.keys(byRole).sort((a,b)=>((order[a]??999)-(order[b]??999))||roleName(a).localeCompare(roleName(b),'it'));
+  return roleIds.map(rid=>{
+    const cards=byRole[rid].sort((a,b)=>a.nm.localeCompare(b.nm,'it')).map(whoCardHtml).join('');
+    return `<div class="who-group">${esc(roleName(rid))}</div><div class="who-grid">${cards}</div>`;
+  }).join('');
+}
+function setLoginQ(v){S.loginQ=v;const w=document.querySelector('.who');if(w)w.innerHTML=loginCards();}
 function deselectUser(){S.selUser=null;S.pin='';S.err='';render();}
 function pick(id){S.selUser=id;S.pin='';S.err='';render();}
 function tap(k){if(!S.selUser)return;if(k==='c')S.pin=S.pin.slice(0,-1);else if(S.pin.length<6)S.pin+=k;
@@ -1068,7 +1082,7 @@ async function postMsg(){
 }
 
 /* ---------- ARCHIVIO ---------- */
-function archivioView(){
+function archiveBody(){
   const q=S.fq.toLowerCase().trim();
   const mine=myFiles();
   const searching=!!q;
@@ -1098,13 +1112,17 @@ function archivioView(){
       ${recent.length?`<div class="sec-lbl">Aggiunti di recente</div><div class="max">${recent.map(fileRow).join('')}</div>`:''}
       <div style="height:20px"></div>`;
   }
+  return body;
+}
+function archivioView(){
   const up=can('bacheca_admin')?`<button class="fup" onclick="pickFiles()"><i class="ti ti-upload"></i>Carica</button>`:'';
   return hdr(`<i class="ti ti-folder"></i>Archivio`,'Documenti','Schede tecniche, menu, listini')
     +`<div class="fbar">
-        <input class="fsearch" id="fq" placeholder="Cerca per nome o autore…" value="${esc(S.fq)}" oninput="S.fq=this.value;renderKeepFocus('fq')">
+        <input class="fsearch" id="fq" placeholder="Cerca per nome o autore…" value="${esc(S.fq)}" oninput="setFq(this.value)">
         ${up}</div>
-      <div class="pane">${body}</div>`;
+      <div class="pane" id="fpane">${archiveBody()}</div>`;
 }
+function setFq(v){S.fq=v;const pane=document.getElementById('fpane');if(pane)pane.innerHTML=archiveBody();}
 const fnOf=id=>(FOLDERS.find(f=>f.id===id)||{}).name||'';
 function fileRow(f){
   const [ic,col]=EXT_ICON[f.ext]||['ti-file','eef0f3|697180'];
@@ -1912,7 +1930,13 @@ $('filePick').addEventListener('change',e=>{
   if(S.pickMode==='attach'){S.pendingFile=files[0];render();}
   else openUploadAccess(files);
 });
-let rt;window.addEventListener('resize',()=>{clearTimeout(rt);rt=setTimeout(render,150);});
+let rt,lastWide=window.innerWidth>=840;
+window.addEventListener('resize',()=>{
+  const wide=window.innerWidth>=840;
+  if(wide===lastWide)return;          // la tastiera cambia l'altezza, non la larghezza: non ridisegnare
+  lastWide=wide;
+  clearTimeout(rt);rt=setTimeout(render,150);
+});
 init();
 </script>
 </body>
