@@ -1826,12 +1826,12 @@ async function delUser(id){
   if(!confirm('Rimuovere questa persona?'))return;
   await db.from('app_users').delete().eq('id',id);await loadAll();render();}
 async function toggleArea(uid,a){const u=USERS.find(x=>x.id===uid),has=u.areas.includes(a);
-  if(has){u.areas=u.areas.filter(x=>x!==a);render();await db.from('user_areas').delete().eq('user_id',uid).eq('area_id',a);}
-  else{u.areas=[...u.areas,a];render();await db.from('user_areas').insert({user_id:uid,area_id:a});}}
+  if(has){u.areas=u.areas.filter(x=>x!==a);renderKeepScroll();await db.from('user_areas').delete().eq('user_id',uid).eq('area_id',a);}
+  else{u.areas=[...u.areas,a];renderKeepScroll();await db.from('user_areas').insert({user_id:uid,area_id:a});}}
 async function togglePower(uid,p){const u=USERS.find(x=>x.id===uid),has=(u.powers||[]).includes(p);
   if(has&&p==='utenti'&&adminsWith('utenti')<=1){
     alert('Non posso togliere questo potere: resterebbe nessuno in grado di gestire l\'app.');return;}
-  u.powers=has?u.powers.filter(x=>x!==p):[...(u.powers||[]),p];render();
+  u.powers=has?u.powers.filter(x=>x!==p):[...(u.powers||[]),p];renderKeepScroll();
   await db.from('app_users').update({powers:u.powers}).eq('id',uid);}
 async function createRoom(){const nm=$('nrNm').value.trim();if(!nm)return;
   const id='r'+Date.now();
@@ -1841,9 +1841,9 @@ async function createRoom(){const nm=$('nrNm').value.trim();if(!nm)return;
 async function delRoom(id){if(!confirm('Eliminare la stanza? Spariscono anche i suoi avvisi e documenti.'))return;
   await db.from('rooms').delete().eq('id',id);if(S.room===id)S.room='comune';await loadAll();render();}
 async function toggleMember(rid,uid){const has=RMEM.some(x=>x.room_id===rid&&x.user_id===uid);
-  if(has){RMEM=RMEM.filter(x=>!(x.room_id===rid&&x.user_id===uid));render();
+  if(has){RMEM=RMEM.filter(x=>!(x.room_id===rid&&x.user_id===uid));renderKeepScroll();
     await db.from('room_members').delete().eq('room_id',rid).eq('user_id',uid);}
-  else{RMEM=[...RMEM,{room_id:rid,user_id:uid}];render();
+  else{RMEM=[...RMEM,{room_id:rid,user_id:uid}];renderKeepScroll();
     await db.from('room_members').insert({room_id:rid,user_id:uid});}}
 
 /* ---------- profilo ---------- */
@@ -1869,6 +1869,12 @@ function render(){
     <p style="white-space:pre-line">${esc(S.err)}</p>
     <button onclick="location.reload()" style="margin-top:16px;height:40px;padding:0 20px;border:0.5px solid var(--line);background:var(--card);border-radius:9px;color:var(--tx);font:inherit;font-size:13.5px;cursor:pointer">Riprova</button></div>`;return;}
   app.innerHTML=(S.screen==='login'?loginView():appView())+viewerHtml()+logHtml()+accessHtml();
+}
+function renderKeepScroll(){
+  const y=(document.querySelector('.pane')||{}).scrollTop||0;
+  render();
+  const p=document.querySelector('.pane');if(p)p.scrollTop=y;
+  requestAnimationFrame(()=>{const q=document.querySelector('.pane');if(q)q.scrollTop=y;});
 }
 function renderKeepFocus(id){const el=$(id);const pos=el?el.selectionStart:null;render();
   const n=$(id);if(n){n.focus();const p=(pos===null?n.value.length:pos);
