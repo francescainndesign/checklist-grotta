@@ -745,7 +745,8 @@ async function init(){
       .on('postgres_changes',{event:'*',schema:'public',table:'checks'},async()=>{await loadChecks();applyChecks();render();})
       .on('postgres_changes',{event:'*',schema:'public',table:'messages'},async()=>{
           await loadMessages();
-          // se sto già guardando questa stanza, le menzioni nuove le segno viste
+          const ae=document.activeElement;
+          if(ae&&(ae.id==='bcInput'||ae.tagName==='TEXTAREA'||(ae.tagName==='INPUT'&&ae.type!=='button')))return;
           if(S.user&&S.tab==='bacheca'){const un=unreadIn(S.room);
             if(un.length){S.justRead=Array.from(new Set([...S.justRead,...un.map(m=>m.id)]));await markRead(S.room);}}
           render();})
@@ -939,8 +940,8 @@ function bachecaView(){
       <button class="st ${S.bacFilter==='me'?'on':''}" onclick="setFilter('me')">Per me${forMeTot?`<span class="cnt neutral">${forMeTot}</span>`:''}</button></div>`;
     body=filt+admin+`<div class="max">${feed}</div>`;
   }
-  const allTag=`<span class="ctag all ${S.composeTags.includes('tutti')?'on':''}" onclick="ctag('tutti')">@tutti</span>`;
-  const areaTags=Object.keys(AREAS).map(a=>`<span class="ctag ${S.composeTags.includes(a)?'on':''}" onclick="ctag('${a}')">#${AREAS[a].nm}</span>`).join('');
+  const allTag=`<span class="ctag all ${S.composeTags.includes('tutti')?'on':''}" onclick="ctag('tutti',this)">@tutti</span>`;
+  const areaTags=Object.keys(AREAS).map(a=>`<span class="ctag ${S.composeTags.includes(a)?'on':''}" onclick="ctag('${a}',this)">#${AREAS[a].nm}</span>`).join('');
   const hint=S.bacView==='cal'?`<div class="chint"><i class="ti ti-calendar-event" style="font-size:13px;vertical-align:-2px"></i> Avviso per ${parseYmd(S.calSel).toLocaleDateString('it-IT',{weekday:'long',day:'numeric',month:'long'})}</div>`:'';
   const pf=S.pendingFile;
   const isCommon=!(ROOMS.find(r=>r.id===S.room)||{}).private;
@@ -1043,10 +1044,11 @@ function setRoom(r){S.room=r;S.editing=null;S.tagEditing=null;S.pendingFile=null
   S.justRead=[];render();markRead(r);}
 function setBacView(v){S.bacView=v;render();}
 function setFilter(f){S.bacFilter=f;render();}
-function ctag(t){
-  const el=$('bcInput');if(el)S.draft[S.room]=el.value;   // salva la bozza prima di ridisegnare
-  S.composeTags=S.composeTags.includes(t)?S.composeTags.filter(x=>x!==t):[...S.composeTags,t];
-  renderKeepFocus('bcInput');}
+function ctag(t,elc){
+  const el=$('bcInput');if(el)S.draft[S.room]=el.value;
+  const i=S.composeTags.indexOf(t);
+  if(i>=0)S.composeTags.splice(i,1);else S.composeTags.push(t);
+  if(elc)elc.classList.toggle('on',S.composeTags.includes(t));}
 const rnOf=id=>(ROOMS.find(r=>r.id===id)||{}).name||'';
 function attachFile(){S.pickMode='attach';const el=$('filePick');el.multiple=false;el.value='';el.click();}
 function clearPending(){S.pendingFile=null;render();}
@@ -1060,8 +1062,8 @@ async function postMsg(){
   if(pf&&!S.pendFolder){alert('Scegli in quale cartella salvare il documento.');return;}
   const u=S.user,tags=[...S.composeTags],due=S.bacView==='cal'?S.calSel:null;
   const folder=S.pendFolder,vis=isCommon?'all':S.pendVis;
-  S.sending=true;S.composeTags=[];S.pendingFile=null;S.pendFolder=null;S.pendVis='room';
-  S.draft[room]='';if(el)el.value='';render();
+  S.draft[room]=body;
+  S.sending=true;render();
   let fileId=null;
   try{
     if(pf){
@@ -1077,7 +1079,8 @@ async function postMsg(){
     await db.from('messages').insert({room_id:room,user_id:u.id,author:u.nm,initials:u.ini,color:u.c,
       body,tags,due_date:due,file_id:fileId,level:'normal'});
     await loadMessages();
-  }catch(e){alert('Non sono riuscito a inviare: '+(e.message||e));}
+    S.composeTags=[];S.pendingFile=null;S.pendFolder=null;S.pendVis='room';S.draft[room]='';
+  }catch(e){alert('Non sono riuscito a inviare: '+(e.message||e)+'\n\nNiente è andato perso: il messaggio è ancora qui, riprova.');}
   S.sending=false;render();
 }
 
