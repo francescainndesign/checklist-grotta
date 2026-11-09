@@ -78,6 +78,14 @@
   .ag-dh.today b{color:var(--acc)}
   .ag-sel{width:100%;padding:6px 4px;max-width:none}
   .ag-sel.set{border-color:var(--acc);background:var(--acc-bg);color:#1e4fb0;font-weight:700}
+  .tdot{display:inline-block;width:10px;height:10px;border-radius:50%;margin-right:4px;vertical-align:middle;border:0.5px solid rgba(0,0,0,.18)}
+  .ag-legend{display:flex;gap:14px;justify-content:center;flex-wrap:wrap;margin-bottom:12px;font-size:11.5px;color:var(--tx-2)}
+  .ag-legend span{display:inline-flex;align-items:center;gap:5px}
+  .ag-legend i{width:11px;height:11px;border-radius:3px;display:inline-block;border:0.5px solid rgba(0,0,0,.18)}
+  .ag-save{display:flex;gap:10px;justify-content:center;margin-bottom:14px}
+  .ag-save button{font:inherit;font-size:13px;border-radius:9px;padding:9px 18px;cursor:pointer;border:0.5px solid var(--line);background:var(--card);color:var(--tx)}
+  .ag-save .save{background:var(--acc);border-color:var(--acc);color:#fff;font-weight:600}
+  .ag-save button:disabled{opacity:.45;cursor:default}
   .center i{font-size:36px;color:#c7ccd4;margin-bottom:14px}
   .center h3{font-size:17px;color:var(--tx);margin-bottom:8px;font-family:var(--fd)}
   .center p{font-size:14px;line-height:1.55;max-width:420px}
@@ -701,7 +709,7 @@ let db=null,AREAS={},USERS=[],MSGS=[],CHECKS=[],ROOMS=[],RMEM=[],FILES=[],FOLDER
 let BLK={},TRN={},ASG={},SPU={};
 let S={screen:'load',selUser:null,loginQ:'',pin:'',user:null,tab:'check',area:null,phase:null,err:'',
   room:'comune',bacView:'feed',bacFilter:'all',calMode:'month',calAnchor:null,calSel:null,
-  turnoView:null,turnoManage:false,asgWeek:null,_turniErr:null,
+  turnoView:null,turnoManage:false,asgWeek:null,asgDraft:{},_turniErr:null,
   composeTags:[],editTags:[],tagOpen:false,tagHint:false,chatSearch:'',chatMenu:false,chatSearchOpen:false,replyTo:null,msgMenu:null,_paneY:null,_chatStick:true,_chatToBottom:true,_newMsgs:0,_newMention:false,editing:null,ctrlDate:null,archChecks:null,fq:'',fext:'all',uploading:false,adminTab:'utenti',
   pendingFile:null,pendFolder:null,pendVis:'room',pickMode:'library',sending:false,folder:null,
   accessFor:null,accVis:'all',accU:[],accR:[],accRm:[],pendUploadFiles:null,
@@ -822,7 +830,7 @@ async function loadTurni(){
   BLK={};(bl.data||[]).forEach(b=>BLK[b.id]={id:b.id,nome:b.nome,reparto:b.reparto,sort:b.sort,voci:[]});
   (bv.data||[]).forEach(v=>{const b=BLK[v.blocco_id];if(b)b.voci.push({id:v.id,testo:v.testo,tipo:v.tipo,sort:v.sort});});
   Object.values(BLK).forEach(b=>b.voci.sort((a,c)=>a.sort-c.sort));
-  TRN={};(tu.data||[]).forEach(t=>TRN[t.codice]={codice:t.codice,orario:t.orario,pausa:t.pausa,giorni:t.giorni||[],giorni_label:t.giorni_label,ruolo:t.ruolo,mansioni:t.mansioni,tempo_apertura:t.tempo_apertura,sort:t.sort,attivo:t.attivo,blocks:[]});
+  TRN={};(tu.data||[]).forEach(t=>TRN[t.codice]={codice:t.codice,orario:t.orario,pausa:t.pausa,giorni:t.giorni||[],giorni_label:t.giorni_label,ruolo:t.ruolo,mansioni:t.mansioni,tempo_apertura:t.tempo_apertura,sort:t.sort,attivo:t.attivo,colore:t.colore||'',blocks:[]});
   const ex={};(tx.data||[]).forEach(x=>{(ex[x.turno_codice+'|'+x.blocco_id]=ex[x.turno_codice+'|'+x.blocco_id]||[]).push({id:x.id,testo:x.testo,tipo:x.tipo,sort:x.sort});});
   (tb.data||[]).forEach(r=>{const t=TRN[r.turno_codice];if(!t)return;
     const extra=(ex[r.turno_codice+'|'+r.blocco_id]||[]).slice().sort((a,c)=>a.sort-c.sort);
@@ -939,7 +947,7 @@ async function init(){
       .on('postgres_changes',{event:'*',schema:'public',table:'files'},async()=>{await loadFiles();render();})
       .on('postgres_changes',{event:'*',schema:'public',table:'service_days'},async()=>{await loadServiceDays();render();})
       .on('postgres_changes',{event:'*',schema:'public',table:'settings'},async()=>{await loadSettings();render();})
-      .on('postgres_changes',{event:'*',schema:'public',table:'spunte'},async()=>{try{await loadSpunte();}catch(e){}render();})
+      .on('postgres_changes',{event:'*',schema:'public',table:'spunte'},async()=>{try{await loadSpunte();}catch(e){}if(S.tab==='check')renderKeepScroll();else render();})
       .on('postgres_changes',{event:'*',schema:'public',table:'assegnazioni'},async()=>{try{await loadAssign();}catch(e){}render();})
       .subscribe(st=>{if(st==='SUBSCRIBED'){$('live').classList.add('on');$('liveTxt').textContent='dal vivo';}
         else{$('live').classList.remove('on');$('liveTxt').textContent='riconnetto…';}});
@@ -1081,6 +1089,7 @@ const DOWLBL={dom:'Dom',lun:'Lun',mar:'Mar',mer:'Mer',gio:'Gio',ven:'Ven',sab:'S
 const dowOf=ymd=>DOW[new Date(ymd+'T00:00:00').getDay()];
 const turnoList=()=>Object.values(TRN).sort((a,b)=>(a.sort||0)-(b.sort||0));
 const turnoFor=ymd=>ASG[ymd+'|'+S.user.id]||null;
+const turnoCol=code=>{const c=(TRN[code]||{}).colore;return c?'#'+c:'';};
 const turnoAvailOn=ymd=>{const dw=dowOf(ymd);return turnoList().filter(t=>!t.giorni.length||t.giorni.includes(dw));};
 function turnoLines(code){
   const t=TRN[code];if(!t)return [];
@@ -1109,7 +1118,9 @@ function checkView(){
   const groups={};turnoList().forEach(x=>{(groups[x.ruolo||'Altro']=groups[x.ruolo||'Altro']||[]).push(x);});
   const opts=Object.keys(groups).map(g=>`<optgroup label="${esc(g)}">`+
      groups[g].map(x=>`<option value="${x.codice}" ${x.codice===code?'selected':''}>${esc(x.codice)} · ${esc(x.giorni_label||'')}${x.orario?' · '+esc(x.orario):''}</option>`).join('')+`</optgroup>`).join('');
-  const sel=`<div class="tsel"><label>Turno</label><select onchange="setTurnoView(this.value)">${opts}</select></div>`;
+  const tc=turnoCol(code);
+  const sw=tc?`<span class="tdot" style="background:${tc}"></span>`:'';
+  const sel=`<div class="tsel"><label>Turno</label>${sw}<select onchange="setTurnoView(this.value)">${opts}</select></div>`;
   const mineNote=mine?(mine===code?`<span class="tmine"><i class="ti ti-user-check"></i> il tuo turno di oggi</span>`
       :`<button class="tgoto" onclick="setTurnoView('${mine}')"><i class="ti ti-user-check"></i> vai al tuo turno (${esc(mine)})</button>`)
     :`<span class="tnone">Nessun turno assegnato per oggi</span>`;
@@ -1117,9 +1128,9 @@ function checkView(){
   const rows=turnoLines(code).map(x=>turnoRowHtml(x,code)).join('')
     ||`<div class="empty"><i class="ti ti-clipboard-plus"></i><b>Turno vuoto</b>Nessuna voce in questo turno.</div>`;
   const mansioni=t.mansioni?`<div class="tman">${esc(t.mansioni)}</div>`:'';
-  const manageBtn=can('controllo')?`<button class="icon-btn" onclick="S.turnoManage=true;render()" aria-label="Assegna turni"><i class="ti ti-calendar-cog"></i></button>`:'';
+  const manageBtn=can('controllo')?`<button class="icon-btn" onclick="S.turnoManage=true;S.asgDraft={};render()" aria-label="Assegna turni"><i class="ti ti-calendar-cog"></i></button>`:'';
   return hdr(`<i class="ti ti-clipboard-check"></i>${esc(t.ruolo||'Checklist')} · ${esc(roleName(u.role))}`,
-      esc(code)+(t.giorni_label?' · '+esc(t.giorni_label):''),
+      (tc?`<span class="tdot" style="background:${tc}"></span>`:'')+esc(code)+(t.giorni_label?' · '+esc(t.giorni_label):''),
       `${esc(t.orario||'')}${t.pausa?' · pausa '+esc(t.pausa):''} · ${new Date().toLocaleDateString('it-IT',{weekday:'long',day:'numeric',month:'long'})}`,bar,manageBtn)
     +`<div class="pane"><div class="tbar">${sel}<div class="tbar-note">${mineNote}</div></div>${mansioni}
       <div class="list max">${rows}<div class="foot-note">Se non è stato possibile eseguire un’operazione, avvisa i manager e scrivilo in chat.</div></div></div>`;
@@ -1135,9 +1146,9 @@ function turnoRowHtml(x,code){
 function setTurnoView(c){S.turnoView=c;render();}
 async function tickTurno(lineId){
   const code=S.turnoView,sd=serviceDate(),u=S.user,key=code+'|'+lineId;
-  if(SPU[key]){delete SPU[key];render();
+  if(SPU[key]){delete SPU[key];renderKeepScroll();
     await db.from('spunte').delete().eq('line_id',lineId).eq('turno_codice',code).eq('service_date',sd);}
-  else{const now=new Date().toISOString();SPU[key]={user_name:u.nm,checked_at:now};render();
+  else{const now=new Date().toISOString();SPU[key]={user_name:u.nm,checked_at:now};renderKeepScroll();
     await db.from('spunte').upsert({line_id:lineId,turno_codice:code,service_date:sd,user_id:u.id,user_name:u.nm,checked_at:now},{onConflict:'line_id,turno_codice,service_date'});}}
 /* ---------- ASSEGNAZIONE TURNI (manager) ---------- */
 function weekMonday(ymd){const d=new Date(ymd+'T00:00:00');const g=(d.getDay()+6)%7;d.setDate(d.getDate()-g);return ymdOf(d);}
@@ -1151,10 +1162,13 @@ function assignView(){
       return `<div class="ag-cell ag-dh ${ds===serviceDate()?'today':''}"><b>${DOWLBL[dw]}</b><span>${dd.getDate()}/${dd.getMonth()+1}</span></div>`;}).join('')+`</div>`;
   const body=staff.map(p=>{
     const cells=days.map(ds=>{
-      const cur=ASG[ds+'|'+p.id]||'',av=turnoAvailOn(ds);
+      const cur=asgVal(ds,p.id),av=turnoAvailOn(ds);
       const opts=`<option value="">—</option>`+av.map(t=>`<option value="${t.codice}" ${t.codice===cur?'selected':''}>${esc(t.codice)}</option>`).join('')
         +(cur&&!av.some(t=>t.codice===cur)?`<option value="${cur}" selected>${esc(cur)}</option>`:'');
-      return `<div class="ag-cell"><select class="ag-sel ${cur?'set':''}" onchange="setAsg('${ds}','${p.id}',this.value)">${opts}</select></div>`;
+      const col=cur?turnoCol(cur):'';
+      const stl=col?` style="border-left:4px solid ${col};background:${col}22;font-weight:700"`:'';
+      const cls=cur?(col?'':'set'):'';
+      return `<div class="ag-cell"><select class="ag-sel ${cls}"${stl} onchange="setAsg('${ds}','${p.id}',this.value)">${opts}</select></div>`;
     }).join('');
     return `<div class="ag-row"><div class="ag-nm"><span class="mini" style="${fill(p.c)}">${p.ini}</span>${esc(p.nm)}</div>${cells}</div>`;
   }).join('');
@@ -1162,23 +1176,38 @@ function assignView(){
   const nav=`<div class="ag-nav"><button onclick="shiftWeek(-7)" aria-label="Settimana precedente"><i class="ti ti-chevron-left"></i></button>
      <div class="ag-wk">${wkLbl}</div>
      <button onclick="shiftWeek(7)" aria-label="Settimana successiva"><i class="ti ti-chevron-right"></i></button></div>`;
+  const legend=`<div class="ag-legend"><span><i style="background:#2e7d5b"></i>Domenica</span><span><i style="background:#ffff00"></i>Lun–Gio</span><span><i style="background:#c00000"></i>Ven/Sab</span></div>`;
   const copy=`<button class="ag-copy" onclick="copyPrevWeek()"><i class="ti ti-copy"></i> Copia settimana precedente</button>`;
+  const dirty=asgDirty(),pend=asgPending();
+  const saveBar=`<div class="ag-save"><button onclick="cancelAsg()" ${dirty?'':'disabled'}>Annulla</button><button class="save" onclick="saveAsg()" ${dirty?'':'disabled'}>Salva${pend?' ('+pend+')':''}</button></div>`;
   return hdr('<i class="ti ti-calendar-cog"></i>Assegnazione turni','Settimana',wkLbl,'',
-      `<button class="icon-btn" onclick="S.turnoManage=false;render()" aria-label="Chiudi"><i class="ti ti-x"></i></button>`)
-    +`<div class="pane"><div class="agwrap">${nav}${copy}<div class="aggrid">${head}${body}</div>
+      `<button class="icon-btn" onclick="closeAsg()" aria-label="Chiudi"><i class="ti ti-x"></i></button>`)
+    +`<div class="pane"><div class="agwrap">${nav}${legend}${copy}${saveBar}<div class="aggrid">${head}${body}</div>
       <div class="foot-note">Scegli il turno di ogni persona per ogni giorno. Le celle restano vuote finché non assegni.</div></div></div>`;
 }
-async function setAsg(ds,uid,code){
-  const key=ds+'|'+uid;
-  if(!code){delete ASG[key];render();await db.from('assegnazioni').delete().eq('data',ds).eq('user_id',uid);}
-  else{ASG[key]=code;render();await db.from('assegnazioni').upsert({data:ds,user_id:uid,turno_codice:code},{onConflict:'data,user_id'});}}
+const asgVal=(ds,uid)=>{const k=ds+'|'+uid;return (S.asgDraft&&k in S.asgDraft)?S.asgDraft[k]:(ASG[k]||'');};
+const asgPending=()=>S.asgDraft?Object.keys(S.asgDraft).filter(k=>(S.asgDraft[k]||'')!==(ASG[k]||'')).length:0;
+const asgDirty=()=>asgPending()>0;
+function setAsg(ds,uid,code){S.asgDraft[ds+'|'+uid]=code;render();}
+async function saveAsg(){
+  const d=S.asgDraft||{},ups=[],dels=[];
+  Object.keys(d).forEach(k=>{const v=d[k]||'';if(v===(ASG[k]||''))return;
+    const i=k.indexOf('|'),ds=k.slice(0,i),uid=k.slice(i+1);
+    if(v){ups.push({data:ds,user_id:uid,turno_codice:v});ASG[k]=v;}else{dels.push([ds,uid]);delete ASG[k];}});
+  S.asgDraft={};render();
+  if(ups.length)await db.from('assegnazioni').upsert(ups,{onConflict:'data,user_id'});
+  for(const dl of dels)await db.from('assegnazioni').delete().eq('data',dl[0]).eq('user_id',dl[1]);}
+function cancelAsg(){S.asgDraft={};render();}
+async function closeAsg(){
+  if(asgDirty()){if(confirm('Hai modifiche non salvate.\n\nOK = salva ed esci · Annulla = esci senza salvare'))await saveAsg();}
+  S.asgDraft={};S.turnoManage=false;render();}
 function shiftWeek(n){S.asgWeek=addDays(S.asgWeek||weekMonday(serviceDate()),n);render();}
-async function copyPrevWeek(){
-  const mon=S.asgWeek||weekMonday(serviceDate()),rows=[];
+function copyPrevWeek(){
+  const mon=S.asgWeek||weekMonday(serviceDate());
   for(let i=0;i<7;i++){const ds=addDays(mon,i),prev=addDays(ds,-7);
-    USERS.forEach(p=>{const pc=ASG[prev+'|'+p.id],cur=ASG[ds+'|'+p.id];
-      if(pc&&!cur){ASG[ds+'|'+p.id]=pc;rows.push({data:ds,user_id:p.id,turno_codice:pc});}});}
-  render();if(rows.length)await db.from('assegnazioni').upsert(rows,{onConflict:'data,user_id'});}
+    USERS.forEach(p=>{const pc=asgVal(prev,p.id),cur=asgVal(ds,p.id);
+      if(pc&&!cur)S.asgDraft[ds+'|'+p.id]=pc;});}
+  render();}
 
 /* ---------- BACHECA: stanze / feed / calendario / file ---------- */
 function daySep(d){const t=new Date(),y=new Date();y.setDate(t.getDate()-1);
