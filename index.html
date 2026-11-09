@@ -179,6 +179,11 @@
   .bc-editbox .ea button{flex:1;height:34px;border-radius:var(--r-s);font-size:12.5px;cursor:pointer;border:0.5px solid var(--line);background:var(--card);color:var(--tx-2)}
   .bc-editbox .ea button.save{background:var(--ink);color:#fff;border-color:var(--ink)}
   .compose{border-top:0.5px solid var(--line);padding:11px 14px;background:var(--card);flex-shrink:0}
+  .panewrap{flex:1;display:flex;flex-direction:column;min-height:0;position:relative}
+  .jumpbtn{position:absolute;right:14px;bottom:14px;z-index:5}
+  .jumpbtn button{width:44px;height:44px;border-radius:50%;background:var(--card);border:0.5px solid var(--line);box-shadow:0 3px 10px rgba(20,26,39,.22);color:var(--ink);font-size:22px;cursor:pointer;display:flex;align-items:center;justify-content:center;position:relative}
+  .jumpbtn .jb-badge{position:absolute;top:-5px;right:-4px;min-width:19px;height:19px;padding:0 5px;border-radius:10px;background:#1f9d57;color:#fff;font-size:11px;font-weight:700;line-height:1;display:flex;align-items:center;justify-content:center}
+  .jumpbtn .jb-at{background:#e07a3c}
   .chint{font-size:11.5px;color:var(--acc);margin-bottom:8px}
   .ctags{display:flex;gap:6px;flex-wrap:wrap;margin-bottom:9px}
   .ctag{font-size:11.5px;padding:5px 11px;border-radius:99px;border:0.5px solid var(--line);color:var(--tx-3);cursor:pointer;user-select:none}
@@ -592,6 +597,9 @@
     .nv.on{background:#fff;color:var(--ink);font-weight:500}
     .nv i{font-size:19px}
     .nv .nb{margin-left:auto;background:#e2584a;color:#fff;font-size:10px;border-radius:99px;padding:1px 6px}
+  .nb.nb-at{background:#e07a3c;font-weight:700}
+  .nb.nb-dot{min-width:0;width:9px;height:9px;padding:0;border-radius:50%;background:#1f9d57}
+  .tab .nb.nb-dot{top:6px}
     .side .out{margin-top:auto;display:flex;align-items:center;gap:9px;padding:10px 11px;border-radius:var(--r-s);color:#8b97ab;cursor:pointer;font-size:13px;background:none;border:none;width:100%;text-align:left}
     .side .out:hover{background:var(--ink-soft);color:#fff}
     .hd{padding:18px 24px 16px}
@@ -645,7 +653,7 @@
 let db=null,AREAS={},USERS=[],MSGS=[],CHECKS=[],ROOMS=[],RMEM=[],FILES=[],FOLDERS=[],ROLES=[],SET={},PHASES=[],READS=[],SDAYS={};
 let S={screen:'load',selUser:null,loginQ:'',pin:'',user:null,tab:'check',area:null,phase:null,err:'',
   room:'comune',bacView:'feed',bacFilter:'all',calMode:'month',calAnchor:null,calSel:null,
-  composeTags:[],editTags:[],tagOpen:false,tagHint:false,chatSearch:'',chatMenu:false,chatSearchOpen:false,replyTo:null,msgMenu:null,_paneY:null,_chatStick:true,_chatToBottom:true,editing:null,ctrlDate:null,archChecks:null,fq:'',fext:'all',uploading:false,adminTab:'utenti',
+  composeTags:[],editTags:[],tagOpen:false,tagHint:false,chatSearch:'',chatMenu:false,chatSearchOpen:false,replyTo:null,msgMenu:null,_paneY:null,_chatStick:true,_chatToBottom:true,_newMsgs:0,_newMention:false,editing:null,ctrlDate:null,archChecks:null,fq:'',fext:'all',uploading:false,adminTab:'utenti',
   pendingFile:null,pendFolder:null,pendVis:'room',pickMode:'library',sending:false,folder:null,
   accessFor:null,accVis:'all',accU:[],accR:[],accRm:[],pendUploadFiles:null,
   edArea:null,edPhase:null,moveOpen:null,moveArea:null,movePhase:null,
@@ -706,6 +714,8 @@ const isRead=id=>READS.includes(id);
 const isMention=m=>S.user&&!m.deleted&&forMe(m)&&m.uid!==S.user.id;
 const unreadIn=r=>visibleIn(r).filter(m=>isMention(m)&&!isRead(m.id));
 const unreadTotal=()=>myRooms().reduce((n,r)=>n+unreadIn(r.id).length,0);
+const unreadAllIn=r=>visibleIn(r).filter(m=>!m.deleted&&m.uid!==S.user.id&&!isRead(m.id));
+const unreadAllTotal=()=>myRooms().reduce((n,r)=>n+unreadAllIn(r.id).length,0);
 // un file si vede se è "per tutti", oppure se ho accesso alla stanza da cui è partito
 const canSeeFile=f=>{
   if(f.vis==='all')return true;
@@ -822,7 +832,7 @@ async function liveRefresh(force){
   try{
     await loadMessages();await loadChecks();applyChecks();await loadSettings();
     if(typing)return;                    // dati aggiornati, ma non ridisegno sotto la tastiera
-    if(S.tab==='bacheca'){const un=unreadIn(S.room);
+    if(S.tab==='bacheca'&&S._chatStick!==false){const un=unreadAllIn(S.room);
       if(un.length){S.justRead=Array.from(new Set([...S.justRead,...un.map(m=>m.id)]));await markRead(S.room);}}
     renderKeepScroll();
   }catch(e){}
@@ -842,11 +852,18 @@ async function init(){
     db.channel('rt')
       .on('postgres_changes',{event:'*',schema:'public',table:'checks'},async()=>{await loadChecks();applyChecks();render();})
       .on('postgres_changes',{event:'*',schema:'public',table:'messages'},async()=>{
+          const before=new Set(roomMsgs().map(m=>m.id));
           await loadMessages();
           const ae=document.activeElement;
-          if(ae&&(ae.id==='bcInput'||ae.tagName==='TEXTAREA'||(ae.tagName==='INPUT'&&ae.type!=='button')))return;
-          if(S.user&&S.tab==='bacheca'){const un=unreadIn(S.room);
-            if(un.length){S.justRead=Array.from(new Set([...S.justRead,...un.map(m=>m.id)]));await markRead(S.room);}}
+          const typing=ae&&(ae.id==='bcInput'||ae.tagName==='TEXTAREA'||(ae.tagName==='INPUT'&&ae.type!=='button'));
+          if(S.user&&S.tab==='bacheca'&&S._chatStick===false){
+            const fresh=roomMsgs().filter(m=>!before.has(m.id)&&m.uid!==S.user.id);
+            if(fresh.length){S._newMsgs=(S._newMsgs||0)+fresh.length;if(fresh.some(isMention))S._newMention=true;}
+          }
+          if(typing)return;
+          if(S.user&&S.tab==='bacheca'&&S._chatStick!==false){const un=unreadAllIn(S.room);
+            if(un.length){S.justRead=Array.from(new Set([...S.justRead,...un.map(m=>m.id)]));await markRead(S.room);}
+            S._newMsgs=0;S._newMention=false;}
           render();})
       .on('postgres_changes',{event:'*',schema:'public',table:'files'},async()=>{await loadFiles();render();})
       .on('postgres_changes',{event:'*',schema:'public',table:'service_days'},async()=>{await loadServiceDays();render();})
@@ -928,16 +945,18 @@ function tabsFor(u){const off=checklistsOff();const p=effPowers(u);const t=['bac
 const ICO={check:['ti-checklist','Checklist'],bacheca:['ti-message-circle','Chat'],archivio:['ti-folder','Archivio'],
   controllo:['ti-eye','Controllo'],utenti:['ti-settings','Gestione'],profilo:['ti-user','Profilo']};
 function appView(){
-  const u=S.user,n=meCount();
+  const u=S.user;
+  const nMent=unreadTotal(),nAll=unreadAllTotal();
+  const chatBadge=nMent>0?`<span class="nb nb-at">@</span>`:(nAll>0?`<span class="nb nb-dot"></span>`:'');
   const tl=tabsFor(u);if(!tl.includes(S.tab))S.tab=tl[0];
   let c='';
   if(S.tab==='check')c=checkView();else if(S.tab==='bacheca')c=bachecaView();
   else if(S.tab==='archivio')c=archivioView();
   else if(S.tab==='controllo')c=controlloView();else if(S.tab==='utenti')c=adminView();else c=profiloView();
   const nav=tabsFor(u).map(t=>`<button class="nv ${S.tab===t?'on':''}" onclick="go('${t}')">
-    <i class="ti ${ICO[t][0]}"></i>${ICO[t][1]}${t==='bacheca'&&n?`<span class="nb">${n}</span>`:''}</button>`).join('');
+    <i class="ti ${ICO[t][0]}"></i>${ICO[t][1]}${t==='bacheca'?chatBadge:''}</button>`).join('');
   const tabs=tabsFor(u).map(t=>`<button class="tab ${S.tab===t?'on':''}" onclick="go('${t}')">
-    <i class="ti ${ICO[t][0]}"></i>${ICO[t][1]}${t==='bacheca'&&n?`<span class="nb">${n}</span>`:''}</button>`).join('');
+    <i class="ti ${ICO[t][0]}"></i>${ICO[t][1]}${t==='bacheca'?chatBadge:''}</button>`).join('');
   return `<div class="shell">
     <aside class="side"><div class="sb">${esc(venue())}</div>
       <div class="me"><div class="av" style="${fill(u.c)}">${u.ini}</div>
@@ -1038,7 +1057,7 @@ function bachecaView(){
     return `<button class="room ${S.room===r.id?'on':''}" onclick="setRoom('${r.id}')">
       <i class="ti ti-${r.private?'lock':'users'}"></i>${esc(r.name)}
       ${un?`<span class="rat"><i class="ti ti-at"></i>${un>1?un:''}</span>`:''}</button>`;}).join('');
-  const forMeTot=feedMsgs().filter(forMe).length;
+  const forMeTot=unreadIn(S.room).length;
   const rn=(ROOMS.find(r=>r.id===S.room)||{}).name||'';
   const srch=S.chatSearchOpen?`<div class="chsearch"><i class="ti ti-search"></i><input id="chSearch" placeholder="Cerca nei messaggi…" value="${esc(S.chatSearch||'')}" oninput="setChatSearch(this.value)"><button class="chsx" onclick="toggleChatSearch()" aria-label="Chiudi"><i class="ti ti-x"></i></button></div>`:'';
   const filt=`<div class="subtabs" style="padding-top:4px">
@@ -1085,9 +1104,11 @@ function bachecaView(){
           oninput="onComposeInput(this)"
           onkeydown="if(event.key==='Enter')postMsg()">
         <button class="send" onclick="postMsg()" aria-label="Invia"><i class="ti ti-${S.sending?'loader-2':'send'}"></i></button></div></div>`;
+  const nNew=S._newMsgs||0;
+  const jump=(nNew||S._newMention)?`<div class="jumpbtn"><button onclick="jumpBottom()"><i class="ti ti-chevron-down"></i><span class="jb-badge ${S._newMention?'jb-at':''}">${S._newMention?'@':nNew}</span></button></div>`:'';
   return `<div class="chhd"><div class="chhd-t"><i class="ti ti-message-circle"></i> ${esc(rn)}</div>
     <div class="chhd-a"><button class="icon-btn" onclick="toggleChatSearch()" aria-label="Cerca"><i class="ti ti-search"></i></button>${chAct}<button class="icon-btn" onclick="logout()" aria-label="Esci"><i class="ti ti-logout"></i></button></div>${chMenu}</div>`
-    +`<div class="rooms">${roomBtns}</div>${srch}${filt}<div class="pane" onscroll="S._paneY=this.scrollTop;S._chatStick=(this.scrollHeight-this.scrollTop-this.clientHeight)<60"><div class="max" id="chatfeed">${chatFeedHtml()}</div></div>${composeH}`;
+    +`<div class="rooms">${roomBtns}</div>${srch}${filt}<div class="panewrap"><div class="pane" onscroll="onPaneScroll(this)"><div class="max" id="chatfeed">${chatFeedHtml()}</div></div>${jump}</div>${composeH}`;
 }
 function msgActions(m,mine,canEdit,canDelete,canTag){
   if(S.msgMenu!==m.id)return '';
@@ -1140,6 +1161,16 @@ async function delMsg(id){
 }
 function setChatSearch(v){S.chatSearch=v;const el=document.getElementById('chatfeed');if(el)el.innerHTML=chatFeedHtml();}
 function toggleChatSearch(){S.chatSearchOpen=!S.chatSearchOpen;S.chatMenu=false;if(!S.chatSearchOpen)S.chatSearch='';render();if(S.chatSearchOpen)setTimeout(()=>{const e=document.getElementById('chSearch');if(e)e.focus();},40);}
+function jumpBottom(){S._chatToBottom=true;S._chatStick=true;S._newMsgs=0;S._newMention=false;render();
+  const un=unreadAllIn(S.room);if(un.length){S.justRead=Array.from(new Set([...S.justRead,...un.map(m=>m.id)]));markRead(S.room);}}
+function onPaneScroll(el){
+  S._paneY=el.scrollTop;
+  const bottom=(el.scrollHeight-el.scrollTop-el.clientHeight)<60;
+  S._chatStick=bottom;
+  if(bottom&&(S._newMsgs||S._newMention)){S._newMsgs=0;S._newMention=false;
+    const jb=document.querySelector('.jumpbtn');if(jb)jb.remove();
+    const un=unreadAllIn(S.room);if(un.length){S.justRead=Array.from(new Set([...S.justRead,...un.map(m=>m.id)]));markRead(S.room);}}
+}
 let _ment=[],_mentEl=null,_mentBoxId=null,_mentAcc=null;
 function mentionList(){return [{id:'tutti',label:'tutti',g:false}]
     .concat(ROOMS.filter(r=>r.private).map(r=>({id:'g:'+r.id,label:r.name,g:true})))
@@ -1183,7 +1214,7 @@ async function msgTag(id,t){
 }
 // segna come viste le menzioni della stanza aperta
 async function markRead(room){
-  const un=unreadIn(room).filter(m=>!String(m.id).startsWith('tmp'));
+  const un=unreadAllIn(room).filter(m=>!String(m.id).startsWith('tmp'));
   if(!un.length)return;
   const ids=un.map(m=>m.id);
   S.justRead=Array.from(new Set([...S.justRead,...ids]));
