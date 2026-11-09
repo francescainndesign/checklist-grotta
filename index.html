@@ -82,10 +82,18 @@
   .pane{flex:1;overflow-y:auto;min-width:0;-webkit-overflow-scrolling:touch}
   .pane-l{display:none}
 
-  .hd{background:var(--ink);color:#fff;padding:15px 18px 14px;flex-shrink:0}
+  .hd{background:var(--ink);color:#fff;padding:15px 18px 14px;flex-shrink:0;position:relative}
   .hd-top{display:flex;align-items:center;justify-content:space-between;margin-bottom:9px}
   .hd-role{font-size:11px;color:#8b97ab}
   .hd-role i{vertical-align:-2px;margin-right:4px}
+  .hd-actions{display:flex;align-items:center;gap:2px}
+  .chmenu-bd{position:fixed;inset:0;z-index:29}
+  .chmenu{position:absolute;top:46px;right:14px;z-index:30;min-width:184px;background:var(--card);border:0.5px solid var(--line);border-radius:11px;box-shadow:0 12px 30px rgba(0,0,0,.2);padding:6px;display:flex;flex-direction:column}
+  .chmenu button{display:flex;align-items:center;gap:10px;background:none;border:none;font:inherit;font-size:13.5px;color:var(--tx);padding:10px 11px;border-radius:8px;cursor:pointer;text-align:left}
+  .chmenu button:hover{background:var(--line-2)}
+  .chmenu button i{font-size:16px;color:var(--tx-3)}
+  .chmenu button.danger{color:#b5382c}
+  .chmenu button.danger i{color:#b5382c}
   .icon-btn{background:none;border:none;color:#8b97ab;cursor:pointer;font-size:19px;padding:4px}
   .icon-btn:hover{color:#fff}
   .hd h2{font-family:var(--fd);font-weight:600;font-size:20px}
@@ -192,6 +200,41 @@
   .bc-msg.del{padding-top:12px;padding-bottom:12px}
   .tg.person{background:var(--ok-bg);color:var(--ok)}
   .tg.group{background:#f2ecfb;color:#59409c}
+  .mention{color:#1e4fb0;font-weight:500}
+  .mbox{display:flex;flex-direction:column;margin-bottom:8px;max-height:190px;overflow-y:auto;border:0.5px solid var(--line);border-radius:var(--r-s);background:var(--card)}
+  .mopt{display:flex;align-items:center;gap:8px;text-align:left;border:none;background:none;font:inherit;font-size:13.5px;padding:10px 12px;cursor:pointer;color:var(--tx)}
+  .mopt+.mopt{border-top:0.5px solid var(--line-2)}
+  .mopt:hover,.mopt:active{background:var(--acc-bg)}
+  .mopt i{font-size:15px;color:var(--tx-3)}
+  [hidden]{display:none!important}
+  .daysep{display:flex;justify-content:center;margin:12px 0 6px}
+  .daysep span{font-size:11px;color:var(--tx-3);background:var(--line-2);border-radius:99px;padding:3px 12px}
+  .mrow{display:flex;gap:7px;padding:1px 14px;margin-top:2px}
+  .mrow.mine{flex-direction:row-reverse}
+  .mrow .av{width:26px;height:26px;border-radius:50%;flex:0 0 auto;font-size:10px;font-weight:600;display:flex;align-items:center;justify-content:center;align-self:flex-end}
+  .mrow.grp .av{visibility:hidden}
+  .mrow.mine .av{display:none}
+  .bub{max-width:78%;background:var(--card);border:0.5px solid var(--line);border-radius:14px;padding:8px 11px;min-width:0}
+  .mrow.mine .bub{background:var(--acc-bg);border-color:#cfe0fb}
+  .mrow.unread .bub{box-shadow:0 0 0 2px #bcd3fb}
+  .bname{font-size:11.5px;font-weight:600;color:var(--acc);margin-bottom:3px}
+  .bub .bc-tx{font-size:14px;line-height:1.5;margin:0}
+  .bub .att{margin-top:6px}
+  .bmeta{display:flex;align-items:center;gap:7px;justify-content:flex-end;font-size:10.5px;color:var(--tx-3);margin-top:3px}
+  .bmeta .forme{color:#185fa5;background:#e6f1fb;padding:1px 7px;border-radius:99px}
+  .bmeta .dots{background:none;border:none;color:var(--tx-3);cursor:pointer;font-size:15px;padding:0 2px;line-height:1}
+  .rquote{border-left:3px solid var(--acc);background:rgba(0,0,0,.04);border-radius:6px;padding:4px 8px;margin-bottom:6px;font-size:12px;overflow:hidden}
+  .rquote b{color:var(--acc);display:block;font-size:11px}
+  .rquote span{color:var(--tx-2);display:block;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+  .bub.del{opacity:.7}
+  .mmenu{display:flex;flex-wrap:wrap;gap:4px;margin-top:7px;border-top:0.5px solid var(--line);padding-top:7px}
+  .mmenu button{display:flex;align-items:center;gap:5px;background:none;border:0.5px solid var(--line);border-radius:7px;font:inherit;font-size:12px;color:var(--tx-2);padding:5px 9px;cursor:pointer}
+  .mmenu button.danger{color:#b5382c;border-color:#e6c3bd}
+  .replybar{display:flex;align-items:center;gap:8px;background:var(--line-2);border-radius:var(--r-s);padding:7px 10px;margin-bottom:8px}
+  .replybar .rq{flex:1;min-width:0;border-left:3px solid var(--acc);padding-left:8px}
+  .replybar .rq b{display:block;font-size:11.5px;color:var(--acc)}
+  .replybar .rq span{display:block;font-size:12px;color:var(--tx-2);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+  .replybar button{background:none;border:none;color:var(--tx-3);cursor:pointer;font-size:16px}
   .send{width:42px;height:42px;border-radius:var(--r-s);background:var(--ink);color:#fff;border:none;cursor:pointer;font-size:17px;flex:0 0 auto}
   .clip{width:42px;height:42px;border-radius:var(--r-s);background:var(--card);color:var(--tx-2);border:0.5px solid var(--line);cursor:pointer;font-size:18px;flex:0 0 auto}
   .clip:hover{border-color:#c3c9d2;color:var(--tx)}
@@ -592,7 +635,7 @@
 let db=null,AREAS={},USERS=[],MSGS=[],CHECKS=[],ROOMS=[],RMEM=[],FILES=[],FOLDERS=[],ROLES=[],SET={},PHASES=[],READS=[],SDAYS={};
 let S={screen:'load',selUser:null,loginQ:'',pin:'',user:null,tab:'check',area:null,phase:null,err:'',
   room:'comune',bacView:'feed',bacFilter:'all',calMode:'month',calAnchor:null,calSel:null,
-  composeTags:[],tagOpen:false,tagHint:false,chatSearch:'',editing:null,ctrlDate:null,archChecks:null,fq:'',fext:'all',uploading:false,adminTab:'utenti',
+  composeTags:[],tagOpen:false,tagHint:false,chatSearch:'',chatMenu:false,replyTo:null,msgMenu:null,_paneY:null,_chatStick:true,_chatToBottom:true,editing:null,ctrlDate:null,archChecks:null,fq:'',fext:'all',uploading:false,adminTab:'utenti',
   pendingFile:null,pendFolder:null,pendVis:'room',pickMode:'library',sending:false,folder:null,
   accessFor:null,accVis:'all',accU:[],accR:[],accRm:[],pendUploadFiles:null,
   edArea:null,edPhase:null,moveOpen:null,moveArea:null,movePhase:null,
@@ -706,7 +749,7 @@ async function loadFolders(){const {data}=await db.from('folders').select('*').o
 async function loadMessages(){const {data}=await db.from('messages').select('*').order('created_at',{ascending:false});
   MSGS=(data||[]).map(r=>({id:r.id,uid:r.user_id,nm:r.author,ini:r.initials,c:r.color,room:r.room_id||'comune',
     ts:r.created_at,tm:fmt(r.created_at),tsFull:new Date(r.created_at).toLocaleString('it-IT'),
-    tx:r.body,tags:r.tags||[],due:r.due_date||null,edited:!!r.edited_at,fileId:r.file_id||null,deleted:!!r.deleted}));}
+    tx:r.body,tags:r.tags||[],due:r.due_date||null,edited:!!r.edited_at,fileId:r.file_id||null,deleted:!!r.deleted,replyTo:r.reply_to||null}));}
 async function loadReads(){
   if(!S.user)return;
   const {data,error}=await db.from('message_reads').select('message_id').eq('user_id',S.user.id);
@@ -861,7 +904,7 @@ async function enter(){const u=USERS.find(x=>x.id===S.selUser);if(!u)return;
   if(!data||!data.length){S.pin='';S.err='PIN errato';render();return;}
   S.user=u;S.screen='app';S.tab='bacheca';S.area=u.areas[0]||Object.keys(AREAS)[0];S.phase=defaultPhaseFor(S.area);
   S.pin='';S.selUser=null;S.err='';S.ctrlDate=serviceDate();S.archChecks=null;
-  S.room=(myRooms()[0]||{id:'comune'}).id;S.bacView='feed';S.calAnchor=serviceDate();S.calSel=serviceDate();
+  S.room=(myRooms()[0]||{id:'comune'}).id;S.bacView='feed';S._chatToBottom=true;S.calAnchor=serviceDate();S.calSel=serviceDate();
   S.justRead=[];render();loadReads().then(render);}
 function logout(){S.screen='login';S.user=null;S.selUser=null;S.pin='';S.err='';S.editing=null;
   READS=[];S.justRead=[];S.draft={};render();}
@@ -898,12 +941,12 @@ function go(t){S.tab=t;S.editing=null;S.tagEditing=null;S.moveOpen=null;
   if(t==='archivio'){S.folder=null;S.fq='';S.fext='all';}
   if(t==='check'&&!S.user.areas.includes(S.area))S.area=S.user.areas[0]||S.area;
   render();
-  if(t==='bacheca'){S.justRead=[];markRead(S.room);}}
+  if(t==='bacheca'){S.justRead=[];S._chatToBottom=true;markRead(S.room);}}
 const pctColor=p=>p>=1?'#1d8a63':p>=.34?'#b5730f':'#c0392b';
 const iniFor=nm=>{const u=USERS.find(x=>x.nm===nm);return u?{ini:u.ini,c:u.c}:{ini:(nm||'?').slice(0,2).toUpperCase(),c:PALETTE[0]};};
-function hdr(role,title,meta,extra){return `<div class="hd"><div class="hd-top">
+function hdr(role,title,meta,extra,act){return `<div class="hd"><div class="hd-top">
     <div class="hd-role">${role}</div>
-    <button class="icon-btn" onclick="logout()" aria-label="Esci"><i class="ti ti-logout"></i></button></div>
+    <div class="hd-actions">${act||''}<button class="icon-btn" onclick="logout()" aria-label="Esci"><i class="ti ti-logout"></i></button></div></div>
     <h2>${title}</h2><div class="meta">${meta}</div>${extra||''}</div>`;}
 
 /* ---------- CHECKLIST ---------- */
@@ -958,12 +1001,25 @@ function setArea(a){S.area=a;S.showAllPhases=false;S.phase=defaultPhaseFor(a)||a
 function setPhase(p){S.phase=p;render();}
 
 /* ---------- BACHECA: stanze / feed / calendario / file ---------- */
+function daySep(d){const t=new Date(),y=new Date();y.setDate(t.getDate()-1);
+  if(d.toDateString()===t.toDateString())return 'Oggi';
+  if(d.toDateString()===y.toDateString())return 'Ieri';
+  return d.toLocaleDateString('it-IT',{weekday:'long',day:'numeric',month:'long'});}
 function chatFeedHtml(){
   const q=(S.chatSearch||'').toLowerCase().trim();
   const base=feedMsgs().filter(m=>S.bacFilter==='all'||forMe(m));
-  const shown=q?base.filter(m=>((m.tx||'')+' '+(m.nm||'')).toLowerCase().includes(q)):base;
-  return shown.length?shown.map(bcMsgHtml).join('')
-    :`<div class="empty"><i class="ti ti-message-off"></i><b>${q?'Nessun risultato':'Nessun messaggio'}</b>${q?'Prova un\'altra parola.':(S.bacFilter==='me'?'Niente che ti riguardi.':'Scrivi il primo messaggio.')}</div>`;
+  const flt=q?base.filter(m=>((m.tx||'')+' '+(m.nm||'')).toLowerCase().includes(q)):base;
+  if(!flt.length)return `<div class="empty"><i class="ti ti-message-off"></i><b>${q?'Nessun risultato':'Nessun messaggio'}</b>${q?'Prova un\'altra parola.':(S.bacFilter==='me'?'Niente che ti riguardi.':'Scrivi il primo messaggio.')}</div>`;
+  const asc=flt.slice().sort((a,b)=>new Date(a.ts)-new Date(b.ts));
+  let out='',lastDay=null,lastUid=null,lastT=0;
+  asc.forEach(m=>{
+    const d=new Date(m.ts),dk=d.toDateString();
+    if(dk!==lastDay){out+=`<div class="daysep"><span>${daySep(d)}</span></div>`;lastDay=dk;lastUid=null;}
+    const grouped=(m.uid===lastUid)&&((d-lastT)<300000)&&!m.deleted;
+    out+=bcMsgHtml(m,grouped);
+    lastUid=m.deleted?null:m.uid;lastT=d;
+  });
+  return out;
 }
 function bachecaView(){
   const rs=myRooms();
@@ -978,9 +1034,10 @@ function bachecaView(){
   const filt=`<div class="subtabs" style="padding-top:4px">
       <button class="st ${S.bacFilter==='all'?'on':''}" onclick="setFilter('all')">Tutti</button>
       <button class="st ${S.bacFilter==='me'?'on':''}" onclick="setFilter('me')">Per me${forMeTot?`<span class="cnt neutral">${forMeTot}</span>`:''}</button></div>`;
-  const admin=can('bacheca_admin')?`<div class="mgr-bar">
-      <button onclick="exportCsv()"><i class="ti ti-download"></i>Scarica CSV</button>
-      <button class="danger" onclick="clearRoom()"><i class="ti ti-trash"></i>Svuota stanza</button></div>`:'';
+  const chAct=can('bacheca_admin')?`<button class="icon-btn" onclick="S.chatMenu=!S.chatMenu;render()" aria-label="Opzioni"><i class="ti ti-dots-vertical"></i></button>`:'';
+  const chMenu=(S.chatMenu&&can('bacheca_admin'))?`<div class="chmenu-bd" onclick="S.chatMenu=false;render()"></div><div class="chmenu">
+      <button onclick="S.chatMenu=false;exportCsv()"><i class="ti ti-download"></i> Scarica CSV</button>
+      <button class="danger" onclick="S.chatMenu=false;clearRoom()"><i class="ti ti-trash"></i> Svuota stanza</button></div>`:'';
   const pf=S.pendingFile;
   const isCommon=!(ROOMS.find(r=>r.id===S.room)||{}).private;
   let pend='';
@@ -1006,33 +1063,37 @@ function bachecaView(){
       <div class="plbl">Salva nella cartella</div><div class="ctags">${fol}</div>
       <div class="plbl">Chi può vedere il file</div>${vis}</div>`;
   }
-  const tagChips=S.composeTags.map(t=>`<span class="tgc" onclick="ctag('${t}',null)">${tagLabel(t)} <i class="ti ti-x"></i></span>`).join('');
-  const picker=S.tagOpen?`<div class="tagpick">
-      <span class="ctag all ${S.composeTags.includes('tutti')?'on':''}" onclick="ctag('tutti',this)">@tutti</span>
-      ${ROOMS.filter(r=>r.private).map(r=>`<span class="ctag grp ${S.composeTags.includes('g:'+r.id)?'on':''}" onclick="ctag('g:${r.id}',this)">@${esc(r.name)}</span>`).join('')}
-      ${USERS.filter(u=>u.id!==S.user.id).map(u=>`<span class="ctag ${S.composeTags.includes('u:'+u.id)?'on':''}" onclick="ctag('u:${u.id}',this)">${esc(u.nm)}</span>`).join('')}
-    </div>`:'';
-  const hintBar=S.tagHint?`<div class="taghint"><span>Vuoi taggare qualcuno? È consigliato ma non obbligatorio.</span>
-      <div class="tha"><button class="sec" onclick="S.tagHint=false;S.tagOpen=true;render()">Aggiungi tag</button>
-      <button onclick="S.tagHint=false;postMsg(true)">Invia comunque</button></div></div>`:'';
-  const composeH=`<div class="compose">${pend}
-      ${S.composeTags.length?`<div class="tagchips">${tagChips}</div>`:''}${picker}${hintBar}
+  const hintBar=S.tagHint?`<div class="taghint"><span>Vuoi taggare qualcuno? Scrivi @ nel messaggio. È consigliato ma non obbligatorio.</span>
+      <div class="tha"><button onclick="S.tagHint=false;postMsg(true)">Invia comunque</button></div></div>`:'';
+  const replyBar=S.replyTo?`<div class="replybar"><div class="rq"><b>${esc(S.replyTo.nm)}</b><span>${esc((S.replyTo.tx||'documento').slice(0,70))}</span></div><button onclick="S.replyTo=null;render()" aria-label="Annulla"><i class="ti ti-x"></i></button></div>`:'';
+  const composeH=`<div class="compose">${pend}${replyBar}${hintBar}
+      <div class="mbox" id="mentionBox" hidden></div>
       <div class="cin">
         <button class="clip" onclick="attachFile()" aria-label="Allega documento"><i class="ti ti-paperclip"></i></button>
-        <button class="tagbtn ${S.tagOpen?'on':''}" onclick="S.tagOpen=!S.tagOpen;render()" aria-label="Tagga persone"><i class="ti ti-at"></i></button>
         <input id="bcInput" value="${esc(S.draft[S.room]||'')}"
-          placeholder="${pf?'Aggiungi una spiegazione…':'Scrivi un messaggio…'}"
-          oninput="S.draft[S.room]=this.value"
+          placeholder="${pf?'Aggiungi una spiegazione…':'Scrivi un messaggio… usa @ per taggare'}"
+          oninput="onComposeInput(this)"
           onkeydown="if(event.key==='Enter')postMsg()">
         <button class="send" onclick="postMsg()" aria-label="Invia"><i class="ti ti-${S.sending?'loader-2':'send'}"></i></button></div></div>`;
-  return hdr(`<i class="ti ti-message-circle"></i>Chat`,esc(rn),'Messaggi e documenti del team')
-    +`<div class="rooms">${roomBtns}</div>${srch}${filt}${admin}<div class="pane"><div class="max" id="chatfeed">${chatFeedHtml()}</div></div>${composeH}`;
+  return hdr(`<i class="ti ti-message-circle"></i>Chat`,esc(rn),'Messaggi e documenti del team',chMenu,chAct)
+    +`<div class="rooms">${roomBtns}</div>${srch}${filt}<div class="pane" onscroll="S._paneY=this.scrollTop;S._chatStick=(this.scrollHeight-this.scrollTop-this.clientHeight)<60"><div class="max" id="chatfeed">${chatFeedHtml()}</div></div>${composeH}`;
 }
-function bcMsgHtml(m){
-  if(m.deleted)return `<div class="bc-msg del" id="msg_${m.id}"><div class="bc-hd">
-    <span class="mini" style="${fill(m.c)}">${m.ini}</span>
-    <span class="bc-del"><i class="ti ti-ban"></i> messaggio eliminato</span></div></div>`;
+function msgActions(m,mine,canEdit,canDelete,canTag){
+  if(S.msgMenu!==m.id)return '';
+  let b=`<button onclick="setReply('${m.id}')"><i class="ti ti-arrow-back-up"></i> Rispondi</button>`;
+  if(canTag)b+=`<button onclick="S.msgMenu=null;S.tagEditing='${m.id}';render()"><i class="ti ti-at"></i> Tag</button>`;
+  if(canEdit)b+=`<button onclick="S.msgMenu=null;S.editing='${m.id}';render()"><i class="ti ti-pencil"></i> Modifica</button>`;
+  if(canDelete)b+=`<button class="danger" onclick="S.msgMenu=null;delMsg('${m.id}')"><i class="ti ti-trash"></i> Elimina</button>`;
+  return `<div class="mmenu">${b}</div>`;
+}
+function setReply(id){const m=MSGS.find(x=>x.id===id);if(!m)return;
+  S.replyTo={id:m.id,nm:m.nm,tx:m.tx};S.msgMenu=null;render();
+  setTimeout(()=>{const el=document.getElementById('bcInput');if(el)el.focus();},40);}
+function bcMsgHtml(m,grouped){
   const mine=m.uid===S.user.id;
+  if(m.deleted)return `<div class="mrow ${mine?'mine':'other'} ${grouped?'grp':''}" id="msg_${m.id}">
+    ${mine?'':`<span class="av" style="${fill(m.c)}">${grouped?'':m.ini}</span>`}
+    <div class="bub del"><span class="bc-del"><i class="ti ti-ban"></i> messaggio eliminato</span></div></div>`;
   const canEdit=mine&&(Date.now()-new Date(m.ts).getTime())<editWin();
   const canDelete=mine||can('bacheca_admin');
   const canTag=mine||can('bacheca_admin');
@@ -1040,10 +1101,17 @@ function bcMsgHtml(m){
   const unread=mention&&S.justRead.includes(m.id);
   const f=m.fileId?FILES.find(x=>x.id===m.fileId):null;
   const att=f?attCard(f):'';
-  const txt=m.tx&&m.tx.trim()?`<div class="bc-tx">${esc(m.tx)}</div>`:'';
-  let tags=m.tags.map(t=>`<span class="tg ${t==='tutti'?'all':t.startsWith('g:')?'group':'person'}">${tagLabel(t)}</span>`).join('');
-  if(canTag)tags+=`<button class="tg addt" onclick="S.tagEditing=S.tagEditing==='${m.id}'?null:'${m.id}';render()">
-    <i class="ti ti-${S.tagEditing===m.id?'x':'plus'}"></i>${m.tags.length?'':' tag'}</button>`;
+  let bodyHtml=esc(m.tx||'');
+  (m.tags||[]).forEach(t=>{const lab='@'+(t==='tutti'?'tutti':t.startsWith('u:')?uName(t.slice(2)):t.startsWith('g:')?gName(t.slice(2)):t);
+    bodyHtml=bodyHtml.split(esc(lab)).join('<span class="mention">'+esc(lab)+'</span>');});
+  const txt=m.tx&&m.tx.trim()?`<div class="bc-tx">${bodyHtml}</div>`:'';
+  let rq='';
+  if(m.replyTo){const o=MSGS.find(x=>x.id===m.replyTo);
+    rq=`<div class="rquote"><b>${o?esc(o.nm):'Messaggio'}</b><span>${o?esc((o.tx||'documento').slice(0,70)):'non disponibile'}</span></div>`;}
+  if(S.editing===m.id)return `<div class="mrow ${mine?'mine':'other'}" id="msg_${m.id}">${mine?'':`<span class="av" style="${fill(m.c)}">${m.ini}</span>`}
+    <div class="bub"><div class="bc-editbox"><textarea id="edit_${m.id}">${esc(m.tx)}</textarea>
+    <div class="ea"><button onclick="S.editing=null;render()">Annulla</button>
+    <button class="save" onclick="saveEdit('${m.id}')">Salva</button></div></div></div>`;
   const tagEditor=S.tagEditing===m.id?`<div class="tgedit">
       <div class="plbl" style="margin-top:0">Chi deve essere avvisato</div>
       <div class="ctags">
@@ -1051,19 +1119,13 @@ function bcMsgHtml(m){
         ${ROOMS.filter(r=>r.private).map(r=>`<span class="ctag grp ${m.tags.includes('g:'+r.id)?'on':''}" onclick="msgTag('${m.id}','g:${r.id}')">@${esc(r.name)}</span>`).join('')}
         ${USERS.filter(u=>u.id!==S.user.id).map(u=>`<span class="ctag ${m.tags.includes('u:'+u.id)?'on':''}" onclick="msgTag('${m.id}','u:${u.id}')">${esc(u.nm)}</span>`).join('')}
       </div></div>`:'';
-  if(S.editing===m.id)return `<div class="bc-msg"><div class="bc-hd"><span class="mini" style="${fill(m.c)}">${m.ini}</span>
-    <span class="bc-nm">${esc(m.nm)}</span><span class="bc-tm">${m.tm}</span></div>
-    <div class="bc-editbox"><textarea id="edit_${m.id}">${esc(m.tx)}</textarea>
-    <div class="ea"><button onclick="S.editing=null;render()">Annulla</button>
-    <button class="save" onclick="saveEdit('${m.id}')">Salva</button></div></div></div>`;
-  return `<div class="bc-msg ${mention?'me':''} ${unread?'unread':''}" id="msg_${m.id}">
-    <div class="bc-hd">
-      <span class="mini" style="${fill(m.c)}">${m.ini}</span><span class="bc-nm">${esc(m.nm)}</span>
-      <span class="bc-tm">${m.tm}${m.edited?' · modificato':''}</span>
-      ${unread?'<span class="at"><i class="ti ti-at"></i></span>':(mention&&!m.tags.includes('tutti')?'<span class="bc-forme">per te</span>':'')}
-      ${canEdit?`<button class="bc-edit" onclick="S.editing='${m.id}';render()" aria-label="Modifica"><i class="ti ti-pencil"></i></button>`:''}
-      ${canDelete?`<button class="bc-edit" onclick="delMsg('${m.id}')" aria-label="Elimina"><i class="ti ti-trash"></i></button>`:''}</div>
-    ${txt}${att}${tags?`<div class="bc-tags">${tags}</div>`:''}${tagEditor}</div>`;
+  const name=(!mine&&!grouped)?`<div class="bname">${esc(m.nm)}</div>`:'';
+  return `<div class="mrow ${mine?'mine':'other'} ${grouped?'grp':''} ${unread?'unread':''}" id="msg_${m.id}">
+    ${mine?'':`<span class="av" style="${fill(m.c)}">${grouped?'':m.ini}</span>`}
+    <div class="bub">${name}${rq}${txt}${att}
+      <div class="bmeta">${mention&&!unread&&!m.tags.includes('tutti')?'<span class="forme">per te</span>':''}${unread?'<i class="ti ti-at"></i>':''}<span class="bt">${m.tm}${m.edited?' · mod':''}</span>
+        <button class="dots" onclick="S.msgMenu=S.msgMenu==='${m.id}'?null:'${m.id}';render()" aria-label="Opzioni"><i class="ti ti-dots"></i></button></div>
+      ${msgActions(m,mine,canEdit,canDelete,canTag)}${tagEditor}</div></div>`;
 }
 async function delMsg(id){
   if(!confirm('Eliminare questo messaggio?'))return;
@@ -1073,6 +1135,35 @@ async function delMsg(id){
   await loadMessages();render();
 }
 function setChatSearch(v){S.chatSearch=v;const el=document.getElementById('chatfeed');if(el)el.innerHTML=chatFeedHtml();}
+let _ment=[];
+function onComposeInput(el){
+  S.draft[S.room]=el.value;
+  const pos=el.selectionStart,upto=el.value.slice(0,pos),m=upto.match(/@([^\s@]*)$/);
+  const box=document.getElementById('mentionBox');if(!box)return;
+  if(!m){box.hidden=true;box.innerHTML='';_ment=[];return;}
+  const term=m[1].toLowerCase();
+  const all=[{id:'tutti',label:'tutti',g:false}]
+    .concat(ROOMS.filter(r=>r.private).map(r=>({id:'g:'+r.id,label:r.name,g:true})))
+    .concat(USERS.filter(u=>u.id!==S.user.id).map(u=>({id:'u:'+u.id,label:u.nm,g:false})));
+  _ment=all.filter(o=>o.label.toLowerCase().includes(term)).slice(0,6);
+  if(!_ment.length){box.hidden=true;box.innerHTML='';return;}
+  box.innerHTML=_ment.map((o,i)=>`<button class="mopt" onmousedown="pickMention(event,${i})">`+
+    (o.id==='tutti'?'<i class="ti ti-users"></i> @tutti':((o.g?'<i class="ti ti-lock"></i> ':'<i class="ti ti-user"></i> ')+esc(o.label)))+`</button>`).join('');
+  box.hidden=false;
+}
+function pickMention(ev,i){
+  ev.preventDefault();
+  const o=_ment[i];if(!o)return;
+  const el=document.getElementById('bcInput'),pos=el.selectionStart,val=el.value;
+  const m=val.slice(0,pos).match(/@([^\s@]*)$/);if(!m)return;
+  const start=pos-m[0].length,insert='@'+o.label+' ';
+  el.value=val.slice(0,start)+insert+val.slice(pos);
+  const np=start+insert.length;el.setSelectionRange(np,np);
+  S.draft[S.room]=el.value;
+  if(!S.composeTags.includes(o.id))S.composeTags.push(o.id);
+  const box=document.getElementById('mentionBox');box.hidden=true;box.innerHTML='';_ment=[];
+  el.focus();
+}
 // aggiunge/toglie un tag a un messaggio già inviato: chi viene taggato riceve la segnalazione
 async function msgTag(id,t){
   const m=MSGS.find(x=>x.id===id);if(!m)return;
@@ -1097,7 +1188,7 @@ async function markRead(room){
     render();
   }
 }
-function setRoom(r){S.room=r;S.editing=null;S.tagEditing=null;S.pendingFile=null;S.pendFolder=null;S.pendVis='room';
+function setRoom(r){S.room=r;S.chatMenu=false;S.editing=null;S.tagEditing=null;S.pendingFile=null;S.pendFolder=null;S.pendVis='room';
   S.justRead=[];render();markRead(r);}
 function setBacView(v){S.bacView=v;render();}
 function setFilter(f){S.bacFilter=f;render();}
@@ -1136,9 +1227,9 @@ async function postMsg(force){
       fileId=ins.data.id;await loadFiles();
     }
     await db.from('messages').insert({room_id:room,user_id:u.id,author:u.nm,initials:u.ini,color:u.c,
-      body,tags,due_date:null,file_id:fileId,level:'normal'});
+      body,tags,due_date:null,file_id:fileId,level:'normal',reply_to:S.replyTo?S.replyTo.id:null});
     await loadMessages();
-    S.composeTags=[];S.tagOpen=false;S.pendingFile=null;S.pendFolder=null;S.pendVis='room';S.draft[room]='';
+    S.composeTags=[];S.tagOpen=false;S.replyTo=null;S.pendingFile=null;S.pendFolder=null;S.pendVis='room';S.draft[room]='';S._chatToBottom=true;
   }catch(e){alert('Non sono riuscito a inviare: '+(e.message||e)+'\n\nNiente è andato perso: il messaggio è ancora qui, riprova.');}
   S.sending=false;render();
 }
@@ -1976,6 +2067,9 @@ function render(){
     <p style="white-space:pre-line">${esc(S.err)}</p>
     <button onclick="location.reload()" style="margin-top:16px;height:40px;padding:0 20px;border:0.5px solid var(--line);background:var(--card);border-radius:9px;color:var(--tx);font:inherit;font-size:13.5px;cursor:pointer">Riprova</button></div>`;return;}
   app.innerHTML=(S.screen==='login'?loginView():appView())+viewerHtml()+logHtml()+accessHtml();
+  if(S.screen==='app'&&S.tab==='bacheca'){requestAnimationFrame(()=>{const pn=document.querySelector('.pane');if(!pn)return;
+    if(S._chatToBottom||S._chatStick!==false){pn.scrollTop=pn.scrollHeight;S._chatToBottom=false;}
+    else if(S._paneY!=null){pn.scrollTop=S._paneY;}});}
 }
 function renderKeepScroll(){
   const y=(document.querySelector('.pane')||{}).scrollTop||0;
