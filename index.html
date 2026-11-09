@@ -147,15 +147,15 @@
   .mgr-bar button{flex:1;min-width:130px;height:36px;border:0.5px solid var(--line);background:var(--card);border-radius:var(--r-s);font-size:12.5px;color:var(--tx-2);cursor:pointer;display:flex;align-items:center;justify-content:center;gap:6px}
   .mgr-bar button:hover{border-color:#c3c9d2;color:var(--tx)}
   .mgr-bar button.danger:hover{border-color:#e6a9a2;color:#c0392b}
-  .bc-msg{padding:14px 16px;border-bottom:0.5px solid var(--line-2)}
-  .bc-msg.me{background:#f4f8ff}
+  .bc-msg{padding:16px 16px;border-bottom:0.5px solid var(--line-2)}
+  .bc-msg.me{background:transparent;box-shadow:inset 3px 0 0 var(--acc)}
   .bc-hd{display:flex;align-items:center;gap:8px;margin-bottom:6px}
   .bc-hd .mini{width:24px;height:24px;border-radius:50%;font-size:10px;font-weight:600;display:flex;align-items:center;justify-content:center}
   .bc-nm{font-size:13px;font-weight:600}
   .bc-tm{font-size:11.5px;color:var(--tx-3)}
   .bc-edit{margin-left:auto;background:none;border:none;color:var(--acc);cursor:pointer;font-size:16px}
   .bc-forme{margin-left:auto;font-size:10.5px;color:#185fa5;background:#e6f1fb;padding:2px 8px;border-radius:99px}
-  .bc-tx{font-size:14px;line-height:1.5;margin-bottom:8px}
+  .bc-tx{font-size:14.5px;line-height:1.6;margin-bottom:8px}
   .bc-tags{display:flex;gap:6px;flex-wrap:wrap}
   .tg{font-size:11px;padding:3px 9px;border-radius:99px}
   .tg.area{background:#e7f4ee;color:#0f6e56;font-weight:500}
@@ -174,6 +174,24 @@
   .cin{display:flex;gap:8px}
   .cin input{flex:1;height:42px;border:0.5px solid var(--line);border-radius:var(--r-s);padding:0 12px;font:inherit;font-size:14px;color:var(--tx);background:var(--card)}
   .cin input:focus{outline:none;border-color:var(--acc);box-shadow:0 0 0 3px var(--acc-bg)}
+  .chsearch{display:flex;align-items:center;gap:8px;padding:8px 14px;border-bottom:0.5px solid var(--line-2)}
+  .chsearch i{color:var(--tx-3);font-size:16px}
+  .chsearch input{flex:1;border:none;background:none;font:inherit;font-size:13.5px;color:var(--tx);outline:none}
+  .tagbtn{width:42px;height:42px;border:0.5px solid var(--line);border-radius:var(--r-s);background:var(--card);color:var(--tx-2);cursor:pointer;flex:0 0 auto}
+  .tagbtn.on{background:var(--acc-bg);border-color:#bcd3fb;color:#1e4fb0}
+  .tagpick{display:flex;gap:6px;flex-wrap:wrap;margin-bottom:9px;max-height:140px;overflow-y:auto}
+  .ctag.grp.on{border-color:#d8c8f0;background:#f2ecfb;color:#59409c}
+  .tagchips{display:flex;gap:6px;flex-wrap:wrap;margin-bottom:9px}
+  .tgc{font-size:11.5px;padding:5px 10px;border-radius:99px;background:var(--ok-bg);color:var(--ok);cursor:pointer;display:inline-flex;align-items:center;gap:5px}
+  .tgc i{font-size:12px}
+  .taghint{background:var(--acc-bg);border-radius:var(--r-s);padding:10px 12px;margin-bottom:9px;font-size:12.5px;color:#1e4fb0}
+  .taghint .tha{display:flex;gap:8px;margin-top:8px}
+  .taghint button{border:none;border-radius:var(--r-s);padding:7px 12px;font:inherit;font-size:12.5px;cursor:pointer;background:var(--ink);color:#fff}
+  .taghint button.sec{background:var(--card);border:0.5px solid #bcd3fb;color:#1e4fb0}
+  .bc-del{font-size:13px;color:var(--tx-3);font-style:italic;display:inline-flex;align-items:center;gap:6px}
+  .bc-msg.del{padding-top:12px;padding-bottom:12px}
+  .tg.person{background:var(--ok-bg);color:var(--ok)}
+  .tg.group{background:#f2ecfb;color:#59409c}
   .send{width:42px;height:42px;border-radius:var(--r-s);background:var(--ink);color:#fff;border:none;cursor:pointer;font-size:17px;flex:0 0 auto}
   .clip{width:42px;height:42px;border-radius:var(--r-s);background:var(--card);color:var(--tx-2);border:0.5px solid var(--line);cursor:pointer;font-size:18px;flex:0 0 auto}
   .clip:hover{border-color:#c3c9d2;color:var(--tx)}
@@ -574,7 +592,7 @@
 let db=null,AREAS={},USERS=[],MSGS=[],CHECKS=[],ROOMS=[],RMEM=[],FILES=[],FOLDERS=[],ROLES=[],SET={},PHASES=[],READS=[],SDAYS={};
 let S={screen:'load',selUser:null,loginQ:'',pin:'',user:null,tab:'check',area:null,phase:null,err:'',
   room:'comune',bacView:'feed',bacFilter:'all',calMode:'month',calAnchor:null,calSel:null,
-  composeTags:[],editing:null,ctrlDate:null,archChecks:null,fq:'',fext:'all',uploading:false,adminTab:'utenti',
+  composeTags:[],tagOpen:false,tagHint:false,chatSearch:'',editing:null,ctrlDate:null,archChecks:null,fq:'',fext:'all',uploading:false,adminTab:'utenti',
   pendingFile:null,pendFolder:null,pendVis:'room',pickMode:'library',sending:false,folder:null,
   accessFor:null,accVis:'all',accU:[],accR:[],accRm:[],pendUploadFiles:null,
   edArea:null,edPhase:null,moveOpen:null,moveArea:null,movePhase:null,
@@ -617,15 +635,22 @@ function defaultPhaseFor(aid){const av=availablePhases(aid);if(!av.length)return
 const MODE_LBL={full:'Pranzo e Cena',cena:'Solo cena',pranzo:'Solo pranzo',chiuso:'Chiuso'};
 const cutoff=()=>{const n=parseInt(SET.day_cutoff,10);return isNaN(n)?5:Math.min(12,Math.max(0,n));};
 const editWin=()=>{const n=parseInt(SET.edit_window,10);return (isNaN(n)?15:n)*60*1000;};
-const tagLabel=t=>t==='tutti'?'@tutti':('#'+(AREAS[t]?AREAS[t].nm:t));
-const forMe=m=>m.tags.includes('tutti')||m.tags.some(t=>S.user&&S.user.areas.includes(t));
+const uName=id=>{const u=USERS.find(x=>x.id===id);return u?u.nm:id;};
+const gName=id=>{const r=ROOMS.find(x=>x.id===id);return r?r.name:id;};
+const tagLabel=t=>t==='tutti'?'@tutti':t.startsWith('u:')?'@'+uName(t.slice(2)):t.startsWith('g:')?'@'+gName(t.slice(2)):('#'+(AREAS[t]?AREAS[t].nm:t));
+const forMe=m=>{if(!S.user)return false;const T=m.tags||[];
+  if(T.includes('tutti'))return true;
+  if(T.includes('u:'+S.user.id))return true;
+  if(T.some(t=>t.startsWith('g:')&&RMEM.some(x=>x.room_id===t.slice(2)&&x.user_id===S.user.id)))return true;
+  if(T.some(t=>S.user.areas&&S.user.areas.includes(t)))return true;
+  return false;};
 const myRooms=()=>ROOMS.filter(r=>!r.private||RMEM.some(x=>x.room_id===r.id&&x.user_id===S.user.id));
 const roomMsgs=()=>MSGS.filter(m=>m.room===S.room);
-const feedMsgs=()=>roomMsgs().filter(m=>!m.due||m.due===serviceDate());
-const visibleIn=r=>MSGS.filter(m=>m.room===r&&(!m.due||m.due===serviceDate()));
+const feedMsgs=()=>roomMsgs();
+const visibleIn=r=>MSGS.filter(m=>m.room===r);
 const isRead=id=>READS.includes(id);
 // una menzione non letta: mi riguarda, non l'ho scritta io, non l'ho ancora vista
-const isMention=m=>S.user&&forMe(m)&&m.uid!==S.user.id;
+const isMention=m=>S.user&&!m.deleted&&forMe(m)&&m.uid!==S.user.id;
 const unreadIn=r=>visibleIn(r).filter(m=>isMention(m)&&!isRead(m.id));
 const unreadTotal=()=>myRooms().reduce((n,r)=>n+unreadIn(r.id).length,0);
 // un file si vede se è "per tutti", oppure se ho accesso alla stanza da cui è partito
@@ -681,7 +706,7 @@ async function loadFolders(){const {data}=await db.from('folders').select('*').o
 async function loadMessages(){const {data}=await db.from('messages').select('*').order('created_at',{ascending:false});
   MSGS=(data||[]).map(r=>({id:r.id,uid:r.user_id,nm:r.author,ini:r.initials,c:r.color,room:r.room_id||'comune',
     ts:r.created_at,tm:fmt(r.created_at),tsFull:new Date(r.created_at).toLocaleString('it-IT'),
-    tx:r.body,tags:r.tags||[],due:r.due_date||null,edited:!!r.edited_at,fileId:r.file_id||null}));}
+    tx:r.body,tags:r.tags||[],due:r.due_date||null,edited:!!r.edited_at,fileId:r.file_id||null,deleted:!!r.deleted}));}
 async function loadReads(){
   if(!S.user)return;
   const {data,error}=await db.from('message_reads').select('message_id').eq('user_id',S.user.id);
@@ -736,6 +761,26 @@ async function diagnose(){
   alert('Queste tabelle non rispondono:\n\n'+lines+'\n\nRilancia gli script SQL corrispondenti su Supabase (SQL Editor → Run).');
 }
 
+async function liveRefresh(force){
+  if(!db||!S.user||S.screen!=='app')return;
+  const ae=document.activeElement;
+  const typing=ae&&(ae.id==='bcInput'||ae.tagName==='TEXTAREA'||(ae.tagName==='INPUT'&&ae.type!=='button'));
+  if(typing&&!force)return;              // non interrompere chi sta scrivendo
+  try{
+    await loadMessages();await loadChecks();applyChecks();await loadSettings();
+    if(typing)return;                    // dati aggiornati, ma non ridisegno sotto la tastiera
+    if(S.tab==='bacheca'){const un=unreadIn(S.room);
+      if(un.length){S.justRead=Array.from(new Set([...S.justRead,...un.map(m=>m.id)]));await markRead(S.room);}}
+    renderKeepScroll();
+  }catch(e){}
+}
+let _liveTimer=null;
+function startLiveFallback(){
+  if(_liveTimer)clearInterval(_liveTimer);
+  _liveTimer=setInterval(()=>liveRefresh(false),12000);   // ricontrollo periodico
+  document.addEventListener('visibilitychange',()=>{if(!document.hidden)liveRefresh(true);});
+  window.addEventListener('focus',()=>liveRefresh(true));  // riapri l'app -> aggiorna subito
+}
 async function init(){
   if(SUPABASE_URL.includes('INCOLLA')||SUPABASE_ANON_KEY.includes('INCOLLA')){S.screen='config';render();return;}
   try{
@@ -753,7 +798,9 @@ async function init(){
       .on('postgres_changes',{event:'*',schema:'public',table:'files'},async()=>{await loadFiles();render();})
       .on('postgres_changes',{event:'*',schema:'public',table:'service_days'},async()=>{await loadServiceDays();render();})
       .on('postgres_changes',{event:'*',schema:'public',table:'settings'},async()=>{await loadSettings();render();})
-      .subscribe(st=>{if(st==='SUBSCRIBED'){$('live').classList.add('on');$('liveTxt').textContent='dal vivo';}});
+      .subscribe(st=>{if(st==='SUBSCRIBED'){$('live').classList.add('on');$('liveTxt').textContent='dal vivo';}
+        else{$('live').classList.remove('on');$('liveTxt').textContent='riconnetto…';}});
+    startLiveFallback();
     S.screen='login';render();
   }catch(e){S.screen='error';S.err=e.message||String(e);render();}
 }
@@ -812,7 +859,7 @@ async function enter(){const u=USERS.find(x=>x.id===S.selUser);if(!u)return;
   S.checking=false;
   if(error){S.pin='';S.err=error.message||'Errore di verifica';render();return;}
   if(!data||!data.length){S.pin='';S.err='PIN errato';render();return;}
-  S.user=u;S.screen='app';S.tab=checklistsOff()?'bacheca':'check';S.area=u.areas[0]||Object.keys(AREAS)[0];S.phase=defaultPhaseFor(S.area);
+  S.user=u;S.screen='app';S.tab='bacheca';S.area=u.areas[0]||Object.keys(AREAS)[0];S.phase=defaultPhaseFor(S.area);
   S.pin='';S.selUser=null;S.err='';S.ctrlDate=serviceDate();S.archChecks=null;
   S.room=(myRooms()[0]||{id:'comune'}).id;S.bacView='feed';S.calAnchor=serviceDate();S.calSel=serviceDate();
   S.justRead=[];render();loadReads().then(render);}
@@ -820,12 +867,12 @@ function logout(){S.screen='login';S.user=null;S.selUser=null;S.pin='';S.err='';
   READS=[];S.justRead=[];S.draft={};render();}
 
 /* ---------- shell ---------- */
-function tabsFor(u){const off=checklistsOff();const p=effPowers(u);const t=[];
+function tabsFor(u){const off=checklistsOff();const p=effPowers(u);const t=['bacheca'];
   if(!off)t.push('check');
   if(!off&&p.includes('controllo'))t.push('controllo');
-  t.push('bacheca');t.push('archivio');
+  t.push('archivio');
   if(p.includes('utenti'))t.push('utenti');t.push('profilo');return t;}
-const ICO={check:['ti-checklist','Checklist'],bacheca:['ti-messages','Bacheca'],archivio:['ti-folder','Archivio'],
+const ICO={check:['ti-checklist','Checklist'],bacheca:['ti-message-circle','Chat'],archivio:['ti-folder','Archivio'],
   controllo:['ti-eye','Controllo'],utenti:['ti-settings','Gestione'],profilo:['ti-user','Profilo']};
 function appView(){
   const u=S.user,n=meCount();
@@ -911,6 +958,13 @@ function setArea(a){S.area=a;S.showAllPhases=false;S.phase=defaultPhaseFor(a)||a
 function setPhase(p){S.phase=p;render();}
 
 /* ---------- BACHECA: stanze / feed / calendario / file ---------- */
+function chatFeedHtml(){
+  const q=(S.chatSearch||'').toLowerCase().trim();
+  const base=feedMsgs().filter(m=>S.bacFilter==='all'||forMe(m));
+  const shown=q?base.filter(m=>((m.tx||'')+' '+(m.nm||'')).toLowerCase().includes(q)):base;
+  return shown.length?shown.map(bcMsgHtml).join('')
+    :`<div class="empty"><i class="ti ti-message-off"></i><b>${q?'Nessun risultato':'Nessun messaggio'}</b>${q?'Prova un\'altra parola.':(S.bacFilter==='me'?'Niente che ti riguardi.':'Scrivi il primo messaggio.')}</div>`;
+}
 function bachecaView(){
   const rs=myRooms();
   if(!rs.some(r=>r.id===S.room))S.room=(rs[0]||{id:'comune'}).id;
@@ -918,31 +972,15 @@ function bachecaView(){
     return `<button class="room ${S.room===r.id?'on':''}" onclick="setRoom('${r.id}')">
       <i class="ti ti-${r.private?'lock':'users'}"></i>${esc(r.name)}
       ${un?`<span class="rat"><i class="ti ti-at"></i>${un>1?un:''}</span>`:''}</button>`;}).join('');
-  const n=unreadIn(S.room).length;              // menzioni non lette in questa stanza
-  const forMeTot=feedMsgs().filter(forMe).length; // quanti avvisi mi riguardano in tutto
-  const sub=`<div class="subtabs">
-    <button class="st ${S.bacView==='feed'?'on':''}" onclick="setBacView('feed')"><i class="ti ti-message"></i>Avvisi${n?`<span class="cnt">${n}</span>`:''}</button>
-    <button class="st ${S.bacView==='cal'?'on':''}" onclick="setBacView('cal')"><i class="ti ti-calendar"></i>Calendario</button></div>`;
+  const forMeTot=feedMsgs().filter(forMe).length;
   const rn=(ROOMS.find(r=>r.id===S.room)||{}).name||'';
-  let body='',compose=true;
-  if(S.bacView==='cal'){body=`<div class="mw">
-      <button class="mwp ${S.calMode==='month'?'on':''}" onclick="setCalMode('month')">Mese</button>
-      <button class="mwp ${S.calMode==='week'?'on':''}" onclick="setCalMode('week')">Settimana</button></div>`+calHtml()+dayPanel();}
-  else{
-    const shown=feedMsgs().filter(m=>S.bacFilter==='all'||forMe(m));
-    const feed=shown.length?shown.map(bcMsgHtml).join('')
-      :`<div class="empty"><i class="ti ti-message-off"></i><b>Nessun avviso</b>${S.bacFilter==='me'?'Niente che ti riguardi.':'Scrivi il primo messaggio.'}</div>`;
-    const admin=can('bacheca_admin')?`<div class="mgr-bar">
-      <button onclick="exportCsv()"><i class="ti ti-download"></i>Scarica CSV</button>
-      <button class="danger" onclick="clearRoom()"><i class="ti ti-trash"></i>Svuota stanza</button></div>`:'';
-    const filt=`<div class="subtabs" style="padding-top:4px">
+  const srch=`<div class="chsearch"><i class="ti ti-search"></i><input id="chSearch" placeholder="Cerca nei messaggi…" value="${esc(S.chatSearch||'')}" oninput="setChatSearch(this.value)"></div>`;
+  const filt=`<div class="subtabs" style="padding-top:4px">
       <button class="st ${S.bacFilter==='all'?'on':''}" onclick="setFilter('all')">Tutti</button>
       <button class="st ${S.bacFilter==='me'?'on':''}" onclick="setFilter('me')">Per me${forMeTot?`<span class="cnt neutral">${forMeTot}</span>`:''}</button></div>`;
-    body=filt+admin+`<div class="max">${feed}</div>`;
-  }
-  const allTag=`<span class="ctag all ${S.composeTags.includes('tutti')?'on':''}" onclick="ctag('tutti',this)">@tutti</span>`;
-  const areaTags=Object.keys(AREAS).map(a=>`<span class="ctag ${S.composeTags.includes(a)?'on':''}" onclick="ctag('${a}',this)">#${AREAS[a].nm}</span>`).join('');
-  const hint=S.bacView==='cal'?`<div class="chint"><i class="ti ti-calendar-event" style="font-size:13px;vertical-align:-2px"></i> Avviso per ${parseYmd(S.calSel).toLocaleDateString('it-IT',{weekday:'long',day:'numeric',month:'long'})}</div>`:'';
+  const admin=can('bacheca_admin')?`<div class="mgr-bar">
+      <button onclick="exportCsv()"><i class="ti ti-download"></i>Scarica CSV</button>
+      <button class="danger" onclick="clearRoom()"><i class="ti ti-trash"></i>Svuota stanza</button></div>`:'';
   const pf=S.pendingFile;
   const isCommon=!(ROOMS.find(r=>r.id===S.room)||{}).private;
   let pend='';
@@ -954,10 +992,10 @@ function bachecaView(){
     const memb=RMEM.filter(x=>x.room_id===S.room).length;
     const vis=isCommon
       ? `<div class="vopt on"><i class="ti ti-circle-check"></i><div><div class="vt">Tutti gli utenti</div>
-          <div class="vs">Questa è la bacheca comune: il file è per tutti</div></div></div>`
+          <div class="vs">Questa è la chat comune: il file è per tutti</div></div></div>`
       : `<div class="vopt ${S.pendVis==='room'?'on':''}" onclick="setPendVis('room')">
           <i class="ti ti-${S.pendVis==='room'?'circle-check':'circle'}"></i><div>
-          <div class="vt">Solo chi accede a questa bacheca</div><div class="vs">${esc(rnOf(S.room))} · ${memb} person${memb===1?'a':'e'}</div></div></div>
+          <div class="vt">Solo chi accede a questa chat</div><div class="vs">${esc(rnOf(S.room))} · ${memb} person${memb===1?'a':'e'}</div></div></div>
         <div class="vopt ${S.pendVis==='all'?'on':''}" onclick="setPendVis('all')">
           <i class="ti ti-${S.pendVis==='all'?'circle-check':'circle'}"></i><div>
           <div class="vt">Tutti gli utenti</div><div class="vs">Compare nell'archivio di chiunque</div></div></div>`;
@@ -968,54 +1006,73 @@ function bachecaView(){
       <div class="plbl">Salva nella cartella</div><div class="ctags">${fol}</div>
       <div class="plbl">Chi può vedere il file</div>${vis}</div>`;
   }
-  const composeH=compose?`<div class="compose">${hint}${pend}<div class="ctags">${allTag}${areaTags}</div>
-    <div class="cin">
-      <button class="clip" onclick="attachFile()" aria-label="Allega documento"><i class="ti ti-paperclip"></i></button>
-      <input id="bcInput" value="${esc(S.draft[S.room]||'')}"
-        placeholder="${pf?'Aggiungi una spiegazione…':'Scrivi un avviso…'}"
-        oninput="S.draft[S.room]=this.value"
-        onkeydown="if(event.key==='Enter')postMsg()">
-      <button class="send" onclick="postMsg()" aria-label="Invia"><i class="ti ti-${S.sending?'loader-2':'send'}"></i></button></div></div>`:'';
-  return hdr(`<i class="ti ti-messages"></i>Bacheca`,esc(rn),'Avvisi, calendario e documenti')
-    +`<div class="rooms">${roomBtns}</div>${sub}<div class="pane">${body}</div>${composeH}`;
+  const tagChips=S.composeTags.map(t=>`<span class="tgc" onclick="ctag('${t}',null)">${tagLabel(t)} <i class="ti ti-x"></i></span>`).join('');
+  const picker=S.tagOpen?`<div class="tagpick">
+      <span class="ctag all ${S.composeTags.includes('tutti')?'on':''}" onclick="ctag('tutti',this)">@tutti</span>
+      ${ROOMS.filter(r=>r.private).map(r=>`<span class="ctag grp ${S.composeTags.includes('g:'+r.id)?'on':''}" onclick="ctag('g:${r.id}',this)">@${esc(r.name)}</span>`).join('')}
+      ${USERS.filter(u=>u.id!==S.user.id).map(u=>`<span class="ctag ${S.composeTags.includes('u:'+u.id)?'on':''}" onclick="ctag('u:${u.id}',this)">${esc(u.nm)}</span>`).join('')}
+    </div>`:'';
+  const hintBar=S.tagHint?`<div class="taghint"><span>Vuoi taggare qualcuno? È consigliato ma non obbligatorio.</span>
+      <div class="tha"><button class="sec" onclick="S.tagHint=false;S.tagOpen=true;render()">Aggiungi tag</button>
+      <button onclick="S.tagHint=false;postMsg(true)">Invia comunque</button></div></div>`:'';
+  const composeH=`<div class="compose">${pend}
+      ${S.composeTags.length?`<div class="tagchips">${tagChips}</div>`:''}${picker}${hintBar}
+      <div class="cin">
+        <button class="clip" onclick="attachFile()" aria-label="Allega documento"><i class="ti ti-paperclip"></i></button>
+        <button class="tagbtn ${S.tagOpen?'on':''}" onclick="S.tagOpen=!S.tagOpen;render()" aria-label="Tagga persone"><i class="ti ti-at"></i></button>
+        <input id="bcInput" value="${esc(S.draft[S.room]||'')}"
+          placeholder="${pf?'Aggiungi una spiegazione…':'Scrivi un messaggio…'}"
+          oninput="S.draft[S.room]=this.value"
+          onkeydown="if(event.key==='Enter')postMsg()">
+        <button class="send" onclick="postMsg()" aria-label="Invia"><i class="ti ti-${S.sending?'loader-2':'send'}"></i></button></div></div>`;
+  return hdr(`<i class="ti ti-message-circle"></i>Chat`,esc(rn),'Messaggi e documenti del team')
+    +`<div class="rooms">${roomBtns}</div>${srch}${filt}${admin}<div class="pane"><div class="max" id="chatfeed">${chatFeedHtml()}</div></div>${composeH}`;
 }
 function bcMsgHtml(m){
+  if(m.deleted)return `<div class="bc-msg del" id="msg_${m.id}"><div class="bc-hd">
+    <span class="mini" style="${fill(m.c)}">${m.ini}</span>
+    <span class="bc-del"><i class="ti ti-ban"></i> messaggio eliminato</span></div></div>`;
   const mine=m.uid===S.user.id;
   const canEdit=mine&&(Date.now()-new Date(m.ts).getTime())<editWin();
-  const canTag=mine||can('bacheca_admin');      // i tag si possono aggiungere anche dopo, sempre
+  const canDelete=mine||can('bacheca_admin');
+  const canTag=mine||can('bacheca_admin');
   const mention=isMention(m);
-  const unread=mention&&S.justRead.includes(m.id); // appena segnalata: la evidenzio in questa visita
+  const unread=mention&&S.justRead.includes(m.id);
   const f=m.fileId?FILES.find(x=>x.id===m.fileId):null;
   const att=f?attCard(f):'';
   const txt=m.tx&&m.tx.trim()?`<div class="bc-tx">${esc(m.tx)}</div>`:'';
-
-  let tags=m.tags.map(t=>`<span class="tg ${t==='tutti'?'all':'area'}">${tagLabel(t)}</span>`).join('');
-  if(m.due)tags=`<span class="tg date"><i class="ti ti-calendar-event" style="font-size:11px;vertical-align:-1px"></i> ${parseYmd(m.due).toLocaleDateString('it-IT',{day:'numeric',month:'short'})}</span>`+tags;
+  let tags=m.tags.map(t=>`<span class="tg ${t==='tutti'?'all':t.startsWith('g:')?'group':'person'}">${tagLabel(t)}</span>`).join('');
   if(canTag)tags+=`<button class="tg addt" onclick="S.tagEditing=S.tagEditing==='${m.id}'?null:'${m.id}';render()">
     <i class="ti ti-${S.tagEditing===m.id?'x':'plus'}"></i>${m.tags.length?'':' tag'}</button>`;
-
   const tagEditor=S.tagEditing===m.id?`<div class="tgedit">
-      <div class="plbl" style="margin-top:0">Chi deve vedere questo avviso</div>
+      <div class="plbl" style="margin-top:0">Chi deve essere avvisato</div>
       <div class="ctags">
         <span class="ctag all ${m.tags.includes('tutti')?'on':''}" onclick="msgTag('${m.id}','tutti')">@tutti</span>
-        ${Object.keys(AREAS).map(a=>`<span class="ctag ${m.tags.includes(a)?'on':''}" onclick="msgTag('${m.id}','${a}')">#${AREAS[a].nm}</span>`).join('')}
+        ${ROOMS.filter(r=>r.private).map(r=>`<span class="ctag grp ${m.tags.includes('g:'+r.id)?'on':''}" onclick="msgTag('${m.id}','g:${r.id}')">@${esc(r.name)}</span>`).join('')}
+        ${USERS.filter(u=>u.id!==S.user.id).map(u=>`<span class="ctag ${m.tags.includes('u:'+u.id)?'on':''}" onclick="msgTag('${m.id}','u:${u.id}')">${esc(u.nm)}</span>`).join('')}
       </div></div>`:'';
-
   if(S.editing===m.id)return `<div class="bc-msg"><div class="bc-hd"><span class="mini" style="${fill(m.c)}">${m.ini}</span>
     <span class="bc-nm">${esc(m.nm)}</span><span class="bc-tm">${m.tm}</span></div>
     <div class="bc-editbox"><textarea id="edit_${m.id}">${esc(m.tx)}</textarea>
     <div class="ea"><button onclick="S.editing=null;render()">Annulla</button>
     <button class="save" onclick="saveEdit('${m.id}')">Salva</button></div></div></div>`;
-
   return `<div class="bc-msg ${mention?'me':''} ${unread?'unread':''}" id="msg_${m.id}">
     <div class="bc-hd">
       <span class="mini" style="${fill(m.c)}">${m.ini}</span><span class="bc-nm">${esc(m.nm)}</span>
       <span class="bc-tm">${m.tm}${m.edited?' · modificato':''}</span>
-      ${unread?'<span class="at"><i class="ti ti-at"></i></span>':''}
-      ${canEdit?`<button class="bc-edit" onclick="S.editing='${m.id}';render()" aria-label="Modifica"><i class="ti ti-pencil"></i></button>`
-        :(mention&&!unread&&!m.tags.includes('tutti')?'<span class="bc-forme">per te</span>':'')}</div>
+      ${unread?'<span class="at"><i class="ti ti-at"></i></span>':(mention&&!m.tags.includes('tutti')?'<span class="bc-forme">per te</span>':'')}
+      ${canEdit?`<button class="bc-edit" onclick="S.editing='${m.id}';render()" aria-label="Modifica"><i class="ti ti-pencil"></i></button>`:''}
+      ${canDelete?`<button class="bc-edit" onclick="delMsg('${m.id}')" aria-label="Elimina"><i class="ti ti-trash"></i></button>`:''}</div>
     ${txt}${att}${tags?`<div class="bc-tags">${tags}</div>`:''}${tagEditor}</div>`;
 }
+async function delMsg(id){
+  if(!confirm('Eliminare questo messaggio?'))return;
+  const m=MSGS.find(x=>x.id===id);if(!m)return;
+  m.deleted=true;render();
+  await save(db.from('messages').update({deleted:true}).eq('id',id),'eliminare il messaggio');
+  await loadMessages();render();
+}
+function setChatSearch(v){S.chatSearch=v;const el=document.getElementById('chatfeed');if(el)el.innerHTML=chatFeedHtml();}
 // aggiunge/toglie un tag a un messaggio già inviato: chi viene taggato riceve la segnalazione
 async function msgTag(id,t){
   const m=MSGS.find(x=>x.id===id);if(!m)return;
@@ -1054,13 +1111,15 @@ function attachFile(){S.pickMode='attach';const el=$('filePick');el.multiple=fal
 function clearPending(){S.pendingFile=null;render();}
 function setPendFolder(f){S.pendFolder=f;render();}
 function setPendVis(v){S.pendVis=v;render();}
-async function postMsg(){
+async function postMsg(force){
   const el=$('bcInput');const body=((el?el.value:S.draft[S.room])||'').trim();const pf=S.pendingFile;
   if(!body&&!pf)return;
   if(S.sending)return;
+  if(!force&&S.composeTags.length===0){S.tagHint=true;render();return;}
+  S.tagHint=false;
   const room=S.room,isCommon=!(ROOMS.find(r=>r.id===room)||{}).private;
   if(pf&&!S.pendFolder){alert('Scegli in quale cartella salvare il documento.');return;}
-  const u=S.user,tags=[...S.composeTags],due=S.bacView==='cal'?S.calSel:null;
+  const u=S.user,tags=[...S.composeTags];
   const folder=S.pendFolder,vis=isCommon?'all':S.pendVis;
   S.draft[room]=body;
   S.sending=true;render();
@@ -1077,9 +1136,9 @@ async function postMsg(){
       fileId=ins.data.id;await loadFiles();
     }
     await db.from('messages').insert({room_id:room,user_id:u.id,author:u.nm,initials:u.ini,color:u.c,
-      body,tags,due_date:due,file_id:fileId,level:'normal'});
+      body,tags,due_date:null,file_id:fileId,level:'normal'});
     await loadMessages();
-    S.composeTags=[];S.pendingFile=null;S.pendFolder=null;S.pendVis='room';S.draft[room]='';
+    S.composeTags=[];S.tagOpen=false;S.pendingFile=null;S.pendFolder=null;S.pendVis='room';S.draft[room]='';
   }catch(e){alert('Non sono riuscito a inviare: '+(e.message||e)+'\n\nNiente è andato perso: il messaggio è ancora qui, riprova.');}
   S.sending=false;render();
 }
