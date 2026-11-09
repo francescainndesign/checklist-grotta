@@ -33,6 +33,51 @@
   button{font:inherit}
 
   .center{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:34px;text-align:center;color:var(--tx-2)}
+  .home{min-height:100dvh;display:flex;flex-direction:column;background:var(--page)}
+  .home-top{display:flex;align-items:center;justify-content:space-between;padding:18px 20px;padding-top:calc(18px + env(safe-area-inset-top,0px))}
+  .home-out{background:none;border:none;color:var(--tx-3);font-size:21px;cursor:pointer;line-height:1}
+  .home-mid{flex:1;display:flex;flex-direction:column;justify-content:center;max-width:760px;width:100%;margin:0 auto;padding:0 20px 48px}
+  .home-hi{font-family:var(--fd);font-size:27px;font-weight:600;color:var(--ink);line-height:1.1}
+  .home-q{font-size:15px;color:var(--tx-2);margin-top:5px;margin-bottom:24px}
+  .home-cards{display:grid;grid-template-columns:1fr;gap:14px}
+  @media(min-width:680px){.home-cards{grid-template-columns:1fr 1fr}}
+  .hcard{display:flex;flex-direction:column;align-items:flex-start;gap:9px;text-align:left;padding:22px;border:0.5px solid var(--line);border-radius:18px;background:var(--card);cursor:pointer;box-shadow:0 1px 3px rgba(20,26,39,.05);transition:transform .08s ease,box-shadow .12s ease;font:inherit}
+  .hcard:hover{box-shadow:0 6px 18px rgba(20,26,39,.1)}
+  .hcard:active{transform:scale(.99)}
+  .hc-ic{position:relative;width:52px;height:52px;border-radius:14px;display:flex;align-items:center;justify-content:center;font-size:26px;margin-bottom:2px}
+  .hc-t{font-size:18px;font-weight:600;color:var(--ink)}
+  .hc-s{font-size:13px;color:var(--tx-2)}
+  .hc-badge{position:absolute;top:-5px;right:-5px;min-width:18px;height:18px;padding:0 5px;border-radius:9px;color:#fff;font-size:11px;font-weight:700;display:flex;align-items:center;justify-content:center}
+  .hc-badge.at{background:#e07a3c}
+  .hc-badge.dot{min-width:0;width:11px;height:11px;padding:0;border-radius:50%;background:#1f9d57}
+  .tbar{display:flex;align-items:center;gap:12px;flex-wrap:wrap;padding:12px 16px 2px}
+  .tsel{display:flex;align-items:center;gap:7px}
+  .tsel label{font-size:12px;color:var(--tx-3);font-weight:600}
+  .tsel select,.ag-sel{font:inherit;font-size:13px;border:0.5px solid var(--line);border-radius:8px;padding:6px 8px;background:var(--card);color:var(--tx);max-width:62vw}
+  .tbar-note{font-size:12.5px}
+  .tmine{color:#1d8a63;font-weight:600;display:inline-flex;align-items:center;gap:4px}
+  .tnone{color:#b5730f;font-weight:600}
+  .tgoto{background:none;border:none;color:var(--acc);font:inherit;font-size:12.5px;font-weight:600;cursor:pointer;display:inline-flex;align-items:center;gap:4px}
+  .tman{margin:4px 16px 8px;font-size:13px;color:var(--tx-2);font-style:italic}
+  .tblock{margin:18px 0 4px;display:flex;align-items:baseline;gap:9px;flex-wrap:wrap}
+  .tb-nm{font-family:var(--fd);font-size:13.5px;font-weight:600;color:var(--ink);text-transform:uppercase;letter-spacing:.02em}
+  .tb-time{font-size:11px;color:#fff;background:var(--ink);border-radius:99px;padding:2px 8px}
+  .tb-nota{flex-basis:100%;font-size:12px;color:var(--tx-2)}
+  .trow-nota{display:flex;gap:7px;align-items:flex-start;font-size:12.5px;color:var(--tx-2);padding:7px 2px}
+  .trow-nota i{color:var(--tx-3);margin-top:1px;flex:0 0 auto}
+  .agwrap{padding:12px 16px 24px}
+  .ag-nav{display:flex;align-items:center;justify-content:center;gap:14px;margin-bottom:10px}
+  .ag-nav button{width:34px;height:34px;border-radius:8px;border:0.5px solid var(--line);background:var(--card);cursor:pointer;font-size:18px;color:var(--tx);display:flex;align-items:center;justify-content:center}
+  .ag-wk{font-weight:600;font-size:14px;min-width:150px;text-align:center}
+  .ag-copy{display:block;margin:0 auto 12px;border:0.5px solid var(--line);background:var(--card);border-radius:8px;padding:7px 12px;font:inherit;font-size:12.5px;cursor:pointer;color:var(--tx);display:flex;align-items:center;gap:6px}
+  .aggrid{overflow-x:auto;-webkit-overflow-scrolling:touch;padding-bottom:4px}
+  .ag-row{display:flex;gap:6px;align-items:stretch;margin-bottom:6px;min-width:600px}
+  .ag-nm{flex:0 0 128px;display:flex;align-items:center;gap:7px;font-size:12.5px;font-weight:500}
+  .ag-cell{flex:1 1 0;min-width:64px;display:flex;flex-direction:column;justify-content:flex-end}
+  .ag-dh{text-align:center;font-size:11px;color:var(--tx-2);line-height:1.25}
+  .ag-dh.today b{color:var(--acc)}
+  .ag-sel{width:100%;padding:6px 4px;max-width:none}
+  .ag-sel.set{border-color:var(--acc);background:var(--acc-bg);color:#1e4fb0;font-weight:700}
   .center i{font-size:36px;color:#c7ccd4;margin-bottom:14px}
   .center h3{font-size:17px;color:var(--tx);margin-bottom:8px;font-family:var(--fd)}
   .center p{font-size:14px;line-height:1.55;max-width:420px}
@@ -653,8 +698,10 @@
 
 <script>
 let db=null,AREAS={},USERS=[],MSGS=[],CHECKS=[],ROOMS=[],RMEM=[],FILES=[],FOLDERS=[],ROLES=[],SET={},PHASES=[],READS=[],SDAYS={};
+let BLK={},TRN={},ASG={},SPU={};
 let S={screen:'load',selUser:null,loginQ:'',pin:'',user:null,tab:'check',area:null,phase:null,err:'',
   room:'comune',bacView:'feed',bacFilter:'all',calMode:'month',calAnchor:null,calSel:null,
+  turnoView:null,turnoManage:false,asgWeek:null,_turniErr:null,
   composeTags:[],editTags:[],tagOpen:false,tagHint:false,chatSearch:'',chatMenu:false,chatSearchOpen:false,replyTo:null,msgMenu:null,_paneY:null,_chatStick:true,_chatToBottom:true,_newMsgs:0,_newMention:false,editing:null,ctrlDate:null,archChecks:null,fq:'',fext:'all',uploading:false,adminTab:'utenti',
   pendingFile:null,pendFolder:null,pendVis:'room',pickMode:'library',sending:false,folder:null,
   accessFor:null,accVis:'all',accU:[],accR:[],accRm:[],pendUploadFiles:null,
@@ -761,7 +808,29 @@ async function loadAll(){
     powers:x.powers||[],areas:ua.data.filter(y=>y.user_id===x.id).map(y=>y.area_id)}));
   ROOMS=r.data||[];RMEM=rm.data||[];FOLDERS=fo.data||[];
   await loadMessages();await loadFiles();await loadChecks();applyChecks();await loadServiceDays();
+  try{await loadTurni();await loadAssign();await loadSpunte();S._turniErr=null;}
+  catch(e){BLK={};TRN={};ASG={};SPU={};S._turniErr=(e&&e.message)||String(e);}
 }
+async function loadTurni(){
+  const [bl,bv,tu,tb,tx]=await Promise.all([
+    db.from('blocchi').select('*').order('sort'),
+    db.from('blocco_voci').select('*').order('sort'),
+    db.from('turni').select('*').order('sort'),
+    db.from('turno_blocchi').select('*').order('sort'),
+    db.from('turno_voci_extra').select('*').order('sort')]);
+  for(const r of [bl,bv,tu,tb,tx])if(r.error)throw r.error;
+  BLK={};(bl.data||[]).forEach(b=>BLK[b.id]={id:b.id,nome:b.nome,reparto:b.reparto,sort:b.sort,voci:[]});
+  (bv.data||[]).forEach(v=>{const b=BLK[v.blocco_id];if(b)b.voci.push({id:v.id,testo:v.testo,tipo:v.tipo,sort:v.sort});});
+  Object.values(BLK).forEach(b=>b.voci.sort((a,c)=>a.sort-c.sort));
+  TRN={};(tu.data||[]).forEach(t=>TRN[t.codice]={codice:t.codice,orario:t.orario,pausa:t.pausa,giorni:t.giorni||[],giorni_label:t.giorni_label,ruolo:t.ruolo,mansioni:t.mansioni,tempo_apertura:t.tempo_apertura,sort:t.sort,attivo:t.attivo,blocks:[]});
+  const ex={};(tx.data||[]).forEach(x=>{(ex[x.turno_codice+'|'+x.blocco_id]=ex[x.turno_codice+'|'+x.blocco_id]||[]).push({id:x.id,testo:x.testo,tipo:x.tipo,sort:x.sort});});
+  (tb.data||[]).forEach(r=>{const t=TRN[r.turno_codice];if(!t)return;
+    const extra=(ex[r.turno_codice+'|'+r.blocco_id]||[]).slice().sort((a,c)=>a.sort-c.sort);
+    t.blocks.push({blocco_id:r.blocco_id,sort:r.sort,orario:r.orario,nota:r.nota,extra});});
+  Object.values(TRN).forEach(t=>t.blocks.sort((a,c)=>a.sort-c.sort));
+}
+async function loadAssign(){const {data,error}=await db.from('assegnazioni').select('*');if(error)throw error;ASG={};(data||[]).forEach(r=>ASG[r.data+'|'+r.user_id]=r.turno_codice);}
+async function loadSpunte(){const {data,error}=await db.from('spunte').select('*').eq('service_date',serviceDate());if(error)throw error;SPU={};(data||[]).forEach(r=>SPU[r.turno_codice+'|'+r.line_id]={user_name:r.user_name,checked_at:r.checked_at});}
 async function loadSettings(){
   const {data}=await db.from('settings').select('*');SET={};(data||[]).forEach(x=>SET[x.key]=x.value);}
 async function loadServiceDays(){
@@ -870,6 +939,8 @@ async function init(){
       .on('postgres_changes',{event:'*',schema:'public',table:'files'},async()=>{await loadFiles();render();})
       .on('postgres_changes',{event:'*',schema:'public',table:'service_days'},async()=>{await loadServiceDays();render();})
       .on('postgres_changes',{event:'*',schema:'public',table:'settings'},async()=>{await loadSettings();render();})
+      .on('postgres_changes',{event:'*',schema:'public',table:'spunte'},async()=>{try{await loadSpunte();}catch(e){}render();})
+      .on('postgres_changes',{event:'*',schema:'public',table:'assegnazioni'},async()=>{try{await loadAssign();}catch(e){}render();})
       .subscribe(st=>{if(st==='SUBSCRIBED'){$('live').classList.add('on');$('liveTxt').textContent='dal vivo';}
         else{$('live').classList.remove('on');$('liveTxt').textContent='riconnetto…';}});
     startLiveFallback();
@@ -931,7 +1002,8 @@ async function enter(){const u=USERS.find(x=>x.id===S.selUser);if(!u)return;
   S.checking=false;
   if(error){S.pin='';S.err=error.message||'Errore di verifica';render();return;}
   if(!data||!data.length){S.pin='';S.err='PIN errato';render();return;}
-  S.user=u;S.screen='app';S.tab='bacheca';S.area=u.areas[0]||Object.keys(AREAS)[0];S.phase=defaultPhaseFor(S.area);
+  S.user=u;S.tab='bacheca';S.area=u.areas[0]||Object.keys(AREAS)[0];S.phase=defaultPhaseFor(S.area);
+  const _tl=tabsFor(u);S.screen=(_tl.includes('bacheca')&&_tl.includes('check'))?'home':'app';
   S.pin='';S.selUser=null;S.err='';S.ctrlDate=serviceDate();S.archChecks=null;
   S.room=(myRooms()[0]||{id:'comune'}).id;S.bacView='feed';S._chatToBottom=true;S.calAnchor=serviceDate();S.calSel=serviceDate();
   S.justRead=[];render();loadReads().then(render);}
@@ -946,6 +1018,28 @@ function tabsFor(u){const off=checklistsOff();const p=effPowers(u);const t=['bac
   if(p.includes('utenti'))t.push('utenti');t.push('profilo');return t;}
 const ICO={check:['ti-checklist','Checklist'],bacheca:['ti-message-circle','Chat'],archivio:['ti-folder','Archivio'],
   controllo:['ti-eye','Controllo'],utenti:['ti-settings','Gestione'],profilo:['ti-user','Profilo']};
+function homeView(){
+  const u=S.user,tl=tabsFor(u);
+  const hasChat=tl.includes('bacheca'),hasCheck=tl.includes('check');
+  const nMent=unreadTotal(),nAll=unreadAllTotal();
+  const note=nMent>0?`<span class="hc-badge at">@</span>`:(nAll>0?`<span class="hc-badge dot"></span>`:'');
+  const chatCard=hasChat?`<button class="hcard" onclick="enterHome('bacheca')">
+      <div class="hc-ic" style="background:#eef4ff;color:#2f6df0"><i class="ti ti-message-circle"></i>${note}</div>
+      <div class="hc-t">Comunicazioni</div><div class="hc-s">Chat, documenti e avvisi del team</div></button>`:'';
+  const checkCard=hasCheck?`<button class="hcard" onclick="enterHome('check')">
+      <div class="hc-ic" style="background:#e9f7ef;color:#1d8a63"><i class="ti ti-checklist"></i></div>
+      <div class="hc-t">Checklist</div><div class="hc-s">Le attività del tuo turno</div></button>`:'';
+  const first=(u.nm||'').trim().split(/\s+/)[0]||'';
+  return `<div class="home">
+    <div class="home-top"><div class="brand">${esc(venue())}</div>
+      <button class="home-out" onclick="logout()" aria-label="Esci"><i class="ti ti-logout"></i></button></div>
+    <div class="home-mid">
+      <div class="home-hi">Ciao ${esc(first)}</div>
+      <div class="home-q">Dove vuoi andare?</div>
+      <div class="home-cards">${chatCard}${checkCard}</div>
+    </div></div>`;
+}
+function enterHome(t){S.screen='app';go(t);}
 function appView(){
   const u=S.user;
   const nMent=unreadTotal(),nAll=unreadAllTotal();
@@ -971,6 +1065,7 @@ function appView(){
 function go(t){S.tab=t;S.editing=null;S.tagEditing=null;S.moveOpen=null;
   if(t==='archivio'){S.folder=null;S.fq='';S.fext='all';}
   if(t==='check'&&!S.user.areas.includes(S.area))S.area=S.user.areas[0]||S.area;
+  if(t==='check'){S.turnoManage=false;S.turnoView=null;}
   render();
   if(t==='bacheca'){S.justRead=[];S._chatToBottom=true;markRead(S.room);}}
 const pctColor=p=>p>=1?'#1d8a63':p>=.34?'#b5730f':'#c0392b';
@@ -980,56 +1075,110 @@ function hdr(role,title,meta,extra,act){return `<div class="hd"><div class="hd-t
     <div class="hd-actions">${act||''}<button class="icon-btn" onclick="logout()" aria-label="Esci"><i class="ti ti-logout"></i></button></div></div>
     <h2>${title}</h2><div class="meta">${meta}</div>${extra||''}</div>`;}
 
-/* ---------- CHECKLIST ---------- */
-function phaseProg(aid,ph){let d=0,tot=0;(AREAS[aid].phases[ph]||[]).forEach(t=>{
-  if(t.shift==='split'){tot+=2;if(t.pBy)d++;if(t.cBy)d++;}else{tot++;if(t.by)d++;}});return{d,tot};}
+/* ---------- CHECKLIST A TURNI ---------- */
+const DOW=['dom','lun','mar','mer','gio','ven','sab'];
+const DOWLBL={dom:'Dom',lun:'Lun',mar:'Mar',mer:'Mer',gio:'Gio',ven:'Ven',sab:'Sab'};
+const dowOf=ymd=>DOW[new Date(ymd+'T00:00:00').getDay()];
+const turnoList=()=>Object.values(TRN).sort((a,b)=>(a.sort||0)-(b.sort||0));
+const turnoFor=ymd=>ASG[ymd+'|'+S.user.id]||null;
+const turnoAvailOn=ymd=>{const dw=dowOf(ymd);return turnoList().filter(t=>!t.giorni.length||t.giorni.includes(dw));};
+function turnoLines(code){
+  const t=TRN[code];if(!t)return [];
+  const out=[];
+  t.blocks.forEach(b=>{
+    const blk=BLK[b.blocco_id];if(!blk)return;
+    out.push({type:'block',name:blk.nome,orario:b.orario||'',nota:b.nota||''});
+    (blk.voci||[]).forEach(v=>out.push({type:v.tipo==='nota'?'nota':'line',id:'v'+v.id,testo:v.testo}));
+    (b.extra||[]).forEach(v=>out.push({type:v.tipo==='nota'?'nota':'line',id:'x'+v.id,testo:v.testo}));
+  });
+  return out;
+}
+function turnoProg(code){const ls=turnoLines(code).filter(x=>x.type==='line');
+  let d=0;ls.forEach(x=>{if(SPU[code+'|'+x.id])d++;});return{d,tot:ls.length};}
 function checkView(){
-  const u=S.user;
-  const all=areaPhases(S.area);
-  const dayAvail=availablePhases(S.area);
-  const avail=S.showAllPhases?all:dayAvail;
-  const hidden=all.length-dayAvail.length;
-  if(!avail.includes(S.phase))S.phase=defaultPhaseFor(S.area)||avail[0]||phaseIds()[0]||null;
-  const {d,tot}=S.phase?phaseProg(S.area,S.phase):{d:0,tot:0};const pct=tot?d/tot:0;
-  const segs=u.areas.map(a=>`<button class="seg ${S.area===a?'on':''}" onclick="setArea('${a}')">${AREAS[a].nm}</button>`).join('');
-  const ts=(S.phase&&AREAS[S.area].phases[S.phase])||[];
-  const rows=ts.length?ts.map(rowHtml).join('')
-    :`<div class="empty"><i class="ti ti-clipboard-plus"></i><b>Nessuna voce ancora</b>Questa checklist è da comporre.</div>`;
+  const u=S.user,sd=serviceDate();
+  if(!turnoList().length)return hdr('<i class="ti ti-clipboard-check"></i>Checklist','Turni non caricati',
+      'Mancano i contenuti delle checklist a turni.')
+    +`<div class="pane"><div class="empty"><i class="ti ti-database-off"></i><b>Dati turni assenti</b>
+      ${S._turniErr?'Errore: '+esc(S._turniErr)+'. ':''}Lancia <code>supabase-turni.sql</code> su Supabase (SQL Editor → Run), poi ricarica.</div></div>`;
+  if(S.turnoManage&&can('controllo'))return assignView();
+  const mine=turnoFor(sd);
+  if(!S.turnoView)S.turnoView=mine||(turnoAvailOn(sd)[0]||{}).codice||turnoList()[0].codice;
+  const code=S.turnoView,t=TRN[code]||{};
+  const {d,tot}=turnoProg(code),pct=tot?d/tot:0;
+  const groups={};turnoList().forEach(x=>{(groups[x.ruolo||'Altro']=groups[x.ruolo||'Altro']||[]).push(x);});
+  const opts=Object.keys(groups).map(g=>`<optgroup label="${esc(g)}">`+
+     groups[g].map(x=>`<option value="${x.codice}" ${x.codice===code?'selected':''}>${esc(x.codice)} · ${esc(x.giorni_label||'')}${x.orario?' · '+esc(x.orario):''}</option>`).join('')+`</optgroup>`).join('');
+  const sel=`<div class="tsel"><label>Turno</label><select onchange="setTurnoView(this.value)">${opts}</select></div>`;
+  const mineNote=mine?(mine===code?`<span class="tmine"><i class="ti ti-user-check"></i> il tuo turno di oggi</span>`
+      :`<button class="tgoto" onclick="setTurnoView('${mine}')"><i class="ti ti-user-check"></i> vai al tuo turno (${esc(mine)})</button>`)
+    :`<span class="tnone">Nessun turno assegnato per oggi</span>`;
   const bar=`<div class="prog"><div class="prog-track"><div class="prog-fill" style="width:${Math.round(pct*100)}%;background:${pctColor(pct)}"></div></div><div class="prog-n">${d}/${tot}</div></div>`;
-  const ptabs=avail.length>1?`<div class="phase-row">${avail.map(ph=>
-      `<div class="phase ${S.phase===ph?'on':''}" onclick="setPhase('${ph}')">${esc(phaseName(ph))}</div>`).join('')}</div>`:'';
-  const mode=todayMode();
-  const modeTag=mode!=='full'?`<span class="modetag ${mode}">${MODE_LBL[mode]}</span>`:'';
-  const allLink=(!S.showAllPhases&&hidden>0)?`<div class="showall"><button onclick="S.showAllPhases=true;render()"><i class="ti ti-eye"></i> Mostra tutte le sezioni</button></div>`:'';
-  return hdr(`<i class="ti ti-map-pin"></i>${AREAS[S.area].sec} · ${esc(roleName(u.role))}`,AREAS[S.area].nm,
-      `${S.phase?esc(phaseName(S.phase))+' · ':''}${new Date().toLocaleDateString('it-IT',{weekday:'long',day:'numeric',month:'long'})} ${modeTag}`,bar)
-    +`<div class="pane"><div class="segs">${segs}</div>${ptabs}${allLink}
-      <div class="list max">${rows}${ts.length?'<div class="foot-note">Se non è stato possibile eseguire un\u2019operazione, avvisa i manager e scrivilo in bacheca.</div>':''}</div></div>`;
+  const rows=turnoLines(code).map(x=>turnoRowHtml(x,code)).join('')
+    ||`<div class="empty"><i class="ti ti-clipboard-plus"></i><b>Turno vuoto</b>Nessuna voce in questo turno.</div>`;
+  const mansioni=t.mansioni?`<div class="tman">${esc(t.mansioni)}</div>`:'';
+  const manageBtn=can('controllo')?`<button class="icon-btn" onclick="S.turnoManage=true;render()" aria-label="Assegna turni"><i class="ti ti-calendar-cog"></i></button>`:'';
+  return hdr(`<i class="ti ti-clipboard-check"></i>${esc(t.ruolo||'Checklist')} · ${esc(roleName(u.role))}`,
+      esc(code)+(t.giorni_label?' · '+esc(t.giorni_label):''),
+      `${esc(t.orario||'')}${t.pausa?' · pausa '+esc(t.pausa):''} · ${new Date().toLocaleDateString('it-IT',{weekday:'long',day:'numeric',month:'long'})}`,bar,manageBtn)
+    +`<div class="pane"><div class="tbar">${sel}<div class="tbar-note">${mineNote}</div></div>${mansioni}
+      <div class="list max">${rows}<div class="foot-note">Se non è stato possibile eseguire un’operazione, avvisa i manager e scrivilo in chat.</div></div></div>`;
 }
-function rowHtml(t){
-  if(t.shift==='split'){
-    const pc=(lab,by,tm,f)=>`<button class="pc-btn ${by?'done':''}" onclick="tickPC('${t.id}','${f}')">
-      <div class="pc-lbl"><i class="ti ti-${by?'circle-check':'clock'}"></i>${lab}</div>
-      ${by?`<div class="pc-sign">${esc(by)} · ${tm}</div>`:`<div class="pc-empty">da spuntare</div>`}</button>`;
-    return `<div class="row"><div class="cbx" style="visibility:hidden"></div><div class="r-main">
-      <div class="r-txt">${esc(t.t)}</div><div class="pc">${pc('Pranzo',t.pBy,t.pTm,'pranzo')}${pc('Cena',t.cBy,t.cTm,'cena')}</div></div></div>`;}
-  const late=t.late&&!t.by,s=t.by?iniFor(t.by):null;
-  return `<div class="row ${late?'late':''}"><div class="cbx ${t.by?'done':''}" onclick="tick('${t.id}')"><i class="ti ti-check"></i></div>
-    <div class="r-main"><div class="r-txt">${esc(t.t)}</div>
-    ${t.by?`<div class="r-sign"><span class="mini" style="${fill(s.c)}">${s.ini}</span>${esc(t.by)} · ${t.tm}</div>`:''}
-    ${late?`<div class="badge-late"><i class="ti ti-alert-triangle"></i>in ritardo${t.dl?' · '+esc(t.dl):''}</div>`:''}</div></div>`;
+function turnoRowHtml(x,code){
+  if(x.type==='block')return `<div class="tblock"><div class="tb-nm">${esc(x.name)}</div>${x.orario?`<span class="tb-time">${esc(x.orario)}</span>`:''}${x.nota?`<div class="tb-nota">${esc(x.nota)}</div>`:''}</div>`;
+  if(x.type==='nota')return `<div class="trow-nota"><i class="ti ti-info-circle"></i><span>${esc(x.testo)}</span></div>`;
+  const sp=SPU[code+'|'+x.id],si=sp?iniFor(sp.user_name):null;
+  return `<div class="row"><div class="cbx ${sp?'done':''}" onclick="tickTurno('${x.id}')"><i class="ti ti-check"></i></div>
+    <div class="r-main"><div class="r-txt">${esc(x.testo)}</div>
+    ${sp?`<div class="r-sign"><span class="mini" style="${fill(si.c)}">${si.ini}</span>${esc(sp.user_name)} · ${fmt(sp.checked_at)}</div>`:''}</div></div>`;
 }
-function findTask(id){for(const a of Object.values(AREAS))for(const ph of Object.keys(a.phases))for(const t of a.phases[ph])if(t.id===id)return t;}
-async function tick(id){const t=findTask(id),u=S.user;
-  if(t.by){t.by=t.tm=null;render();await db.from('checks').delete().eq('task_id',id).eq('shift','single').eq('service_date',serviceDate());}
-  else{t.by=u.nm;t.tm=fmt(new Date());render();await db.from('checks').insert({task_id:id,shift:'single',user_id:u.id,user_name:u.nm,service_date:serviceDate()});}}
-async function tickPC(id,f){const t=findTask(id),u=S.user,done=f==='pranzo'?t.pBy:t.cBy;
-  if(done){if(f==='pranzo'){t.pBy=t.pTm=null;}else{t.cBy=t.cTm=null;}render();
-    await db.from('checks').delete().eq('task_id',id).eq('shift',f).eq('service_date',serviceDate());}
-  else{if(f==='pranzo'){t.pBy=u.nm;t.pTm=fmt(new Date());}else{t.cBy=u.nm;t.cTm=fmt(new Date());}render();
-    await db.from('checks').insert({task_id:id,shift:f,user_id:u.id,user_name:u.nm,service_date:serviceDate()});}}
-function setArea(a){S.area=a;S.showAllPhases=false;S.phase=defaultPhaseFor(a)||areaPhases(a)[0]||null;render();}
-function setPhase(p){S.phase=p;render();}
+function setTurnoView(c){S.turnoView=c;render();}
+async function tickTurno(lineId){
+  const code=S.turnoView,sd=serviceDate(),u=S.user,key=code+'|'+lineId;
+  if(SPU[key]){delete SPU[key];render();
+    await db.from('spunte').delete().eq('line_id',lineId).eq('turno_codice',code).eq('service_date',sd);}
+  else{const now=new Date().toISOString();SPU[key]={user_name:u.nm,checked_at:now};render();
+    await db.from('spunte').upsert({line_id:lineId,turno_codice:code,service_date:sd,user_id:u.id,user_name:u.nm,checked_at:now},{onConflict:'line_id,turno_codice,service_date'});}}
+/* ---------- ASSEGNAZIONE TURNI (manager) ---------- */
+function weekMonday(ymd){const d=new Date(ymd+'T00:00:00');const g=(d.getDay()+6)%7;d.setDate(d.getDate()-g);return ymdOf(d);}
+function addDays(ymd,n){const d=new Date(ymd+'T00:00:00');d.setDate(d.getDate()+n);return ymdOf(d);}
+function assignView(){
+  if(!S.asgWeek)S.asgWeek=weekMonday(serviceDate());
+  const mon=S.asgWeek,days=[0,1,2,3,4,5,6].map(i=>addDays(mon,i));
+  const staff=USERS.slice().sort((a,b)=>a.nm.localeCompare(b.nm));
+  const head=`<div class="ag-row ag-head"><div class="ag-nm"></div>`+
+    days.map(ds=>{const dw=dowOf(ds),dd=new Date(ds+'T00:00:00');
+      return `<div class="ag-cell ag-dh ${ds===serviceDate()?'today':''}"><b>${DOWLBL[dw]}</b><span>${dd.getDate()}/${dd.getMonth()+1}</span></div>`;}).join('')+`</div>`;
+  const body=staff.map(p=>{
+    const cells=days.map(ds=>{
+      const cur=ASG[ds+'|'+p.id]||'',av=turnoAvailOn(ds);
+      const opts=`<option value="">—</option>`+av.map(t=>`<option value="${t.codice}" ${t.codice===cur?'selected':''}>${esc(t.codice)}</option>`).join('')
+        +(cur&&!av.some(t=>t.codice===cur)?`<option value="${cur}" selected>${esc(cur)}</option>`:'');
+      return `<div class="ag-cell"><select class="ag-sel ${cur?'set':''}" onchange="setAsg('${ds}','${p.id}',this.value)">${opts}</select></div>`;
+    }).join('');
+    return `<div class="ag-row"><div class="ag-nm"><span class="mini" style="${fill(p.c)}">${p.ini}</span>${esc(p.nm)}</div>${cells}</div>`;
+  }).join('');
+  const wkLbl=new Date(mon+'T00:00:00').toLocaleDateString('it-IT',{day:'numeric',month:'short'})+' – '+new Date(addDays(mon,6)+'T00:00:00').toLocaleDateString('it-IT',{day:'numeric',month:'short'});
+  const nav=`<div class="ag-nav"><button onclick="shiftWeek(-7)" aria-label="Settimana precedente"><i class="ti ti-chevron-left"></i></button>
+     <div class="ag-wk">${wkLbl}</div>
+     <button onclick="shiftWeek(7)" aria-label="Settimana successiva"><i class="ti ti-chevron-right"></i></button></div>`;
+  const copy=`<button class="ag-copy" onclick="copyPrevWeek()"><i class="ti ti-copy"></i> Copia settimana precedente</button>`;
+  return hdr('<i class="ti ti-calendar-cog"></i>Assegnazione turni','Settimana',wkLbl,'',
+      `<button class="icon-btn" onclick="S.turnoManage=false;render()" aria-label="Chiudi"><i class="ti ti-x"></i></button>`)
+    +`<div class="pane"><div class="agwrap">${nav}${copy}<div class="aggrid">${head}${body}</div>
+      <div class="foot-note">Scegli il turno di ogni persona per ogni giorno. Le celle restano vuote finché non assegni.</div></div></div>`;
+}
+async function setAsg(ds,uid,code){
+  const key=ds+'|'+uid;
+  if(!code){delete ASG[key];render();await db.from('assegnazioni').delete().eq('data',ds).eq('user_id',uid);}
+  else{ASG[key]=code;render();await db.from('assegnazioni').upsert({data:ds,user_id:uid,turno_codice:code},{onConflict:'data,user_id'});}}
+function shiftWeek(n){S.asgWeek=addDays(S.asgWeek||weekMonday(serviceDate()),n);render();}
+async function copyPrevWeek(){
+  const mon=S.asgWeek||weekMonday(serviceDate()),rows=[];
+  for(let i=0;i<7;i++){const ds=addDays(mon,i),prev=addDays(ds,-7);
+    USERS.forEach(p=>{const pc=ASG[prev+'|'+p.id],cur=ASG[ds+'|'+p.id];
+      if(pc&&!cur){ASG[ds+'|'+p.id]=pc;rows.push({data:ds,user_id:p.id,turno_codice:pc});}});}
+  render();if(rows.length)await db.from('assegnazioni').upsert(rows,{onConflict:'data,user_id'});}
 
 /* ---------- BACHECA: stanze / feed / calendario / file ---------- */
 function daySep(d){const t=new Date(),y=new Date();y.setDate(t.getDate()-1);
@@ -1137,7 +1286,9 @@ function bcMsgHtml(m,grouped){
     ${mine?'':`<span class="av" style="${fill(m.c)}">${grouped?'':m.ini}</span>`}
     <div class="bub del"><span class="bc-del"><i class="ti ti-ban"></i> messaggio eliminato</span></div></div>`;
   const canEdit=mine&&(Date.now()-new Date(m.ts).getTime())<editWin();
-  const canDelete=mine||can('bacheca_admin');
+  const author=USERS.find(x=>x.id===m.uid);
+  const authorDir=!!author&&effPowers(author).includes('bacheca_admin');
+  const canDelete=mine||(can('bacheca_admin')&&!authorDir);
   const canTag=mine||can('bacheca_admin');
   const mention=isMention(m);
   const unread=mention&&S.justRead.includes(m.id);
@@ -2119,6 +2270,7 @@ function render(){
   if(S.screen==='error'){app.innerHTML=`<div class="center"><i class="ti ti-alert-circle"></i><h3>Qualcosa non torna</h3>
     <p style="white-space:pre-line">${esc(S.err)}</p>
     <button onclick="location.reload()" style="margin-top:16px;height:40px;padding:0 20px;border:0.5px solid var(--line);background:var(--card);border-radius:9px;color:var(--tx);font:inherit;font-size:13.5px;cursor:pointer">Riprova</button></div>`;return;}
+  if(S.screen==='home'){app.innerHTML=homeView();return;}
   app.innerHTML=(S.screen==='login'?loginView():appView())+viewerHtml()+logHtml()+accessHtml();
   if(S.screen==='app'&&S.tab==='bacheca'){requestAnimationFrame(()=>{const pn=document.querySelector('.pane');if(!pn)return;
     if(S._chatToBottom||S._chatStick!==false){pn.scrollTop=pn.scrollHeight;S._chatToBottom=false;}
