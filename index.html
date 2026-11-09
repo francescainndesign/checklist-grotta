@@ -3,6 +3,11 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="Grotta">
+<meta name="theme-color" content="#131a27">
 <title>Checklist Grotta Marcello</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -207,6 +212,11 @@
   .mopt:hover,.mopt:active{background:var(--acc-bg)}
   .mopt i{font-size:15px;color:var(--tx-3)}
   [hidden]{display:none!important}
+  .chhd{background:var(--ink);color:#fff;display:flex;align-items:center;gap:10px;padding:10px 14px;flex-shrink:0;position:relative;padding-top:calc(10px + env(safe-area-inset-top,0px))}
+  .chhd-t{flex:1;min-width:0;font-size:16px;font-weight:600;display:flex;align-items:center;gap:8px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+  .chhd-t i{font-size:18px;color:#8b97ab;flex:0 0 auto}
+  .chhd-a{display:flex;align-items:center;gap:2px;flex:0 0 auto}
+  .chsearch .chsx{background:none;border:none;color:var(--tx-3);cursor:pointer;font-size:16px;padding:0 2px}
   .daysep{display:flex;justify-content:center;margin:12px 0 6px}
   .daysep span{font-size:11px;color:var(--tx-3);background:var(--line-2);border-radius:99px;padding:3px 12px}
   .mrow{display:flex;gap:7px;padding:1px 14px;margin-top:2px}
@@ -635,7 +645,7 @@
 let db=null,AREAS={},USERS=[],MSGS=[],CHECKS=[],ROOMS=[],RMEM=[],FILES=[],FOLDERS=[],ROLES=[],SET={},PHASES=[],READS=[],SDAYS={};
 let S={screen:'load',selUser:null,loginQ:'',pin:'',user:null,tab:'check',area:null,phase:null,err:'',
   room:'comune',bacView:'feed',bacFilter:'all',calMode:'month',calAnchor:null,calSel:null,
-  composeTags:[],tagOpen:false,tagHint:false,chatSearch:'',chatMenu:false,replyTo:null,msgMenu:null,_paneY:null,_chatStick:true,_chatToBottom:true,editing:null,ctrlDate:null,archChecks:null,fq:'',fext:'all',uploading:false,adminTab:'utenti',
+  composeTags:[],editTags:[],tagOpen:false,tagHint:false,chatSearch:'',chatMenu:false,chatSearchOpen:false,replyTo:null,msgMenu:null,_paneY:null,_chatStick:true,_chatToBottom:true,editing:null,ctrlDate:null,archChecks:null,fq:'',fext:'all',uploading:false,adminTab:'utenti',
   pendingFile:null,pendFolder:null,pendVis:'room',pickMode:'library',sending:false,folder:null,
   accessFor:null,accVis:'all',accU:[],accR:[],accRm:[],pendUploadFiles:null,
   edArea:null,edPhase:null,moveOpen:null,moveArea:null,movePhase:null,
@@ -1030,7 +1040,7 @@ function bachecaView(){
       ${un?`<span class="rat"><i class="ti ti-at"></i>${un>1?un:''}</span>`:''}</button>`;}).join('');
   const forMeTot=feedMsgs().filter(forMe).length;
   const rn=(ROOMS.find(r=>r.id===S.room)||{}).name||'';
-  const srch=`<div class="chsearch"><i class="ti ti-search"></i><input id="chSearch" placeholder="Cerca nei messaggi…" value="${esc(S.chatSearch||'')}" oninput="setChatSearch(this.value)"></div>`;
+  const srch=S.chatSearchOpen?`<div class="chsearch"><i class="ti ti-search"></i><input id="chSearch" placeholder="Cerca nei messaggi…" value="${esc(S.chatSearch||'')}" oninput="setChatSearch(this.value)"><button class="chsx" onclick="toggleChatSearch()" aria-label="Chiudi"><i class="ti ti-x"></i></button></div>`:'';
   const filt=`<div class="subtabs" style="padding-top:4px">
       <button class="st ${S.bacFilter==='all'?'on':''}" onclick="setFilter('all')">Tutti</button>
       <button class="st ${S.bacFilter==='me'?'on':''}" onclick="setFilter('me')">Per me${forMeTot?`<span class="cnt neutral">${forMeTot}</span>`:''}</button></div>`;
@@ -1075,14 +1085,14 @@ function bachecaView(){
           oninput="onComposeInput(this)"
           onkeydown="if(event.key==='Enter')postMsg()">
         <button class="send" onclick="postMsg()" aria-label="Invia"><i class="ti ti-${S.sending?'loader-2':'send'}"></i></button></div></div>`;
-  return hdr(`<i class="ti ti-message-circle"></i>Chat`,esc(rn),'Messaggi e documenti del team',chMenu,chAct)
+  return `<div class="chhd"><div class="chhd-t"><i class="ti ti-message-circle"></i> ${esc(rn)}</div>
+    <div class="chhd-a"><button class="icon-btn" onclick="toggleChatSearch()" aria-label="Cerca"><i class="ti ti-search"></i></button>${chAct}<button class="icon-btn" onclick="logout()" aria-label="Esci"><i class="ti ti-logout"></i></button></div>${chMenu}</div>`
     +`<div class="rooms">${roomBtns}</div>${srch}${filt}<div class="pane" onscroll="S._paneY=this.scrollTop;S._chatStick=(this.scrollHeight-this.scrollTop-this.clientHeight)<60"><div class="max" id="chatfeed">${chatFeedHtml()}</div></div>${composeH}`;
 }
 function msgActions(m,mine,canEdit,canDelete,canTag){
   if(S.msgMenu!==m.id)return '';
   let b=`<button onclick="setReply('${m.id}')"><i class="ti ti-arrow-back-up"></i> Rispondi</button>`;
-  if(canTag)b+=`<button onclick="S.msgMenu=null;S.tagEditing='${m.id}';render()"><i class="ti ti-at"></i> Tag</button>`;
-  if(canEdit)b+=`<button onclick="S.msgMenu=null;S.editing='${m.id}';render()"><i class="ti ti-pencil"></i> Modifica</button>`;
+  if(canEdit)b+=`<button onclick="openEdit('${m.id}')"><i class="ti ti-pencil"></i> Modifica</button>`;
   if(canDelete)b+=`<button class="danger" onclick="S.msgMenu=null;delMsg('${m.id}')"><i class="ti ti-trash"></i> Elimina</button>`;
   return `<div class="mmenu">${b}</div>`;
 }
@@ -1109,16 +1119,10 @@ function bcMsgHtml(m,grouped){
   if(m.replyTo){const o=MSGS.find(x=>x.id===m.replyTo);
     rq=`<div class="rquote"><b>${o?esc(o.nm):'Messaggio'}</b><span>${o?esc((o.tx||'documento').slice(0,70)):'non disponibile'}</span></div>`;}
   if(S.editing===m.id)return `<div class="mrow ${mine?'mine':'other'}" id="msg_${m.id}">${mine?'':`<span class="av" style="${fill(m.c)}">${m.ini}</span>`}
-    <div class="bub"><div class="bc-editbox"><textarea id="edit_${m.id}">${esc(m.tx)}</textarea>
+    <div class="bub"><div class="bc-editbox"><div class="mbox" id="mentionBoxEdit" hidden></div><textarea id="edit_${m.id}" oninput="onEditInput(this)" placeholder="Scrivi… usa @ per taggare">${esc(m.tx)}</textarea>
     <div class="ea"><button onclick="S.editing=null;render()">Annulla</button>
     <button class="save" onclick="saveEdit('${m.id}')">Salva</button></div></div></div>`;
-  const tagEditor=S.tagEditing===m.id?`<div class="tgedit">
-      <div class="plbl" style="margin-top:0">Chi deve essere avvisato</div>
-      <div class="ctags">
-        <span class="ctag all ${m.tags.includes('tutti')?'on':''}" onclick="msgTag('${m.id}','tutti')">@tutti</span>
-        ${ROOMS.filter(r=>r.private).map(r=>`<span class="ctag grp ${m.tags.includes('g:'+r.id)?'on':''}" onclick="msgTag('${m.id}','g:${r.id}')">@${esc(r.name)}</span>`).join('')}
-        ${USERS.filter(u=>u.id!==S.user.id).map(u=>`<span class="ctag ${m.tags.includes('u:'+u.id)?'on':''}" onclick="msgTag('${m.id}','u:${u.id}')">${esc(u.nm)}</span>`).join('')}
-      </div></div>`:'';
+  const tagEditor='';
   const name=(!mine&&!grouped)?`<div class="bname">${esc(m.nm)}</div>`:'';
   return `<div class="mrow ${mine?'mine':'other'} ${grouped?'grp':''} ${unread?'unread':''}" id="msg_${m.id}">
     ${mine?'':`<span class="av" style="${fill(m.c)}">${grouped?'':m.ini}</span>`}
@@ -1135,35 +1139,40 @@ async function delMsg(id){
   await loadMessages();render();
 }
 function setChatSearch(v){S.chatSearch=v;const el=document.getElementById('chatfeed');if(el)el.innerHTML=chatFeedHtml();}
-let _ment=[];
-function onComposeInput(el){
-  S.draft[S.room]=el.value;
+function toggleChatSearch(){S.chatSearchOpen=!S.chatSearchOpen;S.chatMenu=false;if(!S.chatSearchOpen)S.chatSearch='';render();if(S.chatSearchOpen)setTimeout(()=>{const e=document.getElementById('chSearch');if(e)e.focus();},40);}
+let _ment=[],_mentEl=null,_mentBoxId=null,_mentAcc=null;
+function mentionList(){return [{id:'tutti',label:'tutti',g:false}]
+    .concat(ROOMS.filter(r=>r.private).map(r=>({id:'g:'+r.id,label:r.name,g:true})))
+    .concat(USERS.filter(u=>u.id!==S.user.id).map(u=>({id:'u:'+u.id,label:u.nm,g:false})));}
+function runMention(el,boxId,acc){
+  _mentEl=el;_mentBoxId=boxId;_mentAcc=acc;
   const pos=el.selectionStart,upto=el.value.slice(0,pos),m=upto.match(/@([^\s@]*)$/);
-  const box=document.getElementById('mentionBox');if(!box)return;
+  const box=document.getElementById(boxId);if(!box)return;
   if(!m){box.hidden=true;box.innerHTML='';_ment=[];return;}
   const term=m[1].toLowerCase();
-  const all=[{id:'tutti',label:'tutti',g:false}]
-    .concat(ROOMS.filter(r=>r.private).map(r=>({id:'g:'+r.id,label:r.name,g:true})))
-    .concat(USERS.filter(u=>u.id!==S.user.id).map(u=>({id:'u:'+u.id,label:u.nm,g:false})));
-  _ment=all.filter(o=>o.label.toLowerCase().includes(term)).slice(0,6);
+  _ment=mentionList().filter(o=>o.label.toLowerCase().includes(term)).slice(0,6);
   if(!_ment.length){box.hidden=true;box.innerHTML='';return;}
   box.innerHTML=_ment.map((o,i)=>`<button class="mopt" onmousedown="pickMention(event,${i})">`+
     (o.id==='tutti'?'<i class="ti ti-users"></i> @tutti':((o.g?'<i class="ti ti-lock"></i> ':'<i class="ti ti-user"></i> ')+esc(o.label)))+`</button>`).join('');
   box.hidden=false;
 }
+function onComposeInput(el){S.draft[S.room]=el.value;runMention(el,'mentionBox',S.composeTags);}
+function onEditInput(el){runMention(el,'mentionBoxEdit',S.editTags);}
 function pickMention(ev,i){
   ev.preventDefault();
-  const o=_ment[i];if(!o)return;
-  const el=document.getElementById('bcInput'),pos=el.selectionStart,val=el.value;
+  const o=_ment[i];if(!o||!_mentEl)return;
+  const el=_mentEl,pos=el.selectionStart,val=el.value;
   const m=val.slice(0,pos).match(/@([^\s@]*)$/);if(!m)return;
   const start=pos-m[0].length,insert='@'+o.label+' ';
   el.value=val.slice(0,start)+insert+val.slice(pos);
   const np=start+insert.length;el.setSelectionRange(np,np);
-  S.draft[S.room]=el.value;
-  if(!S.composeTags.includes(o.id))S.composeTags.push(o.id);
-  const box=document.getElementById('mentionBox');box.hidden=true;box.innerHTML='';_ment=[];
-  el.focus();
+  if(el.id==='bcInput')S.draft[S.room]=el.value;
+  if(_mentAcc&&!_mentAcc.includes(o.id))_mentAcc.push(o.id);
+  const box=document.getElementById(_mentBoxId);if(box){box.hidden=true;box.innerHTML='';}
+  _ment=[];el.focus();
 }
+function openEdit(id){const m=MSGS.find(x=>x.id===id);S.msgMenu=null;S.editing=id;S.editTags=m?[...(m.tags||[])]:[];render();
+  setTimeout(()=>{const e=document.getElementById('edit_'+id);if(e){e.focus();e.setSelectionRange(e.value.length,e.value.length);}},40);}
 // aggiunge/toglie un tag a un messaggio già inviato: chi viene taggato riceve la segnalazione
 async function msgTag(id,t){
   const m=MSGS.find(x=>x.id===id);if(!m)return;
@@ -1358,8 +1367,10 @@ function accessHtml(){
       <button class="ag" onclick="saveAccess()">${isUp?'Carica':'Salva'}</button></div>
   </div></div>`;}
 async function saveEdit(id){const el=$('edit_'+id);if(!el)return;const v=el.value.trim();if(!v){S.editing=null;render();return;}
-  const m=MSGS.find(x=>x.id===id);if(m){m.tx=v;m.edited=true;}S.editing=null;render();
-  await db.from('messages').update({body:v,edited_at:new Date().toISOString()}).eq('id',id);}
+  const tags=[...(S.editTags||[])];
+  const m=MSGS.find(x=>x.id===id);if(m){m.tx=v;m.edited=true;m.tags=tags;}S.editing=null;render();
+  await save(db.from('messages').update({body:v,edited_at:new Date().toISOString(),tags}).eq('id',id),'salvare la modifica');
+  await loadMessages();render();}
 function exportCsv(){
   const rn=(ROOMS.find(r=>r.id===S.room)||{}).name||S.room;
   const rows=[['Data e ora','Autore','Destinatari','Per il giorno','Messaggio']];
