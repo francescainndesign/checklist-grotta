@@ -408,6 +408,11 @@
   .s-bar{height:4px;background:#dfe3e8;border-radius:99px;overflow:hidden}
   .s-bar i{display:block;height:100%;border-radius:99px}
   .sec-lbl{font-size:12.5px;font-weight:600;color:var(--tx-2);padding:18px 16px 4px}
+  .tstat{text-align:left}
+  .tstat .s-nm{display:flex;align-items:center;gap:5px;font-weight:600;color:var(--tx);font-size:12.5px}
+  .tstat .s-sub{font-size:11px;color:var(--tx-2);margin:3px 0 6px;line-height:1.3;min-height:14px}
+  .tstat .s-non{color:#b5730f}
+  .tstat .s-v{margin:2px 0 7px}
   .drow{display:flex;align-items:center;gap:11px;padding:12px 16px;border-bottom:0.5px solid var(--line-2)}
   .drow.late{background:var(--warn-bg)}
   .drow .mini{width:28px;height:28px;border-radius:50%;font-size:10.5px;font-weight:600;flex:0 0 auto;display:flex;align-items:center;justify-content:center}
@@ -709,7 +714,7 @@ let db=null,AREAS={},USERS=[],MSGS=[],CHECKS=[],ROOMS=[],RMEM=[],FILES=[],FOLDER
 let BLK={},TRN={},ASG={},SPU={};
 let S={screen:'load',selUser:null,loginQ:'',pin:'',user:null,tab:'check',area:null,phase:null,err:'',
   room:'comune',bacView:'feed',bacFilter:'all',calMode:'month',calAnchor:null,calSel:null,
-  turnoView:null,turnoManage:false,asgWeek:null,asgDraft:{},_turniErr:null,
+  turnoView:null,turnoManage:false,asgWeek:null,asgDraft:{},ctrlTurno:null,ctrlSpu:null,_turniErr:null,
   composeTags:[],editTags:[],tagOpen:false,tagHint:false,chatSearch:'',chatMenu:false,chatSearchOpen:false,replyTo:null,msgMenu:null,_paneY:null,_chatStick:true,_chatToBottom:true,_newMsgs:0,_newMention:false,editing:null,ctrlDate:null,archChecks:null,fq:'',fext:'all',uploading:false,adminTab:'utenti',
   pendingFile:null,pendFolder:null,pendVis:'room',pickMode:'library',sending:false,folder:null,
   accessFor:null,accVis:'all',accU:[],accR:[],accRm:[],pendUploadFiles:null,
@@ -1783,34 +1788,48 @@ function tstate(t,ch){const cs=ch.filter(c=>c.task_id===t.id);
 function progFrom(aid,ch){let d=0,tot=0;Object.keys(AREAS[aid].phases).forEach(ph=>(AREAS[aid].phases[ph]||[]).forEach(t=>{
   const st=tstate(t,ch);if(t.shift==='split'){tot+=2;if(st.pBy)d++;if(st.cBy)d++;}else{tot++;if(st.by)d++;}}));return{d,tot};}
 function controlloView(){
-  const u=S.user,isToday=S.ctrlDate===serviceDate(),ch=isToday?CHECKS:(S.archChecks||[]);
+  const u=S.user,sd=serviceDate(),isToday=S.ctrlDate===sd;
+  const spu=isToday?SPU:(S.ctrlSpu||{});
   const chips=[0,1,2,3,4,5,6].map(n=>{const d=serviceDate(n);
     const l=n===0?'Oggi':n===1?'Ieri':new Date(Date.now()-cutoff()*3600000-n*86400000).toLocaleDateString('it-IT',{weekday:'short',day:'numeric',month:'short'});
     return `<button class="dc ${S.ctrlDate===d?'on':''}" onclick="selDate('${d}')">${l}</button>`;}).join('');
-  const cards=u.areas.map(a=>{const{d,tot}=progFrom(a,ch),p=tot?d/tot:0;
-    return `<div class="stat ${S.area===a?'on':''}" onclick="openArea('${a}')"><div class="s-nm">${AREAS[a].nm}</div>
-      <div class="s-v">${tot?d+'/'+tot:'—'}</div><div class="s-bar"><i style="width:${Math.round(p*100)}%;background:${pctColor(p)}"></i></div></div>`;}).join('');
-  const det=ph=>(AREAS[S.area].phases[ph]||[]).map(t=>{const st=tstate(t,ch);
-    return st.split?detailRow(t.t+' · pranzo',st.pBy,st.pTm)+detailRow(t.t+' · cena',st.cBy,st.cTm)
-      :detailRow(t.t,st.by,st.tm,t.late,t.dl);}).join('');
-  const blocks=areaPhases(S.area).map(ph=>
-    `<div class="sec-lbl">${AREAS[S.area].nm} · ${esc(phaseName(ph))}</div>${det(ph)}`).join('')
-    ||'<div class="dayp-empty">Nessuna voce in quest\'area.</div>';
+  if(!turnoList().length)return hdr(`<i class="ti ti-eye"></i>Controllo · ${esc(roleName(u.role))}`,'Stato del servizio','')
+    +`<div class="pane"><div class="datechips">${chips}</div><div class="empty"><i class="ti ti-database-off"></i><b>Dati turni assenti</b>Lancia supabase-turni.sql su Supabase, poi ricarica.</div></div>`;
+  const dw=dowOf(S.ctrlDate);
+  const assignees=code=>USERS.filter(pp=>ASG[S.ctrlDate+'|'+pp.id]===code).map(pp=>pp.nm);
+  const hasSpu=code=>Object.keys(spu).some(k=>k.lastIndexOf(code+'|',0)===0);
+  const list=turnoList().filter(t=>(!t.giorni.length||t.giorni.includes(dw))||assignees(t.codice).length||hasSpu(t.codice));
+  if(S.ctrlTurno&&!list.some(t=>t.codice===S.ctrlTurno))S.ctrlTurno=null;
+  const progOf=code=>{const ls=turnoLines(code).filter(x=>x.type==='line');let d=0;ls.forEach(x=>{if(spu[code+'|'+x.id])d++;});return{d,tot:ls.length};};
+  const byrep={};list.forEach(t=>{(byrep[t.ruolo||'Altro']=byrep[t.ruolo||'Altro']||[]).push(t);});
+  const cards=Object.keys(byrep).map(rep=>{
+    const cc=byrep[rep].map(t=>{const {d,tot}=progOf(t.codice),pp=tot?d/tot:0,col=turnoCol(t.codice),who=assignees(t.codice);
+      return `<div class="stat tstat ${S.ctrlTurno===t.codice?'on':''}" onclick="openCtrlTurno('${t.codice}')">
+        <div class="s-nm"><span class="tdot" style="background:${col||'transparent'}"></span>${esc(t.codice)}${t.giorni_label?' · '+esc(t.giorni_label):''}</div>
+        <div class="s-sub">${who.length?esc(who.join(', ')):'<span class="s-non">non assegnato</span>'}</div>
+        <div class="s-v">${tot?d+'/'+tot:'—'}</div>
+        <div class="s-bar"><i style="width:${Math.round(pp*100)}%;background:${pctColor(pp)}"></i></div></div>`;}).join('');
+    return `<div class="sec-lbl">${esc(rep)}</div><div class="stat-grid">${cc}</div>`;}).join('')
+    ||'<div class="ctrl-head">Nessun turno previsto per questo giorno.</div>';
+  let det='';
+  if(S.ctrlTurno){const code=S.ctrlTurno,who=assignees(code);
+    const rows=turnoLines(code).map(x=>{
+      if(x.type==='block')return `<div class="sec-lbl">${esc(x.name)}</div>`;
+      if(x.type==='nota')return `<div class="trow-nota"><i class="ti ti-info-circle"></i><span>${esc(x.testo)}</span></div>`;
+      const sp=spu[code+'|'+x.id];return detailRow(x.testo,sp?sp.user_name:null,sp?fmt(sp.checked_at):null);}).join('');
+    det=`<div class="max"><div class="ctrl-head"><b>Turno ${esc(code)}</b> · assegnato a: ${who.length?esc(who.join(', ')):'nessuno'}</div>${rows}</div>`;
+  }
   return hdr(`<i class="ti ti-eye"></i>Controllo · ${esc(roleName(u.role))}`,isToday?'Stato del servizio':'Archivio',
       isToday?('aggiornato '+fmt(new Date())+' · dal vivo'):('giornata del '+parseYmd(S.ctrlDate).toLocaleDateString('it-IT',{weekday:'long',day:'numeric',month:'long'})))
     +`<div class="pane"><div class="datechips">${chips}</div>
-      <div class="ctrl-head">Aree visibili al tuo ruolo — tocca una scheda</div>
-      <div class="stat-grid">${cards}</div>
-      <div class="max">${blocks}</div><div style="height:20px"></div></div>`;
+      <div class="ctrl-head">Turni del giorno — tocca una scheda per il dettaglio</div>
+      ${cards}${det}<div style="height:20px"></div></div>`;
 }
-function detailRow(txt,by,tm,late,dl){const s=by?iniFor(by):null,lc=(late&&!by)?'late':'';
-  return `<div class="drow ${lc}">${by?`<span class="mini" style="${fill(s.c)}">${s.ini}</span>`:'<span class="mini none"></span>'}
-    <div class="d-tx">${esc(txt)}${(late&&!by)?`<small>in ritardo${dl?' · '+esc(dl):''}</small>`:''}</div>
-    <div><div class="d-nm">${by?esc(by):'—'}</div><div class="d-tm">${tm||'—'}</div></div>
-    <i class="ti ti-${by?'circle-check':(late?'alert-triangle':'circle')}" style="color:${by?'#1d8a63':(late?'#b5730f':'#c7ccd4')};font-size:19px"></i></div>`;}
-async function selDate(d){S.ctrlDate=d;
-  if(d===serviceDate()){S.archChecks=null;render();}
-  else{S.archChecks=[];render();const {data}=await db.from('checks').select('*').eq('service_date',d);S.archChecks=data||[];render();}}
+function openCtrlTurno(c){S.ctrlTurno=S.ctrlTurno===c?null:c;render();}
+async function selDate(d){S.ctrlDate=d;S.ctrlTurno=null;
+  if(d===serviceDate()){S.ctrlSpu=null;render();}
+  else{S.ctrlSpu={};render();const {data}=await db.from('spunte').select('*').eq('service_date',d);
+    const m={};(data||[]).forEach(r=>m[r.turno_codice+'|'+r.line_id]={user_name:r.user_name,checked_at:r.checked_at});S.ctrlSpu=m;render();}}
 function openArea(a){S.area=a;render();}
 
 /* ---------- AMMINISTRAZIONE (solo direzione) ---------- */
