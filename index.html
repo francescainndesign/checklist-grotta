@@ -400,6 +400,8 @@
     padding:1px 6px;font-size:10px;font-weight:600;margin-left:3px}
   .rat i{font-size:11px}
   .room.on .rat{background:#fff;color:var(--ink)}
+  .room .rdot{display:inline-block;width:8px;height:8px;border-radius:50%;background:#1f9d57;margin-left:5px;vertical-align:middle;flex-shrink:0}
+  .room.on .rdot{background:#fff}
   .tg.addt{border:1px dashed var(--border-strong,#c7ccd4);background:transparent;color:var(--tx-3);cursor:pointer;
     display:inline-flex;align-items:center;gap:3px;font-size:11px;padding:3px 9px;border-radius:99px}
   .tg.addt:hover{border-color:var(--acc);color:var(--acc)}
@@ -1053,10 +1055,11 @@ function chatFeedHtml(){
 function bachecaView(){
   const rs=myRooms();
   if(!rs.some(r=>r.id===S.room))S.room=(rs[0]||{id:'comune'}).id;
-  const roomBtns=rs.map(r=>{const un=unreadIn(r.id).length;
+  const roomBtns=rs.map(r=>{const un=unreadIn(r.id).length,anyUn=unreadAllIn(r.id).length;
+    const badge=un?`<span class="rat"><i class="ti ti-at"></i>${un>1?un:''}</span>`:(anyUn?'<span class="rdot"></span>':'');
     return `<button class="room ${S.room===r.id?'on':''}" onclick="setRoom('${r.id}')">
       <i class="ti ti-${r.private?'lock':'users'}"></i>${esc(r.name)}
-      ${un?`<span class="rat"><i class="ti ti-at"></i>${un>1?un:''}</span>`:''}</button>`;}).join('');
+      ${badge}</button>`;}).join('');
   const forMeTot=unreadIn(S.room).length;
   const rn=(ROOMS.find(r=>r.id===S.room)||{}).name||'';
   const srch=S.chatSearchOpen?`<div class="chsearch"><i class="ti ti-search"></i><input id="chSearch" placeholder="Cerca nei messaggi…" value="${esc(S.chatSearch||'')}" oninput="setChatSearch(this.value)"><button class="chsx" onclick="toggleChatSearch()" aria-label="Chiudi"><i class="ti ti-x"></i></button></div>`:'';
@@ -1120,6 +1123,14 @@ function msgActions(m,mine,canEdit,canDelete,canTag){
 function setReply(id){const m=MSGS.find(x=>x.id===id);if(!m)return;
   S.replyTo={id:m.id,nm:m.nm,tx:m.tx};S.msgMenu=null;render();
   setTimeout(()=>{const el=document.getElementById('bcInput');if(el)el.focus();},40);}
+function attCard(f){
+  if(!f)return '';
+  const [ic,col]=EXT_ICON[f.ext]||['ti-file','eef0f3|697180'];
+  return `<div class="att" onclick="openFile('${f.id}')">
+    <div class="ai" style="${fill(col)}"><i class="ti ${ic}"></i></div>
+    <div class="an"><div class="t">${esc(f.name)}</div><div class="s">${kb(f.size||0)}</div></div>
+    <i class="ti ti-eye ad"></i></div>`;
+}
 function bcMsgHtml(m,grouped){
   const mine=m.uid===S.user.id;
   if(m.deleted)return `<div class="mrow ${mine?'mine':'other'} ${grouped?'grp':''}" id="msg_${m.id}">
