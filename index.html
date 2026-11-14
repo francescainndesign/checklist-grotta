@@ -963,59 +963,29 @@ async function init(){
 
 /* ---------- login ---------- */
 function loginView(){
-  const wide=window.innerWidth>=840;
-  const q=(S.loginQ||'').toLowerCase().trim();
-  const cards=loginCards();
-  const u=USERS.find(x=>x.id===S.selUser);
   const dots=[0,1,2,3,4,5].map(i=>`<div class="dot ${i<S.pin.length?'f':''}"></div>`).join('');
   const keys=['1','2','3','4','5','6','7','8','9'].map(k=>`<button class="key" onclick="tap('${k}')">${k}</button>`).join('');
-  const listPane=`<div class="brand">${esc(venue())}</div><h1>Checklist</h1>
-    <p class="sub">Accedi con il tuo PIN personale</p>
-    <div class="who-search"><i class="ti ti-search"></i>
-      <input id="loginQ" placeholder="Cerca il tuo nome…" value="${esc(S.loginQ||'')}" oninput="setLoginQ(this.value)" autocomplete="off"></div>
-    <div class="who">${cards}</div>`;
-  const padPane=`${!wide?`<button class="pad-back" onclick="deselectUser()"><i class="ti ti-arrow-left"></i> Cambia profilo</button>`:''}
-    <div class="pin-lbl">${u?`PIN di <b>${esc(u.nm)}</b>`:'Seleziona prima un profilo'}</div>
+  return `<div class="login"><div class="login-in">
+    <div class="brand">${esc(venue())}</div><h1>Checklist</h1>
+    <p class="sub">Inserisci il tuo PIN</p>
     <div class="dots">${dots}</div>
     <div class="keys">${keys}
       <button class="key util" onclick="tap('c')">Canc</button><button class="key" onclick="tap('0')">0</button>
       <button class="key util" onclick="enter()">Entra</button></div>
-    <div class="err">${S.err||''}</div><div class="hint">${S.checking?'Verifico…':'PIN da 4 a 6 cifre'}</div>`;
-  if(wide){
-    return `<div class="login"><div class="login-wide">
-      <div class="login-list">${listPane}</div>
-      <div class="login-pad">${padPane}</div></div></div>`;
-  }
-  return `<div class="login"><div class="login-in">${S.selUser?padPane:listPane}</div></div>`;
+    <div class="err">${S.err||''}</div><div class="hint">${S.checking?'Verifico…':'PIN da 4 a 6 cifre'}</div>
+  </div></div>`;
 }
-function whoCardHtml(u){return `<button class="who-card ${S.selUser===u.id?'sel':''}" onclick="pick('${u.id}')">
-    <div class="av" style="${fill(u.c)}">${u.ini}</div>
-    <div class="who-t"><div class="nm">${esc(u.nm)}</div></div></button>`;}
-function loginCards(){
-  const q=(S.loginQ||'').toLowerCase().trim();
-  const list=USERS.filter(u=>!q||u.nm.toLowerCase().includes(q)||roleName(u.role).toLowerCase().includes(q));
-  if(!list.length)return '<div class="who-none">Nessun profilo con questo nome.</div>';
-  const order={};ROLES.forEach((r,i)=>order[r.id]=i);
-  const byRole={};list.forEach(u=>{(byRole[u.role]=byRole[u.role]||[]).push(u);});
-  const roleIds=Object.keys(byRole).sort((a,b)=>((order[a]??999)-(order[b]??999))||roleName(a).localeCompare(roleName(b),'it'));
-  return roleIds.map(rid=>{
-    const cards=byRole[rid].sort((a,b)=>a.nm.localeCompare(b.nm,'it')).map(whoCardHtml).join('');
-    return `<div class="who-group">${esc(roleName(rid))}</div><div class="who-grid">${cards}</div>`;
-  }).join('');
-}
-function setLoginQ(v){S.loginQ=v;const w=document.querySelector('.who');if(w)w.innerHTML=loginCards();}
-function deselectUser(){S.selUser=null;S.pin='';S.err='';render();}
-function pick(id){S.selUser=id;S.pin='';S.err='';render();}
-function tap(k){if(!S.selUser)return;if(k==='c')S.pin=S.pin.slice(0,-1);else if(S.pin.length<6)S.pin+=k;
+function tap(k){if(k==='c')S.pin=S.pin.slice(0,-1);else if(S.pin.length<6)S.pin+=k;
   if(S.pin.length===6)setTimeout(enter,110);render();}
-async function enter(){const u=USERS.find(x=>x.id===S.selUser);if(!u)return;
-  if(S.pin.length<4||S.checking)return;
+async function enter(){if(S.pin.length<4||S.checking)return;
   S.checking=true;S.err='';render();
-  const {data,error}=await db.rpc('verify_pin',{p_id:S.selUser,p_pin:S.pin});
+  const {data,error}=await db.rpc('login_pin',{p_pin:S.pin});
   S.checking=false;
   if(error){S.pin='';S.err=error.message||'Errore di verifica';render();return;}
   if(!data||!data.length){S.pin='';S.err='PIN errato';render();return;}
-  S.user=u;S.tab='bacheca';S.area=u.areas[0]||Object.keys(AREAS)[0];S.phase=defaultPhaseFor(S.area);
+  if(data.length>1){S.pin='';S.err='PIN usato da più persone, avvisa la direzione';render();return;}
+  const u=USERS.find(x=>x.id===data[0].id)||data[0];
+  S.user=u;S.tab='bacheca';S.area=(u.areas&&u.areas[0])||Object.keys(AREAS)[0];S.phase=defaultPhaseFor(S.area);
   const _tl=tabsFor(u);S.screen=(_tl.includes('bacheca')&&_tl.includes('check'))?'home':'app';
   S.pin='';S.selUser=null;S.err='';S.ctrlDate=serviceDate();S.archChecks=null;
   S.room=(myRooms()[0]||{id:'comune'}).id;S.bacView='feed';S._chatToBottom=true;S.calAnchor=serviceDate();S.calSel=serviceDate();
