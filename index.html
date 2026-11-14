@@ -187,7 +187,18 @@
   .empty b{display:block;color:var(--tx-2);font-weight:600;font-size:14px;margin-bottom:4px}
 
   /* ---------- STANZE ---------- */
-  .rooms{display:flex;gap:7px;padding:11px 14px 4px;flex-wrap:wrap}
+  .rooms{display:flex;gap:7px;padding:11px 14px 5px;flex-wrap:wrap}
+  .mbell{position:relative}
+  .mbell-b{position:absolute;top:-2px;right:-2px;min-width:15px;height:15px;padding:0 4px;border-radius:8px;background:#e07a3c;color:#fff;font-size:9.5px;font-weight:700;display:flex;align-items:center;justify-content:center}
+  .ment{display:flex;gap:11px;align-items:flex-start;padding:13px 16px;border-bottom:0.5px solid var(--line-2);cursor:pointer}
+  .ment:hover{background:rgba(20,26,39,.02)}
+  .ment.unread{background:var(--acc-bg)}
+  .ment-ic{width:36px;height:36px;flex:0 0 36px;border-radius:50%;background:var(--card);border:0.5px solid var(--line);color:#e07a3c;display:flex;align-items:center;justify-content:center;font-size:18px}
+  .ment-b{flex:1;min-width:0}
+  .ment-r{font-size:11px;color:var(--tx-3);font-weight:600;display:flex;align-items:center;gap:6px}
+  .ment-dot{width:7px;height:7px;border-radius:50%;background:#e07a3c;display:inline-block}
+  .ment-t{font-size:13.5px;color:var(--ink);margin-top:1px;overflow:hidden;text-overflow:ellipsis;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical}
+  .ment-tm{font-size:11px;color:var(--tx-3);flex:0 0 auto;margin-top:1px}
   .rooms::-webkit-scrollbar{height:0}
   .room{flex-shrink:0;font-size:13px;padding:7px 13px;border-radius:99px;border:0.5px solid var(--line);background:var(--card);color:var(--tx-2);cursor:pointer;white-space:nowrap;display:flex;align-items:center;gap:5px}
   .room.on{background:var(--ink);color:#fff;border-color:var(--ink)}
@@ -764,7 +775,7 @@ let db=null,AREAS={},USERS=[],MSGS=[],CHECKS=[],ROOMS=[],RMEM=[],FILES=[],FOLDER
 let BLK={},TRN={},ASG={},SPU={};
 let S={screen:'load',pin:'',user:null,tab:'check',area:null,phase:null,err:'',
   room:'comune',bacFilter:'all',
-  settore:null,edTurno:null,turnoView:null,turnoManage:false,turnoPick:false,turnoFilter:'',asgWeek:null,asgDraft:{},ctrlTurno:null,ctrlSpu:null,_turniErr:null,
+  settore:null,edTurno:null,mentOpen:false,turnoView:null,turnoManage:false,turnoPick:false,turnoFilter:'',asgWeek:null,asgDraft:{},ctrlTurno:null,ctrlSpu:null,_turniErr:null,
   composeTags:[],editTags:[],tagOpen:false,chatSearch:'',chatMenu:false,chatSearchOpen:false,replyTo:null,msgMenu:null,_paneY:null,_chatStick:true,_chatToBottom:true,_newMsgs:0,_newMention:false,editing:null,ctrlDate:null,fq:'',fext:'all',uploading:false,adminTab:'home',
   pendingFile:null,pendFolder:null,pendVis:'room',pickMode:'library',sending:false,folder:null,
   accessFor:null,accVis:'all',accU:[],accR:[],accRm:[],pendUploadFiles:null,
@@ -1274,6 +1285,8 @@ function chatFeedHtml(){
   return out;
 }
 function bachecaView(){
+  if(S.mentOpen)return mentionsView();
+  const nMent=unreadTotal();
   const rs=myRooms();
   if(!rs.some(r=>r.id===S.room))S.room=(rs[0]||{id:'comune'}).id;
   const roomBtns=rs.map(r=>{const un=unreadIn(r.id).length,anyUn=unreadAllIn(r.id).length;
@@ -1281,12 +1294,8 @@ function bachecaView(){
     return `<button class="room ${S.room===r.id?'on':''}" onclick="setRoom('${r.id}')">
       <i class="ti ti-${r.private?'lock':'users'}"></i>${esc(r.name)}
       ${badge}</button>`;}).join('');
-  const forMeTot=unreadIn(S.room).length;
   const rn=(ROOMS.find(r=>r.id===S.room)||{}).name||'';
   const srch=S.chatSearchOpen?`<div class="chsearch"><i class="ti ti-search"></i><input id="chSearch" placeholder="Cerca nei messaggi…" value="${esc(S.chatSearch||'')}" oninput="setChatSearch(this.value)"><button class="chsx" onclick="toggleChatSearch()" aria-label="Chiudi"><i class="ti ti-x"></i></button></div>`:'';
-  const filt=`<div class="subtabs" style="padding-top:4px">
-      <button class="st ${S.bacFilter==='all'?'on':''}" onclick="setFilter('all')">Tutti</button>
-      <button class="st ${S.bacFilter==='me'?'on':''}" onclick="setFilter('me')">Per me${forMeTot?`<span class="cnt neutral">${forMeTot}</span>`:''}</button></div>`;
   const chAct=can('bacheca_admin')?`<button class="icon-btn" onclick="S.chatMenu=!S.chatMenu;render()" aria-label="Opzioni"><i class="ti ti-dots-vertical"></i></button>`:'';
   const chMenu=(S.chatMenu&&can('bacheca_admin'))?`<div class="chmenu-bd" onclick="S.chatMenu=false;render()"></div><div class="chmenu">
       <button onclick="S.chatMenu=false;exportCsv()"><i class="ti ti-download"></i> Scarica CSV</button>
@@ -1330,8 +1339,8 @@ function bachecaView(){
   const nNew=S._newMsgs||0;
   const jump=(nNew||S._newMention)?`<div class="jumpbtn"><button onclick="jumpBottom()"><i class="ti ti-chevron-down"></i><span class="jb-badge ${S._newMention?'jb-at':''}">${S._newMention?'@':nNew}</span></button></div>`:'';
   return `<div class="chhd"><div class="chhd-t"><i class="ti ti-message-circle"></i> ${esc(rn)}</div>
-    <div class="chhd-a"><button class="icon-btn" onclick="toggleChatSearch()" aria-label="Cerca"><i class="ti ti-search"></i></button>${chAct}<button class="icon-btn" onclick="logout()" aria-label="Esci"><i class="ti ti-logout"></i></button></div>${chMenu}</div>`
-    +`<div class="rooms">${roomBtns}</div>${srch}${filt}<div class="panewrap"><div class="pane" onscroll="onPaneScroll(this)"><div class="max" id="chatfeed">${chatFeedHtml()}</div></div>${jump}</div>${composeH}`;
+    <div class="chhd-a"><button class="icon-btn" onclick="toggleChatSearch()" aria-label="Cerca"><i class="ti ti-search"></i></button><button class="icon-btn mbell" onclick="S.mentOpen=true;render()" aria-label="Menzioni"><i class="ti ti-bell"></i>${nMent?`<span class="mbell-b">${nMent>9?'9+':nMent}</span>`:''}</button>${chAct}<button class="icon-btn" onclick="logout()" aria-label="Esci"><i class="ti ti-logout"></i></button></div>${chMenu}</div>`
+    +`<div class="rooms">${roomBtns}</div>${srch}<div class="panewrap"><div class="pane" onscroll="onPaneScroll(this)"><div class="max" id="chatfeed">${chatFeedHtml()}</div></div>${jump}</div>${composeH}`;
 }
 function msgActions(m,mine,canEdit,canDelete,canTag){
   if(S.msgMenu!==m.id)return '';
@@ -1456,7 +1465,28 @@ async function markRead(room){
 }
 function setRoom(r){S.room=r;S.chatMenu=false;S.editing=null;S.pendingFile=null;S.pendFolder=null;S.pendVis='room';
   S.justRead=[];render();markRead(r);}
-function setFilter(f){S.bacFilter=f;render();}
+const snippet=t=>{t=(t||'').replace(/\s+/g,' ').trim();return t.length>72?t.slice(0,72)+'…':t;};
+function fmtShort(ts){const d=new Date(ts),now=new Date();const y=new Date(now);y.setDate(y.getDate()-1);
+  if(d.toDateString()===now.toDateString())return d.toLocaleTimeString('it-IT',{hour:'2-digit',minute:'2-digit'});
+  if(d.toDateString()===y.toDateString())return 'ieri';
+  return d.toLocaleDateString('it-IT',{day:'numeric',month:'short'});}
+function mentionsView(){
+  const mine=myRooms();
+  const list=MSGS.filter(m=>!m.deleted&&mine.some(r=>r.id===(m.room||'comune'))&&isMention(m)).sort((a,b)=>new Date(b.ts)-new Date(a.ts));
+  const rows=list.length?list.map(m=>{const un=!isRead(m.id);
+    return `<div class="ment ${un?'unread':''}" onclick="openMention('${m.id}')">
+      <div class="ment-ic"><i class="ti ti-at"></i></div>
+      <div class="ment-b"><div class="ment-r">${esc(gName(m.room||'comune'))}${un?'<span class="ment-dot"></span>':''}</div>
+        <div class="ment-t"><b>${esc(m.nm)}</b> ${esc(snippet(m.tx))}</div></div>
+      <div class="ment-tm">${fmtShort(m.ts)}</div></div>`;}).join('')
+    :`<div class="empty"><i class="ti ti-at"></i><b>Nessuna menzione</b>Qui compaiono i messaggi che ti taggano.</div>`;
+  return hdr(`<i class="ti ti-at"></i>Menzioni`,'Messaggi che ti riguardano','',
+      `<button class="icon-btn" onclick="S.mentOpen=false;render()" aria-label="Chiudi"><i class="ti ti-x"></i></button>`)
+    +`<div class="pane"><div class="max">${rows}</div></div>`;
+}
+function openMention(id){const m=MSGS.find(x=>x.id===id);if(!m)return;
+  S.mentOpen=false;S.room=m.room||'comune';S._chatToBottom=true;render();
+  const un=unreadAllIn(S.room);if(un.length){S.justRead=Array.from(new Set([...S.justRead,...un.map(x=>x.id)]));markRead(S.room);}}
 function ctag(t,elc){
   const el=$('bcInput');if(el)S.draft[S.room]=el.value;
   const i=S.composeTags.indexOf(t);
