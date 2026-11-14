@@ -1115,6 +1115,7 @@ const turnoList=()=>Object.values(TRN).sort((a,b)=>(a.sort||0)-(b.sort||0));
 const turnoFor=ymd=>ASG[ymd+'|'+S.user.id]||null;
 const turnoCol=code=>{const c=(TRN[code]||{}).colore;return c?'#'+c:'';};
 const turnoDisp=code=>{const t=TRN[code];return t?(t.disp||code):code;};
+const turnoLabel=code=>{const t=TRN[code];if(!t)return code;const d=t.disp||code;const dup=turnoList().filter(x=>(x.disp||x.codice)===d).length>1;return dup&&t.ruolo?d+' · '+t.ruolo:d;};
 const canBothSettori=()=>can('controllo')||can('bacheca_admin');
 function settoreSwitch(){if(!canBothSettori())return '';const a=S.settore||'sala';
   return `<div class="setsw"><button class="${a==='sala'?'on':''}" onclick="setSettore('sala')">Sala</button><button class="${a==='cucina'?'on':''}" onclick="setSettore('cucina')">Cucina</button></div>`;}
@@ -1149,7 +1150,7 @@ function checkView(){
   const {d,tot}=turnoProg(code),pct=tot?d/tot:0;
   const tc=turnoCol(code);
   const sw=tc?`<span class="tdot" style="background:${tc}"></span>`:'';
-  const pickBtn=`<button class="tpick-btn" onclick="S.turnoPick=!S.turnoPick;render()">${sw}<span class="tpick-code">${esc(turnoDisp(code))}</span><span class="tpick-sub">${esc(t.giorni_label||'')}${t.orario?' · '+esc(t.orario):''}</span><i class="ti ti-chevron-down"></i></button>`;
+  const pickBtn=`<button class="tpick-btn" onclick="S.turnoPick=!S.turnoPick;render()">${sw}<span class="tpick-code">${esc(turnoDisp(code))}</span><span class="tpick-sub">${t.ruolo?esc(t.ruolo)+' · ':''}${esc(t.giorni_label||'')}${t.orario?' · '+esc(t.orario):''}</span><i class="ti ti-chevron-down"></i></button>`;
   const sel=`<div class="tsel"><label>Turno</label>${pickBtn}</div>`;
   let panel='';
   if(S.turnoPick){
@@ -1158,7 +1159,7 @@ function checkView(){
        reparti.map(r=>`<button class="tf ${S.turnoFilter===r?'on':''}" onclick="setTurnoFilter('${esc(r)}')">${esc(r)}</button>`).join('');
     const items=turnoList().filter(x=>!S.turnoFilter||(x.ruolo||'Altro')===S.turnoFilter)
       .map(x=>{const st=x.colore?`background:#${x.colore};color:${textOn(x.colore)}`:'';
-        return `<button class="titem ${x.codice===code?'cur':''}" style="${st}" onclick="setTurnoView('${x.codice}')"><span class="ti-code">${esc(x.disp||x.codice)}</span><span class="ti-sub">${esc(x.giorni_label||'')}${x.orario?' · '+esc(x.orario):''}</span></button>`;}).join('')
+        return `<button class="titem ${x.codice===code?'cur':''}" style="${st}" onclick="setTurnoView('${x.codice}')"><span class="ti-code">${esc(x.disp||x.codice)}</span><span class="ti-sub">${x.ruolo?esc(x.ruolo)+' · ':''}${esc(x.giorni_label||'')}${x.orario?' · '+esc(x.orario):''}</span></button>`;}).join('')
       ||'<div class="tpick-none">Nessun turno in questo settore.</div>';
     panel=`<div class="tpick-panel"><div class="tpick-filters">${chips}</div><div class="tpick-list">${items}</div></div>`;
   }
@@ -1205,7 +1206,7 @@ function assignView(){
   const body=staff.map(p=>{
     const cells=days.map(ds=>{
       const cur=asgVal(ds,p.id),av=turnoAvailOn(ds);
-      const opts=`<option value="">—</option>`+av.map(t=>`<option value="${t.codice}" ${t.codice===cur?'selected':''} ${t.colore?`style="background:#${t.colore};color:${textOn(t.colore)}"`:''}>${esc(turnoDisp(t.codice))}</option>`).join('')
+      const opts=`<option value="">—</option>`+av.map(t=>`<option value="${t.codice}" ${t.codice===cur?'selected':''} ${t.colore?`style="background:#${t.colore};color:${textOn(t.colore)}"`:''}>${esc(turnoLabel(t.codice))}</option>`).join('')
         +(cur&&!av.some(t=>t.codice===cur)?`<option value="${cur}" selected>${esc(cur)}</option>`:'');
       const col=cur?turnoCol(cur):'';
       const stl=col?` style="border-left:4px solid ${col};background:${col}22;font-weight:700"`:'';
@@ -2505,6 +2506,12 @@ window.addEventListener('resize',()=>{
   if(wide===lastWide)return;          // la tastiera cambia l'altezza, non la larghezza: non ridisegnare
   lastWide=wide;
   clearTimeout(rt);rt=setTimeout(render,150);
+});
+document.addEventListener('keydown',e=>{
+  if(S.screen!=='login'||S.checking)return;
+  if(e.key>='0'&&e.key<='9'){e.preventDefault();tap(e.key);}
+  else if(e.key==='Backspace'){e.preventDefault();tap('c');}
+  else if(e.key==='Enter'){e.preventDefault();enter();}
 });
 init();
 </script>
