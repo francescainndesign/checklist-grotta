@@ -2341,6 +2341,7 @@ function foldersPane(){
     return `<div class="u-card"><div class="u-top">
       <div class="av" style="${fill('eaf1ff|1e4fb0')}"><i class="ti ti-folder"></i></div>
       <div><div class="u-nm">${esc(f.name)}</div><div class="u-rl">${n} document${n===1?'o':'i'}</div></div>
+      <button class="u-key" onclick="renameFolder('${f.id}')" aria-label="Rinomina"><i class="ti ti-pencil"></i></button>
       <button class="u-del" onclick="delFolder('${f.id}')" aria-label="Elimina"><i class="ti ti-trash"></i></button></div>
       <div class="u-lbl">Visibile a</div><div class="chips">${[['condivisa','Tutti'],['sala','Solo Sala'],['cucina','Solo Cucina']].map(([k,l])=>`<span class="chip ${((f.settore||'condivisa')===k)?'on':''}" onclick="setFolderSettore('${f.id}','${k}')">${l}</span>`).join('')}</div></div>`;}).join('')
     ||'<div class="empty"><i class="ti ti-folder-off"></i><b>Nessuna cartella</b>Creane una qui sopra.</div>';
@@ -2354,6 +2355,9 @@ async function createFolder(){const el=$('nfNm'),nm=el.value.trim();if(!nm)retur
   el.value='';await loadFolders();render();}
 async function setFolderSettore(id,sett){const f=FOLDERS.find(x=>x.id===id);if(f)f.settore=sett;renderKeepScroll();
   await save(db.from('folders').update({settore:sett}).eq('id',id),'aggiornare la cartella');}
+async function renameFolder(id){const f=FOLDERS.find(x=>x.id===id);const v=prompt('Nome della cartella',f?f.name:'');if(v===null)return;const nm=v.trim();if(!nm)return;
+  if(f)f.name=nm;renderKeepScroll();
+  await save(db.from('folders').update({name:nm}).eq('id',id),'rinominare la cartella');}
 async function delFolder(id){
   const collect=pid=>{let out=[];FOLDERS.filter(f=>f.parent_id===pid).forEach(f=>{out.push(f.id);out=out.concat(collect(f.id));});return out;};
   const subIds=collect(id),all=[id,...subIds];
@@ -2366,7 +2370,6 @@ async function delFolder(id){
 function usersPane(){
   const cards=USERS.map(u=>{
     const rp=rolePowers(u.role);
-    const ac=Object.keys(AREAS).map(a=>`<span class="chip ${u.areas.includes(a)?'on':''}" onclick="toggleArea('${u.id}','${a}')">${AREAS[a].nm}</span>`).join('');
     const pc=POWERS.map(([p,l])=>{const fr=rp.includes(p),on=fr||(u.powers||[]).includes(p);
       return `<span class="chip pow ${on?'on':''} ${fr?'locked':''}" ${fr?'':`onclick="togglePower('${u.id}','${p}')"`}>${l}${fr?' · ruolo':''}</span>`;}).join('');
     const rc=ROOMS.filter(r=>r.private).map(r=>{const on=RMEM.some(x=>x.room_id===r.id&&x.user_id===u.id);
@@ -2381,7 +2384,6 @@ function usersPane(){
         <button class="prs" onclick="doResetPin('${u.id}')">Salva</button>
         <button class="prx" onclick="closeResetPin()">Annulla</button></div>`:''}
       <div class="u-lbl">Settore</div><div class="chips">${[['sala','Sala'],['cucina','Cucina']].map(([k,l])=>`<span class="chip ${((u.settore||'sala')===k)?'on':''}" onclick="setUserSettore('${u.id}','${k}')">${l}</span>`).join('')}</div>
-      <div class="u-lbl">Checklist visibili</div><div class="chips">${ac}</div>
       <div class="u-lbl">Poteri</div><div class="chips">${pc}</div>
       <div class="u-lbl">Stanze private</div><div class="chips">${rc}</div></div>`;}).join('');
   return `${S.pinMsg?`<div class="okbanner"><i class="ti ti-check"></i> ${esc(S.pinMsg)}</div>`:''}
@@ -2401,6 +2403,7 @@ function roomsPane(){
     return `<div class="u-card"><div class="u-top">
       <div class="av" style="${fill(r.private?'f2ecfb|6a4bb0':'e7f4ee|0f6e56')}"><i class="ti ti-${r.private?'lock':'users'}"></i></div>
       <div><div class="u-nm">${esc(r.name)}</div><div class="u-rl">${r.private?mem.length+' membri':'aperta a tutti'}</div></div>
+      <button class="u-key" onclick="renameRoom('${r.id}')" aria-label="Rinomina"><i class="ti ti-pencil"></i></button>
       ${r.id!=='comune'?`<button class="u-del" onclick="delRoom('${r.id}')" aria-label="Elimina"><i class="ti ti-trash"></i></button>`:''}</div>
       <div class="u-lbl">Chi può entrare</div><div class="chips">${chips}</div></div>`;}).join('');
   return `<div class="rm-add"><input id="nrNm" placeholder="Nome della nuova stanza privata">
@@ -2435,9 +2438,6 @@ async function delUser(id){
   await db.from('app_users').delete().eq('id',id);await loadAll();render();}
 async function setUserSettore(uid,sett){const u=USERS.find(x=>x.id===uid);if(u)u.settore=sett;renderKeepScroll();
   await save(db.from('app_users').update({settore:sett}).eq('id',uid),'aggiornare il settore');}
-async function toggleArea(uid,a){const u=USERS.find(x=>x.id===uid),has=u.areas.includes(a);
-  if(has){u.areas=u.areas.filter(x=>x!==a);renderKeepScroll();await db.from('user_areas').delete().eq('user_id',uid).eq('area_id',a);}
-  else{u.areas=[...u.areas,a];renderKeepScroll();await db.from('user_areas').insert({user_id:uid,area_id:a});}}
 async function togglePower(uid,p){const u=USERS.find(x=>x.id===uid),has=(u.powers||[]).includes(p);
   if(has&&p==='utenti'&&adminsWith('utenti')<=1){
     alert('Non posso togliere questo potere: resterebbe nessuno in grado di gestire l\'app.');return;}
@@ -2448,6 +2448,9 @@ async function createRoom(){const nm=$('nrNm').value.trim();if(!nm)return;
   if(!await save(db.from('rooms').insert({id,name:nm,private:true}),'creare la stanza'))return;
   await save(db.from('room_members').insert({room_id:id,user_id:S.user.id}),'aggiungerti alla stanza');
   $('nrNm').value='';await loadAll();render();}
+async function renameRoom(id){const r=ROOMS.find(x=>x.id===id);const v=prompt('Nome della chat',r?r.name:'');if(v===null)return;const nm=v.trim();if(!nm)return;
+  if(r)r.name=nm;renderKeepScroll();
+  await save(db.from('rooms').update({name:nm}).eq('id',id),'rinominare la chat');}
 async function delRoom(id){if(!confirm('Eliminare la stanza? Spariscono anche i suoi avvisi e documenti.'))return;
   await db.from('rooms').delete().eq('id',id);if(S.room===id)S.room='comune';await loadAll();render();}
 async function toggleMember(rid,uid){const has=RMEM.some(x=>x.room_id===rid&&x.user_id===uid);
@@ -2461,8 +2464,8 @@ function profiloView(){const u=S.user;
   return hdr(`<i class="ti ti-user"></i>Profilo`,esc(u.nm),esc(roleName(u.role)))
     +`<div class="pane"><div style="padding:20px 16px;max-width:520px">
       <div style="background:var(--card);border-radius:12px;padding:16px;border:0.5px solid var(--line)">
-        <div style="font-size:12px;color:var(--tx-2);margin-bottom:8px">Checklist assegnate</div>
-        <div class="chips">${u.areas.map(a=>`<span class="chip on" style="pointer-events:none">${AREAS[a].nm}</span>`).join('')}</div>
+        <div style="font-size:12px;color:var(--tx-2);margin-bottom:8px">Settore</div>
+        <div class="chips"><span class="chip on" style="pointer-events:none">${(u.settore||'sala')==='cucina'?'Cucina':'Sala'}</span></div>
         <div style="font-size:12px;color:var(--tx-2);margin:14px 0 8px">Stanze</div>
         <div class="chips">${myRooms().map(r=>`<span class="chip room on" style="pointer-events:none">${esc(r.name)}</span>`).join('')}</div>
       </div>
