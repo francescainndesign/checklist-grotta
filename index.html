@@ -973,7 +973,14 @@ async function diagnose(){
   alert('Queste tabelle non rispondono:\n\n'+lines+'\n\nRilancia gli script SQL corrispondenti su Supabase (SQL Editor → Run).');
 }
 
+function liveRender(){
+  if(S.tab==='utenti')return;
+  const ae=document.activeElement;
+  if(ae&&/^(INPUT|SELECT|TEXTAREA)$/.test(ae.tagName)&&ae.type!=='button')return;
+  render();
+}
 async function liveRefresh(force){
+  if(S.tab==='utenti')return;
   if(!db||!S.user||S.screen!=='app')return;
   const ae=document.activeElement;
   const typing=ae&&(ae.id==='bcInput'||ae.tagName==='TEXTAREA'||(ae.tagName==='INPUT'&&ae.type!=='button'));
@@ -983,7 +990,7 @@ async function liveRefresh(force){
     if(typing)return;                    // dati aggiornati, ma non ridisegno sotto la tastiera
     if(S.tab==='bacheca'&&S._chatStick!==false){const un=unreadAllIn(S.room);
       if(un.length){S.justRead=Array.from(new Set([...S.justRead,...un.map(m=>m.id)]));await markRead(S.room);}}
-    renderKeepScroll();
+    if(S.tab!=='utenti')renderKeepScroll();
   }catch(e){}
 }
 let _liveTimer=null;
@@ -999,7 +1006,7 @@ async function init(){
     db=window.supabase.createClient(SUPABASE_URL,SUPABASE_ANON_KEY);
     await loadAll();
     db.channel('rt')
-      .on('postgres_changes',{event:'*',schema:'public',table:'checks'},async()=>{await loadChecks();applyChecks();render();})
+      .on('postgres_changes',{event:'*',schema:'public',table:'checks'},async()=>{await loadChecks();applyChecks();liveRender();})
       .on('postgres_changes',{event:'*',schema:'public',table:'messages'},async()=>{
           const before=new Set(roomMsgs().map(m=>m.id));
           await loadMessages();
@@ -1013,12 +1020,12 @@ async function init(){
           if(S.user&&S.tab==='bacheca'&&S._chatStick!==false){const un=unreadAllIn(S.room);
             if(un.length){S.justRead=Array.from(new Set([...S.justRead,...un.map(m=>m.id)]));await markRead(S.room);}
             S._newMsgs=0;S._newMention=false;}
-          render();})
-      .on('postgres_changes',{event:'*',schema:'public',table:'files'},async()=>{await loadFiles();render();})
-      .on('postgres_changes',{event:'*',schema:'public',table:'service_days'},async()=>{await loadServiceDays();render();})
-      .on('postgres_changes',{event:'*',schema:'public',table:'settings'},async()=>{await loadSettings();render();})
-      .on('postgres_changes',{event:'*',schema:'public',table:'spunte'},async()=>{try{await loadSpunte();}catch(e){}if(S.tab==='check')renderKeepScroll();else render();})
-      .on('postgres_changes',{event:'*',schema:'public',table:'assegnazioni'},async()=>{try{await loadAssign();}catch(e){}render();})
+          liveRender();})
+      .on('postgres_changes',{event:'*',schema:'public',table:'files'},async()=>{await loadFiles();liveRender();})
+      .on('postgres_changes',{event:'*',schema:'public',table:'service_days'},async()=>{await loadServiceDays();liveRender();})
+      .on('postgres_changes',{event:'*',schema:'public',table:'settings'},async()=>{await loadSettings();liveRender();})
+      .on('postgres_changes',{event:'*',schema:'public',table:'spunte'},async()=>{try{await loadSpunte();}catch(e){}if(S.tab==='check')renderKeepScroll();else liveRender();})
+      .on('postgres_changes',{event:'*',schema:'public',table:'assegnazioni'},async()=>{try{await loadAssign();}catch(e){}liveRender();})
       .subscribe(st=>{if(st==='SUBSCRIBED'){$('live').classList.add('on');$('liveTxt').textContent='dal vivo';}
         else{$('live').classList.remove('on');$('liveTxt').textContent='riconnetto…';}});
     startLiveFallback();
