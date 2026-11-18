@@ -1,0 +1,221 @@
+<title>Guida del team</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<style>
+/* Layout: pagina scorrevole phone-first, hero + barra di navigazione rapida sticky, contenuti in schede su sfondo pagina */
+:root{
+  --page:#eef0f3; --card:#ffffff; --fg:#131a27; --fg-2:#5a6472; --line:#e3e7ec;
+  --blue:#2f6df0; --blue-soft:#eaf1ff; --green:#1d8a63; --green-soft:#e7f4ee;
+  --amber:#b5730f; --amber-soft:#faf0df;
+  --font-d:'Space Grotesk',system-ui,sans-serif; --font-b:'Inter',system-ui,sans-serif;
+  --maxw:760px;
+}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){
+  --page:#0f141d; --card:#161d29; --fg:#e8ecf2; --fg-2:#9aa4b2; --line:#273142;
+  --blue:#6c9bff; --blue-soft:#1b2740; --green:#4cc08f; --green-soft:#15271f;
+  --amber:#e0a455; --amber-soft:#2a2113; color-scheme:dark;
+}}
+:root[data-theme="dark"]{
+  --page:#0f141d; --card:#161d29; --fg:#e8ecf2; --fg-2:#9aa4b2; --line:#273142;
+  --blue:#6c9bff; --blue-soft:#1b2740; --green:#4cc08f; --green-soft:#15271f;
+  --amber:#e0a455; --amber-soft:#2a2113; color-scheme:dark;
+}
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Space+Grotesk:wght@500;600;700&display=swap');
+
+*{box-sizing:border-box}
+body{background:var(--page);color:var(--fg);font-family:var(--font-b);line-height:1.6;font-size:15px}
+body::before{content:"";position:fixed;inset:0 0 auto;height:env(safe-area-inset-top,0px);background:var(--card);z-index:30}
+.band-in{max-width:var(--maxw);margin-inline:auto;padding-left:max(18px,env(safe-area-inset-left,0px));padding-right:max(18px,env(safe-area-inset-right,0px))}
+
+/* hero */
+.hero{background:var(--card);border-bottom:0.5px solid var(--line)}
+.hero .band-in{padding-block:22px 18px}
+.eyebrow{font-family:var(--font-d);text-transform:uppercase;letter-spacing:.14em;font-size:11px;font-weight:600;color:var(--blue);display:flex;align-items:center;gap:7px}
+.eyebrow .logo{width:22px;height:22px;border-radius:6px;background:var(--fg);display:inline-flex;align-items:center;justify-content:center;flex:0 0 auto}
+.eyebrow .logo svg{width:14px;height:14px}
+h1{font-family:var(--font-d);font-weight:700;font-size:clamp(23px,6vw,30px);margin:12px 0 4px;letter-spacing:-.01em;text-wrap:balance}
+.lede{color:var(--fg-2);font-size:15px;margin:0;max-width:52ch}
+
+/* nav sticky */
+nav.jump{position:sticky;top:env(safe-area-inset-top,0px);z-index:20;background:var(--card);border-bottom:0.5px solid var(--line)}
+nav.jump .band-in{padding-block:0;display:flex;gap:7px;overflow-x:auto;scrollbar-width:none;-webkit-overflow-scrolling:touch}
+nav.jump .band-in::-webkit-scrollbar{display:none}
+nav.jump a{flex:0 0 auto;white-space:nowrap;text-decoration:none;color:var(--fg-2);font-size:13px;font-weight:500;padding:12px 4px;border-bottom:2px solid transparent}
+nav.jump a:hover{color:var(--fg)}
+html{scroll-behavior:smooth}
+
+/* content */
+main{padding-block:22px 48px}
+main .band-in{display:flex;flex-direction:column;gap:16px}
+.sec{background:var(--card);border:0.5px solid var(--line);border-radius:16px;padding:20px 18px;scroll-margin-top:calc(58px + env(safe-area-inset-top,0px))}
+.sec h2{font-family:var(--font-d);font-weight:600;font-size:18px;margin:0 0 10px;display:flex;align-items:center;gap:11px;letter-spacing:-.01em}
+.sec h2 .bid{width:34px;height:34px;border-radius:9px;background:var(--blue-soft);color:var(--blue);display:inline-flex;align-items:center;justify-content:center;flex:0 0 auto}
+.sec h2 .bid svg{width:19px;height:19px}
+.sec p{margin:0 0 11px}
+.sec p:last-child,.sec ol:last-child,.sec .callout:last-child{margin-bottom:0}
+.sec .sub{font-weight:600;font-size:13.5px;color:var(--fg);margin:14px 0 6px;display:flex;align-items:center;gap:7px}
+
+ol.steps{margin:0 0 11px;padding:0;list-style:none;counter-reset:s;display:flex;flex-direction:column;gap:9px}
+ol.steps li{counter-increment:s;position:relative;padding-left:34px;min-height:24px}
+ol.steps li::before{content:counter(s);position:absolute;left:0;top:-1px;width:24px;height:24px;border-radius:50%;background:var(--fg);color:var(--card);font-family:var(--font-d);font-weight:600;font-size:12.5px;display:flex;align-items:center;justify-content:center}
+ul.plain{margin:0 0 11px;padding-left:20px}
+ul.plain li{margin:5px 0}
+
+.ui{display:inline-block;background:var(--blue-soft);color:var(--blue);font-weight:600;font-size:.92em;padding:1px 7px;border-radius:7px;white-space:nowrap}
+.ico-inline{display:inline-flex;vertical-align:-3px;width:16px;height:16px;color:var(--fg-2)}
+
+.callout{border-radius:11px;padding:12px 14px 12px 14px;font-size:14px;display:flex;gap:10px;margin:0 0 11px;border:0.5px solid var(--line)}
+.callout .ci{width:18px;height:18px;flex:0 0 auto;margin-top:1px}
+.callout.tip{background:var(--green-soft);border-color:transparent}
+.callout.tip .ci{color:var(--green)}
+.callout.note{background:var(--amber-soft);border-color:transparent}
+.callout.note .ci{color:var(--amber)}
+.callout b{font-weight:600}
+
+footer{color:var(--fg-2);font-size:12.5px;text-align:center;padding-block:4px 10px}
+footer svg{width:13px;height:13px;vertical-align:-2px}
+svg{stroke:currentColor;stroke-width:1.8;fill:none;stroke-linecap:round;stroke-linejoin:round}
+</style>
+
+<svg width="0" height="0" style="position:absolute" aria-hidden="true">
+  <symbol id="i-info" viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><line x1="12" y1="11" x2="12" y2="16"/><line x1="12" y1="8" x2="12" y2="8"/></symbol>
+  <symbol id="i-key" viewBox="0 0 24 24"><circle cx="8" cy="12" r="4"/><line x1="11.8" y1="11.6" x2="20" y2="11.6"/><line x1="17" y1="11.6" x2="17" y2="14.5"/><line x1="20" y1="11.6" x2="20" y2="15.5"/></symbol>
+  <symbol id="i-home" viewBox="0 0 24 24"><path d="M4 11l8-6 8 6"/><path d="M6 10v9h12v-9"/></symbol>
+  <symbol id="i-check" viewBox="0 0 24 24"><path d="M10 6h10"/><path d="M10 12h10"/><path d="M10 18h10"/><path d="M4 6l1.3 1.3 2.2-2.6"/><path d="M4 12l1.3 1.3 2.2-2.6"/><path d="M4 18l1.3 1.3 2.2-2.6"/></symbol>
+  <symbol id="i-chat" viewBox="0 0 24 24"><path d="M5 5h14a1 1 0 0 1 1 1v9a1 1 0 0 1-1 1H9l-4 4V6a1 1 0 0 1 1-1z"/></symbol>
+  <symbol id="i-folder" viewBox="0 0 24 24"><path d="M4 7a1 1 0 0 1 1-1h3.5l2 2H19a1 1 0 0 1 1 1v8a1 1 0 0 1-1 1H5a1 1 0 0 1-1-1z"/></symbol>
+  <symbol id="i-user" viewBox="0 0 24 24"><circle cx="12" cy="8" r="3.4"/><path d="M5.5 19.5a6.5 6.5 0 0 1 13 0"/></symbol>
+  <symbol id="i-down" viewBox="0 0 24 24"><path d="M12 4v11"/><path d="M7.5 11l4.5 4.5 4.5-4.5"/><path d="M5 20h14"/></symbol>
+  <symbol id="i-help" viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M9.3 9.4a2.7 2.7 0 0 1 5.2 1c0 1.8-2.5 2-2.5 3.6"/><line x1="12" y1="17" x2="12" y2="17"/></symbol>
+  <symbol id="i-bell" viewBox="0 0 24 24"><path d="M6 16V11a6 6 0 0 1 12 0v5l1.5 2H4.5z"/><path d="M10 20a2 2 0 0 0 4 0"/></symbol>
+  <symbol id="i-at" viewBox="0 0 24 24"><circle cx="12" cy="12" r="3.3"/><path d="M15.3 12v1.3a2.4 2.4 0 0 0 4.7-1.3 8 8 0 1 0-3 6.2"/></symbol>
+  <symbol id="i-clip" viewBox="0 0 24 24"><path d="M19 11l-7.5 7.5a3.5 3.5 0 0 1-5-5L13 6a2.2 2.2 0 0 1 3.1 3.1l-7.2 7.2a1 1 0 0 1-1.4-1.4l6.6-6.6"/></symbol>
+  <symbol id="i-logo" viewBox="0 0 24 24"><line x1="5" y1="7.5" x2="13" y2="7.5" stroke-width="2.6"/><line x1="5" y1="12" x2="17" y2="12" stroke-width="2.6"/><line x1="5" y1="16.5" x2="11" y2="16.5" stroke-width="2.6"/><circle cx="17.5" cy="7.5" r="2" fill="#2f6df0" stroke="none"/></symbol>
+</svg>
+
+<header class="hero"><div class="band-in">
+  <div class="eyebrow"><span class="logo"><svg viewBox="0 0 24 24" style="color:#fff"><use href="#i-logo"/></svg></span> Grotta Marcello</div>
+  <h1>Guida all'app · Team</h1>
+  <p class="lede">Checklist del turno e comunicazioni del locale, in un posto solo. Qui trovi come si usa, passo per passo.</p>
+</div></header>
+
+<nav class="jump"><div class="band-in">
+  <a href="#breve">In breve</a>
+  <a href="#entrare">Entrare</a>
+  <a href="#home">Schermata iniziale</a>
+  <a href="#checklist">Checklist</a>
+  <a href="#chat">Chat</a>
+  <a href="#archivio">Archivio</a>
+  <a href="#profilo">Profilo</a>
+  <a href="#installa">Installare</a>
+  <a href="#aiuto">Aiuto</a>
+</div></nav>
+
+<main><div class="band-in">
+
+  <section class="sec" id="breve">
+    <h2><span class="bid"><svg viewBox="0 0 24 24"><use href="#i-info"/></svg></span>In breve</h2>
+    <p>L'app tiene insieme due cose: le <b>checklist del tuo turno</b> e le <b>comunicazioni del team</b> (chat e documenti). La apri dal telefono, spunti le attività man mano che le fai e resti aggiornato su avvisi e documenti del locale.</p>
+    <p>Entri solo con il tuo PIN, senza scegliere il nome da un elenco.</p>
+  </section>
+
+  <section class="sec" id="entrare">
+    <h2><span class="bid"><svg viewBox="0 0 24 24"><use href="#i-key"/></svg></span>Entrare con il PIN</h2>
+    <ol class="steps">
+      <li>Apri l'app.</li>
+      <li>Digita il tuo <b>PIN</b> (da 4 a 6 cifre) sul tastierino.</li>
+      <li>Con 6 cifre entri da solo. Con 4 o 5 cifre tocca <span class="ui">Entra</span>.</li>
+      <li>Da computer puoi digitare il PIN anche con la tastiera.</li>
+    </ol>
+    <div class="callout note"><svg class="ci" viewBox="0 0 24 24"><use href="#i-info"/></svg><div>Il PIN è personale. Se lo dimentichi, o se compare <b>«PIN usato da più persone»</b>, avvisa la direzione: te ne imposta uno nuovo.</div></div>
+  </section>
+
+  <section class="sec" id="home">
+    <h2><span class="bid"><svg viewBox="0 0 24 24"><use href="#i-home"/></svg></span>La schermata iniziale</h2>
+    <p>Appena entri vedi due riquadri:</p>
+    <ul class="plain">
+      <li><span class="ui">Comunicazioni</span> apre la chat e i documenti.</li>
+      <li><span class="ui">Checklist</span> apre le attività del tuo turno.</li>
+    </ul>
+    <p>In basso (o di lato sul tablet) c'è la barra per spostarti tra le sezioni: <span class="ui">Chat</span>, <span class="ui">Checklist</span>, <span class="ui">Archivio</span>, <span class="ui">Profilo</span>.</p>
+    <div class="callout tip"><svg class="ci" viewBox="0 0 24 24"><use href="#i-bell"/></svg><div>Un pallino o una <b>@</b> sul riquadro Comunicazioni segnala messaggi nuovi o una menzione per te.</div></div>
+  </section>
+
+  <section class="sec" id="checklist">
+    <h2><span class="bid"><svg viewBox="0 0 24 24"><use href="#i-check"/></svg></span>Le checklist del turno</h2>
+    <div class="sub">Scegliere il turno</div>
+    <p>In alto tocca <span class="ui">Turno</span> e scegli dal menu. Ogni turno ha un colore e il reparto. Puoi filtrare per reparto. Se oggi hai un turno assegnato, trovi la scorciatoia <span class="ui">vai al tuo turno</span>.</p>
+    <div class="sub">Spuntare le attività</div>
+    <ol class="steps">
+      <li>Tocca il <b>cerchio</b> a sinistra di una voce per segnarla fatta.</li>
+      <li>Restano il tuo nome e l'ora della spunta.</li>
+      <li>Tocca di nuovo il cerchio per togliere la spunta.</li>
+    </ol>
+    <p>La barra in alto mostra l'avanzamento (voci fatte su totali). Le righe in <b>grassetto</b> sono i blocchi, con eventuale orario. Le righe con la <svg class="ico-inline" viewBox="0 0 24 24"><use href="#i-info"/></svg> sono note e non si spuntano.</p>
+    <div class="callout note"><svg class="ci" viewBox="0 0 24 24"><use href="#i-info"/></svg><div>Se non riesci a eseguire un'operazione, avvisa i manager e scrivilo in chat.</div></div>
+  </section>
+
+  <section class="sec" id="chat">
+    <h2><span class="bid"><svg viewBox="0 0 24 24"><use href="#i-chat"/></svg></span>Chat e comunicazioni</h2>
+    <div class="sub">Le stanze</div>
+    <p>In alto scegli la stanza. <span class="ui">Comune</span> è di tutti. Quelle con il lucchetto sono private: ci entra solo chi è stato aggiunto.</p>
+    <div class="sub">Scrivere e taggare</div>
+    <ul class="plain">
+      <li>Scrivi nel campo in basso e invia. Da computer premi <b>Invio</b>.</li>
+      <li>Per taggare qualcuno scrivi <b>@</b> e scegli la persona. Chi è taggato riceve una menzione.</li>
+      <li>La campanella <svg class="ico-inline" viewBox="0 0 24 24"><use href="#i-bell"/></svg> in alto raccoglie i messaggi dove sei stato taggato. Il numero rosso conta quelli da leggere.</li>
+      <li>Per rispondere a un messaggio, aprilo e tocca <span class="ui">Rispondi</span>.</li>
+      <li>Puoi <b>modificare</b> o <b>eliminare</b> un tuo messaggio entro pochi minuti.</li>
+    </ul>
+    <div class="sub">Allegare un documento</div>
+    <ol class="steps">
+      <li>Tocca la graffetta <svg class="ico-inline" viewBox="0 0 24 24"><use href="#i-clip"/></svg> e scegli il file.</li>
+      <li>Indica la <b>cartella</b> e <b>chi può vederlo</b>.</li>
+      <li>Aggiungi una spiegazione se serve, poi invia.</li>
+    </ol>
+    <p>La lente in alto cerca tra i messaggi della stanza.</p>
+  </section>
+
+  <section class="sec" id="archivio">
+    <h2><span class="bid"><svg viewBox="0 0 24 24"><use href="#i-folder"/></svg></span>Archivio documenti</h2>
+    <p>Qui trovi i documenti del locale: schede tecniche, menu, listini, organizzati in cartelle.</p>
+    <ul class="plain">
+      <li>Cerca per <b>nome o autore</b>.</li>
+      <li>Tocca un file (o l'icona dell'occhio) per aprirlo.</li>
+      <li>Vedi solo i documenti destinati a te o a tutti.</li>
+    </ul>
+  </section>
+
+  <section class="sec" id="profilo">
+    <h2><span class="bid"><svg viewBox="0 0 24 24"><use href="#i-user"/></svg></span>Il tuo profilo</h2>
+    <p>Mostra il tuo <b>settore</b> (Sala o Cucina) e le <b>stanze</b> di cui fai parte. Da qui esci con <span class="ui">Esci</span>.</p>
+  </section>
+
+  <section class="sec" id="installa">
+    <h2><span class="bid"><svg viewBox="0 0 24 24"><use href="#i-down"/></svg></span>Installare l'app sul telefono</h2>
+    <p>Così la apri con un'icona, come una normale app.</p>
+    <div class="sub">iPhone (Safari)</div>
+    <ol class="steps">
+      <li>Apri il sito dell'app in Safari.</li>
+      <li>Tocca <b>Condividi</b> (il quadrato con la freccia).</li>
+      <li>Scegli <b>Aggiungi a Home</b>.</li>
+    </ol>
+    <div class="sub">Android (Chrome)</div>
+    <ol class="steps">
+      <li>Apri il sito dell'app in Chrome.</li>
+      <li>Tocca il menu (tre puntini).</li>
+      <li>Scegli <b>Installa app</b> o <b>Aggiungi a schermata Home</b>.</li>
+    </ol>
+  </section>
+
+  <section class="sec" id="aiuto">
+    <h2><span class="bid"><svg viewBox="0 0 24 24"><use href="#i-help"/></svg></span>Problemi?</h2>
+    <ul class="plain">
+      <li>Il PIN non funziona o è condiviso: avvisa la direzione.</li>
+      <li>Un'operazione non riesce: scrivilo in chat e avvisa un manager.</li>
+      <li>Non vedi una checklist che ti aspetti: può essere di un altro settore o in pausa. Chiedi alla direzione.</li>
+    </ul>
+  </section>
+
+</div></main>
+
+<footer><svg viewBox="0 0 24 24" style="display:inline-block"><use href="#i-logo"/></svg> Grotta Marcello · guida del team</footer>
