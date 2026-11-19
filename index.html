@@ -1935,7 +1935,15 @@ function turniEditorPane(){
   const newBtn=`<button class="te-newt" onclick="newTurno()"><i class="ti ti-plus"></i> Nuovo turno</button>`;
   if(!turnoList().length)
     return `${sw}<div class="te-wrap">${newBtn}<div class="empty"><i class="ti ti-clipboard-off"></i><b>Nessun turno in ${S.settore==='cucina'?'Cucina':'Sala'}</b>Crea il primo turno qui sopra.</div></div>`;
-  const cards=turnoList().map(t=>{
+  return `${sw}<div class="te-wrap">${newBtn}
+    <div class="te-note"><i class="ti ti-info-circle"></i> I blocchi sono condivisi: modificare le voci di un blocco le cambia in ogni turno che lo usa. Le differenze di un singolo turno vanno nelle «voci extra».</div>
+    <input class="fsearch" id="tq" placeholder="Cerca un turno (codice, reparto, giorni)…" value="${esc(S.tq||'')}" oninput="setTQ(this.value)" style="margin-bottom:12px">
+    <div id="teList">${turnoCardsHtml()}</div></div>`;
+}
+function setTQ(v){S.tq=v;const g=document.getElementById('teList');if(g)g.innerHTML=turnoCardsHtml();}
+function turnoCardsHtml(){
+  const q=(S.tq||'').trim().toLowerCase();
+  return turnoList().filter(t=>!q||(((t.disp||t.codice)+' '+(t.ruolo||'')+' '+(t.giorni_label||'')).toLowerCase().includes(q))).map(t=>{
     const open=S.edTurno===t.codice,col=turnoCol(t.codice);
     const head=`<div class="te-th" onclick="edTurnoToggle('${t.codice}')">
       <span class="tdot" style="background:${col||'transparent'}"></span>
@@ -1948,10 +1956,8 @@ function turniEditorPane(){
       <div class="te-blabel">Blocchi e voci</div>${blocks}
       <button class="te-addblk" onclick="addBlockToTurno('${t.codice}')"><i class="ti ti-plus"></i> Aggiungi blocco</button>
       <button class="te-delt" onclick="delTurnoFull('${t.codice}')"><i class="ti ti-trash"></i> Elimina turno</button></div></div>`;
-  }).join('');
-  return `${sw}<div class="te-wrap">${newBtn}
-    <div class="te-note"><i class="ti ti-info-circle"></i> I blocchi sono condivisi: modificare le voci di un blocco le cambia in ogni turno che lo usa. Le differenze di un singolo turno vanno nelle «voci extra».</div>
-    ${cards}</div>`;
+  }).join('')
+  ||'<div class="empty"><i class="ti ti-search-off"></i><b>Nessun turno trovato</b>Cambia la ricerca.</div>';
 }
 function edTurnoToggle(code){S.edTurno=S.edTurno===code?null:code;render();}
 async function reloadTurni(){try{await loadTurni();}catch(e){}render();}
@@ -2413,8 +2419,9 @@ async function delFolder(id){
   if(!await save(db.from('folders').delete().eq('id',id),'eliminare la cartella'))return;
   if(all.includes(S.folder))S.folder=null;
   await loadFolders();await loadFiles();render();}
-function usersPane(){
-  const cards=USERS.map(u=>{
+function userCardsHtml(){
+  const q=(S.uq||'').trim().toLowerCase(),uset=S.uSettore||'';
+  return USERS.filter(u=>(!uset||(u.settore||'sala')===uset)&&(!q||(u.nm||'').toLowerCase().includes(q))).map(u=>{
     const rp=rolePowers(u.role);
     const pc=POWERS.map(([p,l])=>{const fr=rp.includes(p),on=fr||(u.powers||[]).includes(p);
       return `<span class="chip pow ${on?'on':''} ${fr?'locked':''}" ${fr?'':`onclick="togglePower('${u.id}','${p}')"`}>${l}${fr?' · ruolo':''}</span>`;}).join('');
@@ -2431,14 +2438,24 @@ function usersPane(){
         <button class="prx" onclick="closeResetPin()">Annulla</button></div>`:''}
       <div class="u-lbl">Settore</div><div class="chips">${[['sala','Sala'],['cucina','Cucina']].map(([k,l])=>`<span class="chip ${((u.settore||'sala')===k)?'on':''}" onclick="setUserSettore('${u.id}','${k}')">${l}</span>`).join('')}</div>
       <div class="u-lbl">Poteri</div><div class="chips">${pc}</div>
-      <div class="u-lbl">Stanze private</div><div class="chips">${rc}</div></div>`;}).join('');
+      <div class="u-lbl">Stanze private</div><div class="chips">${rc}</div></div>`;}).join('')
+    ||'<div class="empty" style="grid-column:1/-1"><i class="ti ti-user-off"></i><b>Nessuna persona</b>Nessun risultato con questo filtro.</div>';
+}
+function setUSettore(x){S.uSettore=x;render();}
+function setUQ(v){S.uq=v;const g=document.getElementById('ugrid');if(g)g.innerHTML=userCardsHtml();}
+function usersPane(){
+  const uset=S.uSettore||'';
+  const fchip=(k,l)=>`<span class="chip ${(uset===k)?'on':''}" onclick="setUSettore('${k}')">${l}</span>`;
   return `${S.pinMsg?`<div class="okbanner"><i class="ti ti-check"></i> ${esc(S.pinMsg)}</div>`:''}
     <div class="u-add-form"><div class="ff-row">
       <input id="nuNm" placeholder="Nome"><input id="nuPin" placeholder="PIN (4-6 cifre)" maxlength="6" inputmode="numeric"></div>
       <div class="ff-row"><select id="nuRole">${ROLES.map(r=>`<option value="${r.id}">${esc(r.name)}</option>`).join('')}</select><select id="nuSettore"><option value="sala">Sala</option><option value="cucina">Cucina</option></select></div>
       <button class="go" onclick="createUser()">Aggiungi persona</button></div>
     <div class="pinnote"><i class="ti ti-shield-lock"></i> I PIN sono cifrati e non sono visibili a nessuno. Se qualcuno lo dimentica, usa «Reimposta PIN» sulla sua scheda.</div>
-    <div class="u-grid">${cards}</div>`;
+    <div style="display:flex;flex-direction:column;gap:10px;margin-bottom:12px">
+      <div class="chips">${fchip('','Tutti')}${fchip('sala','Sala')}${fchip('cucina','Cucina')}</div>
+      <input class="fsearch" id="uq" placeholder="Cerca per nome…" value="${esc(S.uq||'')}" oninput="setUQ(this.value)"></div>
+    <div class="u-grid" id="ugrid">${userCardsHtml()}</div>`;
 }
 function roomsPane(){
   const cards=ROOMS.map(r=>{
