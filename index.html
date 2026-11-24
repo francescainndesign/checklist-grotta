@@ -798,10 +798,9 @@
      INCOLLA QUI LE TUE DUE CHIAVI (Supabase -> Settings -> API)
      ============================================================ -->
 <script>
-  const SUPABASE_URL      = "https://lyvwavtsrelopjfyflxt.supabase.co/";   // es. https://xxxx.supabase.co  (senza /rest/v1/)
-  const SUPABASE_ANON_KEY = "sb_publishable_aLAf1L2P_BB8ft6cnje7RA_cTfHTfBv";   // la chiave "anon" / "publishable"
-  const VAPID_PUBLIC      = "BACqRMJ7r29igb2PM38NBrlY_bzc22zPDYUxciqLNBo28twOY7d4UeUcqOoFJIh1rFPMEjK3nxs--yOO2-UNu_s
-";   // chiave pubblica VAPID per le notifiche push
+  const SUPABASE_URL      = "https://lyvwavtsrelopjfyflxt.supabase.co";
+  const SUPABASE_ANON_KEY = "sb_publishable_aLAf1L2P_BB8ft6cnje7RA_cTfHTfBv";
+  const VAPID_PUBLIC      = "BACqRMJ7r29igb2PM38NBrlY_bzc22zPDYUxciqLNBo28twOY7d4UeUcqOoFJIh1rFPMEjK3nxs--yOO2-UNu_s";
 </script>
 
 <div id="app"></div>
@@ -811,7 +810,7 @@
 <script>
 let db=null,AREAS={},USERS=[],MSGS=[],CHECKS=[],ROOMS=[],RMEM=[],FILES=[],FOLDERS=[],ROLES=[],SET={},PHASES=[],READS=[],SDAYS={};
 let REACTIONS=[];
-const APP_VERSION='v72';
+const APP_VERSION='v73';
 let BLK={},TRN={},ASG={},SPU={};
 let S={screen:'load',pin:'',user:null,tab:'check',area:null,phase:null,err:'',
   room:'comune',bacFilter:'all',
