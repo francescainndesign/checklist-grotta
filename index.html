@@ -361,6 +361,16 @@
   .rquote b{color:var(--acc);display:block;font-size:11px}
   .rquote span{color:var(--tx-2);display:block;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
   .bub.del{opacity:.7}
+  .reacts{display:flex;flex-wrap:wrap;gap:4px;margin-top:5px}
+  .rchip{display:inline-flex;align-items:center;gap:3px;font-size:13px;line-height:1;border:0.5px solid var(--line);background:var(--card);border-radius:99px;padding:3px 8px;cursor:pointer;color:var(--tx)}
+  .rchip.on{background:var(--acc-bg);border-color:#cfe0fb}
+  .rchip span{color:var(--tx-2);font-size:11px;font-weight:600}
+  .rpick{display:flex;gap:2px;padding:2px 2px 8px;margin-bottom:4px;border-bottom:0.5px solid var(--line)}
+  .rpick button{font-size:21px;line-height:1;background:none;border:none;border-radius:9px;padding:5px 7px;cursor:pointer}
+  .rpick button.on{background:var(--acc-bg)}
+  .qreact{background:none;border:none;cursor:pointer;font-size:15px;line-height:1;padding:2px 5px;border-radius:7px;opacity:.5}
+  .qreact.on{opacity:1;background:var(--acc-bg)}
+  .qreact:hover{opacity:1}
   .mmenu{display:flex;flex-wrap:wrap;gap:4px;margin-top:7px;border-top:0.5px solid var(--line);padding-top:7px}
   .mmenu button{display:flex;align-items:center;gap:5px;background:none;border:0.5px solid var(--line);border-radius:7px;font:inherit;font-size:12px;color:var(--tx-2);padding:5px 9px;cursor:pointer}
   .mmenu button.danger{color:#b5382c;border-color:#e6c3bd}
@@ -795,6 +805,7 @@
 
 <script>
 let db=null,AREAS={},USERS=[],MSGS=[],CHECKS=[],ROOMS=[],RMEM=[],FILES=[],FOLDERS=[],ROLES=[],SET={},PHASES=[],READS=[],SDAYS={};
+let REACTIONS=[];
 let BLK={},TRN={},ASG={},SPU={};
 let S={screen:'load',pin:'',user:null,tab:'check',area:null,phase:null,err:'',
   room:'comune',bacFilter:'all',
@@ -903,7 +914,7 @@ async function loadAll(){
   USERS=u.data.map(x=>({id:x.id,nm:x.name,ini:x.initials,role:x.role,c:x.color,settore:x.settore||'sala',
     powers:x.powers||[],areas:ua.data.filter(y=>y.user_id===x.id).map(y=>y.area_id)}));
   ROOMS=r.data||[];RMEM=rm.data||[];FOLDERS=fo.data||[];
-  await loadMessages();await loadFiles();await loadChecks();applyChecks();await loadServiceDays();
+  await loadMessages();await loadFiles();try{await loadReactions();}catch(e){REACTIONS=[];}await loadChecks();applyChecks();await loadServiceDays();
   try{await loadTurni();await loadAssign();await loadSpunte();S._turniErr=null;}
   catch(e){BLK={};TRN={};ASG={};SPU={};S._turniErr=(e&&e.message)||String(e);}
 }
@@ -952,6 +963,7 @@ async function loadFiles(){const {data}=await db.from('files').select('*').order
     allowU:f.allow_users||[],allowR:f.allow_roles||[],allowRm:f.allow_rooms||[],
     size:f.size,by:f.user_name,ts:f.created_at,tsFull:new Date(f.created_at).toLocaleDateString('it-IT',{day:'numeric',month:'short',year:'numeric'})}));}
 async function loadChecks(){const {data}=await db.from('checks').select('*').eq('service_date',serviceDate());CHECKS=data||[];}
+async function loadReactions(){const {data}=await db.from('reactions').select('*');REACTIONS=data||[];}
 function applyChecks(){const map={};CHECKS.forEach(c=>{(map[c.task_id]=map[c.task_id]||[]).push(c);});
   Object.values(AREAS).forEach(a=>Object.keys(a.phases).forEach(ph=>a.phases[ph].forEach(t=>{
     t.by=t.tm=t.pBy=t.pTm=t.cBy=t.cTm=null;const cs=map[t.id]||[];
@@ -1004,7 +1016,7 @@ async function liveRefresh(force){
   const typing=ae&&(ae.id==='bcInput'||ae.tagName==='TEXTAREA'||(ae.tagName==='INPUT'&&ae.type!=='button'));
   if(typing&&!force)return;              // non interrompere chi sta scrivendo
   try{
-    await loadMessages();await loadChecks();applyChecks();await loadSettings();
+    await loadMessages();try{await loadReactions();}catch(e){}await loadChecks();applyChecks();await loadSettings();
     if(typing)return;                    // dati aggiornati, ma non ridisegno sotto la tastiera
     if(S.tab==='bacheca'&&S._chatStick!==false){const un=unreadAllIn(S.room);
       if(un.length){S.justRead=Array.from(new Set([...S.justRead,...un.map(m=>m.id)]));await markRead(S.room);}}
@@ -1048,6 +1060,7 @@ async function init(){
       .on('postgres_changes',{event:'*',schema:'public',table:'settings'},async()=>{await loadSettings();liveRender();})
       .on('postgres_changes',{event:'*',schema:'public',table:'spunte'},async()=>{try{await loadSpunte();}catch(e){}if(S.tab==='check')renderKeepScroll();else liveRender();})
       .on('postgres_changes',{event:'*',schema:'public',table:'assegnazioni'},async()=>{try{await loadAssign();}catch(e){}liveRender();})
+      .on('postgres_changes',{event:'*',schema:'public',table:'reactions'},async()=>{try{await loadReactions();}catch(e){}liveRender();})
       .subscribe(st=>{if(st==='SUBSCRIBED'){$('live').classList.add('on');$('liveTxt').textContent='dal vivo';}
         else{$('live').classList.remove('on');$('liveTxt').textContent='riconnetto…';}});
     startLiveFallback();
@@ -1388,14 +1401,38 @@ function bachecaView(){
 }
 function msgActions(m,mine,canEdit,canDelete,canTag){
   if(S.msgMenu!==m.id)return '';
+  const emos=['👍','❤️','😂','😮','✅'];
+  const mineE=(REACTIONS.find(r=>r.message_id===m.id&&r.user_id===S.user.id)||{}).emoji;
+  const row=`<div class="rpick">${emos.map(e=>`<button class="${mineE===e?'on':''}" onclick="toggleReact('${m.id}','${e}')">${e}</button>`).join('')}</div>`;
   let b=`<button onclick="setReply('${m.id}')"><i class="ti ti-arrow-back-up"></i> Rispondi</button>`;
   if(canEdit)b+=`<button onclick="openEdit('${m.id}')"><i class="ti ti-pencil"></i> Modifica</button>`;
   if(canDelete)b+=`<button class="danger" onclick="S.msgMenu=null;delMsg('${m.id}')"><i class="ti ti-trash"></i> Elimina</button>`;
-  return `<div class="mmenu">${b}</div>`;
+  return `<div class="mmenu">${row}${b}</div>`;
 }
 function setReply(id){const m=MSGS.find(x=>x.id===id);if(!m)return;
   S.replyTo={id:m.id,nm:m.nm,tx:m.tx};S.msgMenu=null;render();
   setTimeout(()=>{const el=document.getElementById('bcInput');if(el)el.focus();},40);}
+function reactsHtml(m){
+  const rs=REACTIONS.filter(r=>r.message_id===m.id);
+  if(!rs.length)return '';
+  const g={};rs.forEach(r=>{g[r.emoji]=(g[r.emoji]||0)+1;});
+  const mineE=(rs.find(r=>r.user_id===S.user.id)||{}).emoji;
+  return `<div class="reacts">`+Object.keys(g).map(e=>`<button class="rchip ${mineE===e?'on':''}" onclick="toggleReact('${m.id}','${e}')">${e} <span>${g[e]}</span></button>`).join('')+`</div>`;
+}
+async function toggleReact(mid,emoji){
+  const u=S.user;if(!u)return;
+  const cur=REACTIONS.find(r=>r.message_id===mid&&r.user_id===u.id);
+  const remove=cur&&cur.emoji===emoji;
+  REACTIONS=REACTIONS.filter(r=>!(r.message_id===mid&&r.user_id===u.id));
+  if(!remove)REACTIONS.push({message_id:mid,user_id:u.id,emoji});
+  S.msgMenu=null;liveRender();
+  try{
+    if(remove)await db.from('reactions').delete().eq('message_id',mid).eq('user_id',u.id);
+    else await db.from('reactions').upsert({message_id:mid,user_id:u.id,emoji},{onConflict:'message_id,user_id'});
+  }catch(e){}
+  try{await loadReactions();}catch(e){}
+  liveRender();
+}
 function attCard(f){
   if(!f)return '';
   const [ic,col]=EXT_ICON[f.ext]||['ti-file','eef0f3|697180'];
@@ -1436,12 +1473,13 @@ function bcMsgHtml(m,grouped){
     <button class="save" onclick="saveEdit('${m.id}')">Salva</button></div></div></div>`;
   const tagEditor='';
   const name=(!mine&&!grouped)?`<div class="bname">${esc(m.nm)}</div>`:'';
+  const myReact=(REACTIONS.find(r=>r.message_id===m.id&&r.user_id===S.user.id)||{}).emoji;
   return `<div class="mrow ${mine?'mine':'other'} ${grouped?'grp':''} ${unread?'unread':''}" id="msg_${m.id}">
     ${mine?'':`<span class="av" style="${fill(m.c)}">${grouped?'':m.ini}</span>`}
     <div class="bub">${name}${rq}${txt}${att}
       <div class="bmeta">${mention&&!unread&&!m.tags.includes('tutti')?'<span class="forme">per te</span>':''}${unread?'<i class="ti ti-at"></i>':''}<span class="bt">${m.tm}${m.edited?' · mod':''}</span>
-        <button class="dots" onclick="S.msgMenu=S.msgMenu==='${m.id}'?null:'${m.id}';render()" aria-label="Opzioni"><i class="ti ti-dots"></i></button></div>
-      ${msgActions(m,mine,canEdit,canDelete,canTag)}${tagEditor}</div></div>`;
+        <button class="qreact ${myReact==='👍'?'on':''}" onclick="toggleReact('${m.id}','👍')" aria-label="Pollice in su">👍</button><button class="dots" onclick="S.msgMenu=S.msgMenu==='${m.id}'?null:'${m.id}';render()" aria-label="Opzioni"><i class="ti ti-dots"></i></button></div>
+      ${reactsHtml(m)}${msgActions(m,mine,canEdit,canDelete,canTag)}${tagEditor}</div></div>`;
 }
 async function delMsg(id){
   if(!confirm('Eliminare questo messaggio?'))return;
