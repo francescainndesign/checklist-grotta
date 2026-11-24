@@ -283,7 +283,7 @@
   .bc-tm{font-size:11.5px;color:var(--tx-3)}
   .bc-edit{margin-left:auto;background:none;border:none;color:var(--acc);cursor:pointer;font-size:16px}
   .bc-forme{margin-left:auto;font-size:10.5px;color:#185fa5;background:#e6f1fb;padding:2px 8px;border-radius:99px}
-  .bc-tx{font-size:14.5px;line-height:1.6;margin-bottom:8px}
+  .bc-tx{font-size:14.5px;line-height:1.6;margin-bottom:8px;white-space:pre-wrap;overflow-wrap:anywhere}
   .bc-tags{display:flex;gap:6px;flex-wrap:wrap}
   .tg{font-size:11px;padding:3px 9px;border-radius:99px}
   .tg.area{background:#e7f4ee;color:#0f6e56;font-weight:500}
@@ -304,9 +304,15 @@
   .ctag{font-size:11.5px;padding:5px 11px;border-radius:99px;border:0.5px solid var(--line);color:var(--tx-3);cursor:pointer;user-select:none}
   .ctag.on{border-color:#bfe2d2;background:var(--ok-bg);color:var(--ok);font-weight:500}
   .ctag.on.all{border-color:#bcd3fb;background:var(--acc-bg);color:#1e4fb0}
-  .cin{display:flex;gap:8px}
+  .cin{display:flex;gap:8px;align-items:flex-end}
   .cin input{flex:1;height:42px;border:0.5px solid var(--line);border-radius:var(--r-s);padding:0 12px;font:inherit;font-size:14px;color:var(--tx);background:var(--card)}
   .cin input:focus{outline:none;border-color:var(--acc);box-shadow:0 0 0 3px var(--acc-bg)}
+  .cin textarea{flex:1;min-width:0;min-height:42px;max-height:120px;border:0.5px solid var(--line);border-radius:var(--r-s);padding:10px 12px;font:inherit;font-size:14px;color:var(--tx);background:var(--card);resize:none;line-height:1.35;overflow-y:auto}
+  .cin textarea:focus{outline:none;border-color:var(--acc);box-shadow:0 0 0 3px var(--acc-bg)}
+  .fmtbar{display:flex;align-items:center;gap:6px;margin-bottom:8px}
+  .fmtb{min-width:30px;height:28px;border:0.5px solid var(--line);background:var(--card);color:var(--tx-2);border-radius:7px;cursor:pointer;font-size:13px;line-height:1;display:inline-flex;align-items:center;justify-content:center;padding:0 7px}
+  .fmtb u{text-decoration:underline}
+  .fmtb:hover{color:var(--tx);border-color:#c3c9d2}
   .chsearch{display:flex;align-items:center;gap:8px;padding:8px 14px;border-bottom:0.5px solid var(--line-2)}
   .chsearch i{color:var(--tx-3);font-size:16px}
   .chsearch input{flex:1;border:none;background:none;font:inherit;font-size:13.5px;color:var(--tx);outline:none}
@@ -1361,12 +1367,16 @@ function bachecaView(){
   const replyBar=S.replyTo?`<div class="replybar"><div class="rq"><b>${esc(S.replyTo.nm)}</b><span>${esc((S.replyTo.tx||'documento').slice(0,70))}</span></div><button onclick="S.replyTo=null;render()" aria-label="Annulla"><i class="ti ti-x"></i></button></div>`:'';
   const composeH=`<div class="compose">${pend}${replyBar}${hintBar}
       <div class="mbox" id="mentionBox" hidden></div>
+      <div class="fmtbar">
+        <button type="button" class="fmtb" onmousedown="event.preventDefault()" onclick="fmtTxt('b')" aria-label="Grassetto" title="Grassetto"><b>B</b></button>
+        <button type="button" class="fmtb" onmousedown="event.preventDefault()" onclick="fmtTxt('i')" aria-label="Corsivo" title="Corsivo"><i>I</i></button>
+        <button type="button" class="fmtb" onmousedown="event.preventDefault()" onclick="fmtTxt('u')" aria-label="Sottolineato" title="Sottolineato"><u>U</u></button></div>
       <div class="cin">
         <button class="clip" onclick="attachFile()" aria-label="Allega documento"><i class="ti ti-paperclip"></i></button>
-        <input id="bcInput" value="${esc(S.draft[S.room]||'')}"
+        <textarea id="bcInput" rows="1"
           placeholder="${pfs.length?'Aggiungi una spiegazione…':'Scrivi un messaggio… usa @ per taggare'}"
-          oninput="onComposeInput(this)"
-          onkeydown="if(event.key==='Enter')postMsg()">
+          oninput="onComposeInput(this);growBox(this)"
+          onkeydown="composeKey(event)">${esc(S.draft[S.room]||'')}</textarea>
         <button class="send" onclick="postMsg()" aria-label="Invia"><i class="ti ti-${S.sending?'loader-2':'send'}"></i></button></div></div>`;
   const nNew=S._newMsgs||0;
   const jump=(nNew||S._newMention)?`<div class="jumpbtn"><button onclick="jumpBottom()"><i class="ti ti-chevron-down"></i><span class="jb-badge ${S._newMention?'jb-at':''}">${S._newMention?'@':nNew}</span></button></div>`:'';
@@ -1406,7 +1416,7 @@ function bcMsgHtml(m,grouped){
   const unread=mention&&S.justRead.includes(m.id);
   const files=(m.fileIds&&m.fileIds.length)?m.fileIds.map(id=>FILES.find(x=>x.id===id)).filter(Boolean):(m.fileId?[FILES.find(x=>x.id===m.fileId)].filter(Boolean):[]);
   const att=files.map(attCard).join('');
-  let bodyHtml=esc(m.tx||'');
+  let bodyHtml=fmtInline(esc(m.tx||''));
   (m.tags||[]).forEach(t=>{const lab='@'+(t==='tutti'?'tutti':t.startsWith('u:')?uName(t.slice(2)):t.startsWith('g:')?gName(t.slice(2)):t);
     bodyHtml=bodyHtml.split(esc(lab)).join('<span class="mention">'+esc(lab)+'</span>');});
   const txt=m.tx&&m.tx.trim()?`<div class="bc-tx">${bodyHtml}</div>`:'';
@@ -1462,6 +1472,20 @@ function runMention(el,boxId,acc){
   box.hidden=false;
 }
 function onComposeInput(el){S.draft[S.room]=el.value;runMention(el,'mentionBox',S.composeTags);}
+function growBox(el){el.style.height='auto';el.style.height=Math.min(el.scrollHeight,120)+'px';}
+function composeKey(e){
+  const coarse=window.matchMedia&&matchMedia('(pointer:coarse)').matches;
+  if(e.key==='Enter'&&!e.shiftKey&&!coarse){e.preventDefault();postMsg();}
+}
+function fmtTxt(k){const el=$('bcInput');if(!el)return;const m=k==='b'?'*':k==='i'?'_':'~';
+  const s=el.selectionStart,e=el.selectionEnd,v=el.value,sel=v.slice(s,e);
+  el.value=v.slice(0,s)+m+sel+m+v.slice(e);S.draft[S.room]=el.value;
+  const pos=sel?s+m.length+sel.length+m.length:s+m.length;
+  el.focus();try{el.setSelectionRange(pos,pos);}catch(_){}growBox(el);}
+function fmtInline(h){return h
+  .replace(/(^|[^\w*])\*(?!\s)([^*\n]+?)\*(?!\w)/g,'$1<b>$2</b>')
+  .replace(/(^|[^\w_])_(?!\s)([^_\n]+?)_(?!\w)/g,'$1<i>$2</i>')
+  .replace(/(^|[^\w~])~(?!\s)([^~\n]+?)~(?!\w)/g,'$1<u>$2</u>');}
 function onEditInput(el){runMention(el,'mentionBoxEdit',S.editTags);}
 function pickMention(ev,i){
   ev.preventDefault();
