@@ -374,6 +374,16 @@
   .qreact{background:none;border:none;cursor:pointer;font-size:15px;line-height:1;padding:2px 5px;border-radius:7px;opacity:.5}
   .qreact.on{opacity:1;background:var(--acc-bg)}
   .qreact:hover{opacity:1}
+  .pushp{position:fixed;inset:0;z-index:80;background:rgba(10,14,22,.45);display:flex;align-items:flex-end;justify-content:center;padding:16px;padding-bottom:calc(16px + env(safe-area-inset-bottom,0px))}
+  @media(min-width:560px){.pushp{align-items:center}}
+  .pushp-card{background:var(--card);border-radius:16px;padding:20px;max-width:380px;width:100%;box-shadow:0 12px 40px rgba(0,0,0,.3)}
+  .pushp-ic{width:44px;height:44px;border-radius:12px;background:var(--acc-bg);color:var(--acc);display:flex;align-items:center;justify-content:center;font-size:22px;margin-bottom:12px}
+  .pushp-t{font-weight:700;font-size:17px;margin-bottom:6px}
+  .pushp-s{font-size:13.5px;color:var(--tx-2);line-height:1.5;margin-bottom:16px}
+  .pushp-a{display:flex;gap:10px;justify-content:flex-end}
+  .pushp-a button{height:40px;padding:0 18px;border-radius:10px;font:inherit;font-size:14px;font-weight:600;cursor:pointer}
+  .pp-no{background:var(--card);border:0.5px solid var(--line);color:var(--tx-2)}
+  .pp-yes{background:var(--acc);border:0;color:#fff}
   .mmenu{display:flex;flex-wrap:wrap;gap:4px;margin-top:7px;border-top:0.5px solid var(--line);padding-top:7px}
   .mmenu button{display:flex;align-items:center;gap:5px;background:none;border:0.5px solid var(--line);border-radius:7px;font:inherit;font-size:12px;color:var(--tx-2);padding:5px 9px;cursor:pointer}
   .mmenu button.danger{color:#b5382c;border-color:#e6c3bd}
@@ -810,7 +820,7 @@
 <script>
 let db=null,AREAS={},USERS=[],MSGS=[],CHECKS=[],ROOMS=[],RMEM=[],FILES=[],FOLDERS=[],ROLES=[],SET={},PHASES=[],READS=[],SDAYS={};
 let REACTIONS=[];
-const APP_VERSION='v73';
+const APP_VERSION='v74';
 let BLK={},TRN={},ASG={},SPU={};
 let S={screen:'load',pin:'',user:null,tab:'check',area:null,phase:null,err:'',
   room:'comune',bacFilter:'all',
@@ -1105,6 +1115,24 @@ async function disablePush(){
   }catch(e){}
   S.pushOn=false;render();
 }
+function shouldAskPush(){
+  if(!pushOk())return false;
+  if(typeof VAPID_PUBLIC==='undefined'||VAPID_PUBLIC.includes('INCOLLA'))return false;
+  if(Notification.permission!=='default')return false;
+  try{if(localStorage.getItem('cg_push_ask')==='no')return false;}catch(e){}
+  return true;
+}
+function pushPromptHtml(){
+  if(!S.pushPrompt)return '';
+  return `<div class="pushp"><div class="pushp-card">
+    <div class="pushp-ic"><i class="ti ti-bell"></i></div>
+    <div class="pushp-t">Vuoi ricevere le notifiche?</div>
+    <div class="pushp-s">Ti avvisiamo su menzioni e nuovi messaggi, anche con l'app chiusa. Potrai cambiarle quando vuoi dal Profilo.</div>
+    <div class="pushp-a"><button class="pp-no" onclick="dismissPushPrompt()">Più tardi</button><button class="pp-yes" onclick="acceptPushPrompt()">Attiva</button></div>
+  </div></div>`;
+}
+function acceptPushPrompt(){S.pushPrompt=false;render();enablePush();}
+function dismissPushPrompt(){S.pushPrompt=false;try{localStorage.setItem('cg_push_ask','no');}catch(e){}render();}
 /* ---------- login ---------- */
 function loginView(){
   const dots=[0,1,2,3,4,5].map(i=>`<div class="dot ${i<S.pin.length?'f':''}"></div>`).join('');
@@ -1136,7 +1164,7 @@ async function enter(){if(S.pin.length<4||S.checking)return;
   const _tl=tabsFor(u);S.screen=(_tl.includes('bacheca')&&_tl.includes('check'))?'home':'app';
   S.pin='';S.err='';S.ctrlDate=serviceDate();
   S.room=(myRooms()[0]||{id:'comune'}).id;S._chatToBottom=true;
-  S.justRead=[];refreshPushState();render();loadReads().then(render);}
+  S.justRead=[];refreshPushState();S.pushPrompt=shouldAskPush();render();loadReads().then(render);}
 function logout(){clearDevicePin();S.screen='login';S.user=null;S.pin='';S.err='';S.editing=null;
   READS=[];S.justRead=[];S.draft={};render();}
 
@@ -2747,8 +2775,8 @@ function render(){
   if(S.screen==='error'){app.innerHTML=`<div class="center"><i class="ti ti-alert-circle"></i><h3>Qualcosa non torna</h3>
     <p style="white-space:pre-line">${esc(S.err)}</p>
     <button onclick="location.reload()" style="margin-top:16px;height:40px;padding:0 20px;border:0.5px solid var(--line);background:var(--card);border-radius:9px;color:var(--tx);font:inherit;font-size:13.5px;cursor:pointer">Riprova</button></div>`;return;}
-  if(S.screen==='home'){app.innerHTML=homeView();return;}
-  app.innerHTML=(S.screen==='login'?loginView():appView())+viewerHtml()+logHtml()+accessHtml();
+  if(S.screen==='home'){app.innerHTML=homeView()+pushPromptHtml();return;}
+  app.innerHTML=(S.screen==='login'?loginView():appView())+viewerHtml()+logHtml()+accessHtml()+pushPromptHtml();
   if(S.screen==='app'&&S.tab==='bacheca'){requestAnimationFrame(()=>{const pn=document.querySelector('.pane');if(!pn)return;
     if(S._chatToBottom||S._chatStick!==false){pn.scrollTop=pn.scrollHeight;S._chatToBottom=false;}
     else if(S._paneY!=null){pn.scrollTop=S._paneY;}});}
