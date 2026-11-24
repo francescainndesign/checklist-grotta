@@ -343,7 +343,10 @@
   .chsearch .chsx{background:none;border:none;color:var(--tx-3);cursor:pointer;font-size:16px;padding:0 2px}
   .daysep{display:flex;justify-content:center;margin:12px 0 6px}
   .daysep span{font-size:11px;color:var(--tx-3);background:var(--line-2);border-radius:99px;padding:3px 12px}
-  .mrow{display:flex;gap:7px;padding:1px 14px;margin-top:2px}
+  .mrow{display:flex;gap:7px;padding:1px 14px;margin-top:2px;position:relative}
+  .mrow .bub{transition:transform .18s}
+  .swrep{position:absolute;left:14px;top:50%;transform:translateY(-50%);opacity:0;transition:opacity .15s;color:var(--acc);font-size:17px;pointer-events:none;z-index:1}
+  .mrow.sw .swrep{opacity:1}
   .mrow.mine{flex-direction:row-reverse}
   .mrow .av{width:26px;height:26px;border-radius:50%;flex:0 0 auto;font-size:10px;font-weight:600;display:flex;align-items:center;justify-content:center;align-self:flex-end}
   .mrow.grp .av{visibility:hidden}
@@ -1412,6 +1415,36 @@ function msgActions(m,mine,canEdit,canDelete,canTag){
 function setReply(id){const m=MSGS.find(x=>x.id===id);if(!m)return;
   S.replyTo={id:m.id,nm:m.nm,tx:m.tx};S.msgMenu=null;render();
   setTimeout(()=>{const el=document.getElementById('bcInput');if(el)el.focus();},40);}
+let _sw={started:false,active:false,x0:0,y0:0,dx:0,el:null},_lastTap={id:null,t:0};
+function swStart(e){const t=e.touches&&e.touches[0];if(!t)return;_sw={started:true,active:false,x0:t.clientX,y0:t.clientY,dx:0,el:e.currentTarget};}
+function swMove(e){
+  if(!_sw.started||!e.touches)return;
+  const t=e.touches[0],dx=t.clientX-_sw.x0,dy=t.clientY-_sw.y0;
+  if(!_sw.active){
+    if(Math.abs(dy)>12&&Math.abs(dy)>=Math.abs(dx)){_sw.started=false;return;}
+    if(dx>12&&dx>Math.abs(dy))_sw.active=true; else return;
+  }
+  const d=Math.max(0,Math.min(dx,80));_sw.dx=d;
+  const bub=_sw.el&&_sw.el.querySelector('.bub');
+  if(bub){bub.style.transition='none';bub.style.transform='translateX('+d+'px)';}
+  if(_sw.el)_sw.el.classList.toggle('sw',d>8);
+  e.preventDefault();
+}
+function swEnd(e,id){
+  const el=_sw.el,bub=el&&el.querySelector('.bub');
+  if(bub){bub.style.transition='transform .18s';bub.style.transform='';}
+  if(el)el.classList.remove('sw');
+  const trig=_sw.active&&_sw.dx>=50,wasTap=!_sw.active&&_sw.dx<6;
+  _sw.started=false;_sw.active=false;
+  if(trig){setReply(id);return;}
+  if(wasTap){
+    if(e.target&&e.target.closest&&e.target.closest('button,.att,a,.mention'))return;
+    const now=Date.now();
+    if(_lastTap.id===id&&now-_lastTap.t<320){toggleReact(id,'👍');_lastTap={id:null,t:0};}
+    else _lastTap={id:id,t:now};
+  }
+}
+function dblLike(e,id){if(e.target&&e.target.closest&&e.target.closest('button,.att,a,.mention'))return;toggleReact(id,'👍');}
 function reactsHtml(m){
   const rs=REACTIONS.filter(r=>r.message_id===m.id);
   if(!rs.length)return '';
@@ -1474,7 +1507,8 @@ function bcMsgHtml(m,grouped){
   const tagEditor='';
   const name=(!mine&&!grouped)?`<div class="bname">${esc(m.nm)}</div>`:'';
   const myReact=(REACTIONS.find(r=>r.message_id===m.id&&r.user_id===S.user.id)||{}).emoji;
-  return `<div class="mrow ${mine?'mine':'other'} ${grouped?'grp':''} ${unread?'unread':''}" id="msg_${m.id}">
+  return `<div class="mrow ${mine?'mine':'other'} ${grouped?'grp':''} ${unread?'unread':''}" id="msg_${m.id}" ontouchstart="swStart(event)" ontouchmove="swMove(event)" ontouchend="swEnd(event,'${m.id}')" ondblclick="dblLike(event,'${m.id}')">
+    <span class="swrep"><i class="ti ti-arrow-back-up"></i></span>
     ${mine?'':`<span class="av" style="${fill(m.c)}">${grouped?'':m.ini}</span>`}
     <div class="bub">${name}${rq}${txt}${att}
       <div class="bmeta">${mention&&!unread&&!m.tags.includes('tutti')?'<span class="forme">per te</span>':''}${unread?'<i class="ti ti-at"></i>':''}<span class="bt">${m.tm}${m.edited?' · mod':''}</span>
