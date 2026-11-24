@@ -1819,6 +1819,7 @@ function wmTiles(){
 async function openFile(id){
   const f=FILES.find(x=>x.id===id);
   if(!f)return;
+  setZoom(true);
   S.viewer=f;S.viewerState='loading';S.viewerPages=[];S.viewerErr='';render();
   // registra l'apertura: la direzione saprà chi ha guardato cosa
   save(db.from('file_views').insert({file_id:f.id,user_id:S.user.id,user_name:S.user.nm}),'registrare l\'apertura');
@@ -1829,13 +1830,13 @@ async function openFile(id){
       const buf=await data.arrayBuffer();
       pdfjsLib.GlobalWorkerOptions.workerSrc='https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js';
       const pdf=await pdfjsLib.getDocument({data:buf}).promise;
-      const maxW=Math.min(820,Math.max(320,window.innerWidth-40));
-      const dpr=Math.min(2,window.devicePixelRatio||1);
+      const dispW=Math.min(820,Math.max(320,window.innerWidth-40));
+      const targetW=Math.min(pdf.numPages>6?1800:2600,dispW*3);  // extra risoluzione per lo zoom a due dita
       for(let n=1;n<=pdf.numPages;n++){
         if(S.viewer!==f)return;              // l'utente ha chiuso: smetto di lavorare
         const page=await pdf.getPage(n);
         const base=page.getViewport({scale:1});
-        const v=page.getViewport({scale:(maxW/base.width)*dpr});
+        const v=page.getViewport({scale:targetW/base.width});
         const cv=document.createElement('canvas');
         cv.width=v.width;cv.height=v.height;
         await page.render({canvasContext:cv.getContext('2d'),viewport:v}).promise;
@@ -1858,7 +1859,11 @@ async function openFile(id){
     S.viewerState='error';S.viewerErr=(e&&e.message)||String(e);render();
   }
 }
-function closeFile(){S.viewer=null;S.viewerState='idle';S.viewerPages=[];render();}
+function setZoom(on){const mv=document.querySelector('meta[name="viewport"]');if(!mv)return;
+  mv.setAttribute('content',on
+    ?'width=device-width, initial-scale=1.0, viewport-fit=cover'
+    :'width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover');}
+function closeFile(){setZoom(false);S.viewer=null;S.viewerState='idle';S.viewerPages=[];render();}
 
 function viewerHtml(){
   const f=S.viewer;if(!f)return '';
