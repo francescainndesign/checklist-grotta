@@ -800,6 +800,8 @@
 <script>
   const SUPABASE_URL      = "https://lyvwavtsrelopjfyflxt.supabase.co/";   // es. https://xxxx.supabase.co  (senza /rest/v1/)
   const SUPABASE_ANON_KEY = "sb_publishable_aLAf1L2P_BB8ft6cnje7RA_cTfHTfBv";   // la chiave "anon" / "publishable"
+  const VAPID_PUBLIC      = "BACqRMJ7r29igb2PM38NBrlY_bzc22zPDYUxciqLNBo28twOY7d4UeUcqOoFJIh1rFPMEjK3nxs--yOO2-UNu_s
+";   // chiave pubblica VAPID per le notifiche push
 </script>
 
 <div id="app"></div>
@@ -809,6 +811,7 @@
 <script>
 let db=null,AREAS={},USERS=[],MSGS=[],CHECKS=[],ROOMS=[],RMEM=[],FILES=[],FOLDERS=[],ROLES=[],SET={},PHASES=[],READS=[],SDAYS={};
 let REACTIONS=[];
+const APP_VERSION='v72';
 let BLK={},TRN={},ASG={},SPU={};
 let S={screen:'load',pin:'',user:null,tab:'check',area:null,phase:null,err:'',
   room:'comune',bacFilter:'all',
@@ -1067,12 +1070,42 @@ async function init(){
       .subscribe(st=>{if(st==='SUBSCRIBED'){$('live').classList.add('on');$('liveTxt').textContent='dal vivo';}
         else{$('live').classList.remove('on');$('liveTxt').textContent='riconnetto…';}});
     startLiveFallback();
+    try{if('serviceWorker' in navigator)await navigator.serviceWorker.register('sw.js');}catch(e){}
     const _sp=loadDevicePin();
     if(_sp&&_sp.length>=4){S.screen='login';S.pin=_sp;render();enter();return;}
     S.screen='login';render();
   }catch(e){S.screen='error';S.err=e.message||String(e);render();}
 }
 
+/* ---------- notifiche push ---------- */
+function pushOk(){return ('serviceWorker' in navigator)&&('PushManager' in window)&&('Notification' in window);}
+function urlB64(s){const pad='='.repeat((4-s.length%4)%4);const b=(s+pad).replace(/-/g,'+').replace(/_/g,'/');const raw=atob(b);const a=new Uint8Array(raw.length);for(let i=0;i<raw.length;i++)a[i]=raw.charCodeAt(i);return a;}
+async function refreshPushState(){
+  if(!pushOk()){S.pushOn=false;return;}
+  try{const reg=await navigator.serviceWorker.ready;const sub=await reg.pushManager.getSubscription();
+    S.pushOn=!!sub&&Notification.permission==='granted';if(S.tab==='profilo')render();}catch(e){}
+}
+async function enablePush(){
+  if(!pushOk()){alert('Questo dispositivo non supporta le notifiche. Su iPhone l\'app va prima aggiunta alla Home.');return;}
+  if(typeof VAPID_PUBLIC==='undefined'||VAPID_PUBLIC.includes('INCOLLA')){alert('Le notifiche non sono ancora configurate dalla direzione.');return;}
+  try{
+    const perm=await Notification.requestPermission();
+    if(perm!=='granted'){alert('Permesso notifiche negato. Puoi riattivarlo dalle impostazioni del telefono.');return;}
+    const reg=await navigator.serviceWorker.ready;
+    let sub=await reg.pushManager.getSubscription();
+    if(!sub)sub=await reg.pushManager.subscribe({userVisibleOnly:true,applicationServerKey:urlB64(VAPID_PUBLIC)});
+    const j=sub.toJSON();
+    const {error}=await db.from('push_subscriptions').upsert({user_id:S.user.id,endpoint:sub.endpoint,p256dh:j.keys.p256dh,auth:j.keys.auth},{onConflict:'endpoint'});
+    if(error)throw error;
+    S.pushOn=true;render();
+  }catch(e){alert('Non riesco ad attivare le notifiche: '+(e.message||e));}
+}
+async function disablePush(){
+  try{const reg=await navigator.serviceWorker.ready;const sub=await reg.pushManager.getSubscription();
+    if(sub){await db.from('push_subscriptions').delete().eq('endpoint',sub.endpoint);await sub.unsubscribe();}
+  }catch(e){}
+  S.pushOn=false;render();
+}
 /* ---------- login ---------- */
 function loginView(){
   const dots=[0,1,2,3,4,5].map(i=>`<div class="dot ${i<S.pin.length?'f':''}"></div>`).join('');
@@ -1104,7 +1137,7 @@ async function enter(){if(S.pin.length<4||S.checking)return;
   const _tl=tabsFor(u);S.screen=(_tl.includes('bacheca')&&_tl.includes('check'))?'home':'app';
   S.pin='';S.err='';S.ctrlDate=serviceDate();
   S.room=(myRooms()[0]||{id:'comune'}).id;S._chatToBottom=true;
-  S.justRead=[];render();loadReads().then(render);}
+  S.justRead=[];refreshPushState();render();loadReads().then(render);}
 function logout(){clearDevicePin();S.screen='login';S.user=null;S.pin='';S.err='';S.editing=null;
   READS=[];S.justRead=[];S.draft={};render();}
 
@@ -2690,11 +2723,20 @@ function profiloView(){const u=S.user;
         <div class="chips">${myRooms().map(r=>`<span class="chip room on" style="pointer-events:none">${esc(r.name)}</span>`).join('')}</div>
       </div>
       <div style="background:var(--card);border-radius:12px;padding:16px;border:0.5px solid var(--line);margin-top:14px">
+        <div style="display:flex;align-items:center;justify-content:space-between;gap:12px">
+          <div style="min-width:0"><div style="font-weight:600;font-size:14px">Notifiche sul telefono</div>
+            <div style="font-size:12px;color:var(--tx-2);margin-top:3px">Avvisi per menzioni e nuovi messaggi, anche con l'app chiusa.</div></div>
+          <button onclick="${S.pushOn?'disablePush':'enablePush'}()" style="flex:0 0 auto;height:36px;padding:0 14px;border-radius:9px;border:0.5px solid ${S.pushOn?'var(--line)':'transparent'};background:${S.pushOn?'var(--card)':'#2f6df0'};color:${S.pushOn?'var(--tx-2)':'#fff'};font-size:13px;font-weight:600;cursor:pointer">${S.pushOn?'Disattiva':'Attiva'}</button>
+        </div>
+        <div style="font-size:11.5px;color:var(--tx-3);margin-top:10px"><i class="ti ti-device-mobile" style="vertical-align:-1px"></i> Su iPhone aggiungi prima l'app alla Home.</div>
+      </div>
+      <div style="background:var(--card);border-radius:12px;padding:16px;border:0.5px solid var(--line);margin-top:14px">
         <div style="font-size:12px;color:var(--tx-2);margin-bottom:10px">Guida all'app</div>
         <a href="guida-team.html" target="_blank" rel="noopener" style="display:flex;align-items:center;gap:10px;text-decoration:none;color:var(--tx);height:44px;padding:0 12px;border:0.5px solid var(--line);border-radius:9px;font-size:13.5px"><i class="ti ti-book" style="color:#2f6df0"></i> Come si usa l'app<i class="ti ti-chevron-right" style="margin-left:auto;color:var(--tx-3)"></i></a>
         ${(can('utenti')||can('controllo')||can('bacheca_admin'))?`<a href="guida-direzione.html" target="_blank" rel="noopener" style="display:flex;align-items:center;gap:10px;text-decoration:none;color:var(--tx);height:44px;padding:0 12px;border:0.5px solid var(--line);border-radius:9px;font-size:13.5px;margin-top:8px"><i class="ti ti-settings" style="color:#2f6df0"></i> Guida della direzione<i class="ti ti-chevron-right" style="margin-left:auto;color:var(--tx-3)"></i></a>`:''}
       </div>
       <button onclick="logout()" style="width:100%;margin-top:16px;height:44px;border:1px dashed #c7ccd4;background:var(--card);border-radius:9px;color:var(--tx-2);font-size:13.5px;cursor:pointer"><i class="ti ti-logout"></i> Esci</button>
+      <div style="text-align:center;color:var(--tx-3);font-size:11px;margin-top:14px">Grotta Marcello · ${APP_VERSION}</div>
     </div></div>`;}
 
 /* ---------- render ---------- */
