@@ -2,7 +2,7 @@
 <html lang="it">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
@@ -30,7 +30,7 @@
     --sidebar:236px;
   }
   *{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent}
-  html,body{height:100%}
+  html,body{height:100%;touch-action:manipulation}
   body{font-family:var(--ff);background:var(--page);color:var(--tx);-webkit-font-smoothing:antialiased;overflow:hidden}
   #app{height:100dvh;display:flex;flex-direction:column}
   button{font:inherit}
@@ -134,7 +134,7 @@
   .pane{flex:1;overflow-y:auto;min-width:0;-webkit-overflow-scrolling:touch}
   .pane-l{display:none}
 
-  .hd{background:var(--ink);color:#fff;padding:15px 18px 14px;flex-shrink:0;position:relative}
+  .hd{background:var(--ink);color:#fff;padding:15px 18px 14px;padding-top:calc(15px + env(safe-area-inset-top,0px));flex-shrink:0;position:relative}
   .hd-top{display:flex;align-items:center;justify-content:space-between;margin-bottom:9px}
   .hd-role{font-size:11px;color:#8b97ab}
   .hd-role i{vertical-align:-2px;margin-right:4px}
@@ -437,6 +437,11 @@
   .fbar{padding:11px 14px 6px;display:flex;gap:8px;flex-wrap:wrap;align-items:center}
   .fsearch{flex:1;min-width:180px;height:38px;border:0.5px solid var(--line);border-radius:var(--r-s);padding:0 12px 0 34px;font:inherit;font-size:13.5px;background:var(--card) url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='16' height='16' viewBox='0 0 24 24' fill='none' stroke='%239aa1ac' stroke-width='2'><circle cx='11' cy='11' r='7'/><path d='M21 21l-4-4'/></svg>") no-repeat 11px center}
   .fsearch:focus{outline:none;border-color:var(--acc);box-shadow:0 0 0 3px var(--acc-bg)}
+  .gtool{margin:0 16px 12px;display:flex;flex-direction:column;gap:10px}
+  .gsrch{display:block;width:100%;box-sizing:border-box;height:40px;border:0.5px solid var(--line);border-radius:var(--r-s);padding:0 12px 0 36px;font:inherit;font-size:13.5px;color:var(--tx);background:var(--card) url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='16' height='16' viewBox='0 0 24 24' fill='none' stroke='%239aa1ac' stroke-width='2'><circle cx='11' cy='11' r='7'/><path d='M21 21l-4-4'/></svg>") no-repeat 12px center}
+  .gsrch:focus{outline:none;border-color:var(--acc);box-shadow:0 0 0 3px var(--acc-bg)}
+  .remember{display:flex;align-items:center;gap:8px;justify-content:center;margin-top:18px;font-size:13px;color:var(--tx-2);cursor:pointer;user-select:none}
+  .remember input{width:17px;height:17px;accent-color:var(--acc);cursor:pointer;flex:0 0 auto}
   .fup{height:38px;padding:0 14px;border-radius:var(--r-s);background:var(--ink);color:#fff;border:none;cursor:pointer;font-size:13px;display:flex;align-items:center;gap:6px;flex:0 0 auto}
   .ffilters{display:flex;gap:6px;padding:2px 14px 8px;flex-wrap:wrap}
   .ff{font-size:11.5px;padding:5px 11px;border-radius:99px;border:0.5px solid var(--line);background:var(--card);color:var(--tx-3);cursor:pointer}
@@ -453,6 +458,8 @@
   .cpath b{color:var(--tx)}
   .fmeta{font-size:11.5px;color:var(--tx-3);margin-top:2px}
   .fdl{background:none;border:none;color:var(--tx-3);cursor:pointer;font-size:19px;padding:5px}
+  .facts{display:flex;align-items:center;gap:2px;flex:0 0 auto}
+  .att + .att{margin-top:6px}
   .fdl:hover{color:var(--acc)}
   .fdel:hover{color:#c0392b}
   .uprog{padding:10px 16px;font-size:12.5px;color:var(--acc);display:flex;align-items:center;gap:8px}
@@ -531,7 +538,7 @@
   /* ---- visualizzatore documenti con filigrana ---- */
   .vw{position:fixed;inset:0;z-index:60;background:rgba(10,14,22,.82);display:flex;flex-direction:column;
     backdrop-filter:blur(3px)}
-  .vw-hd{display:flex;align-items:center;gap:10px;padding:12px 16px;color:#fff;flex-shrink:0}
+  .vw-hd{display:flex;align-items:center;gap:10px;padding:12px 16px;padding-top:calc(12px + env(safe-area-inset-top,0px));color:#fff;flex-shrink:0}
   .vw-hd .x{background:none;border:none;color:#8b97ab;cursor:pointer;font-size:22px;padding:2px}
   .vw-hd .x:hover{color:#fff}
   .vw-nm{flex:1;min-width:0}
@@ -726,14 +733,14 @@
   .tab .nb.nb-dot{top:6px}
     .side .out{margin-top:auto;display:flex;align-items:center;gap:9px;padding:10px 11px;border-radius:var(--r-s);color:#8b97ab;cursor:pointer;font-size:13px;background:none;border:none;width:100%;text-align:left}
     .side .out:hover{background:var(--ink-soft);color:#fff}
-    .hd{padding:18px 24px 16px}
+    .hd{padding:18px 24px 16px;padding-top:calc(18px + env(safe-area-inset-top,0px))}
     .hd h2{font-size:23px}
     .segs,.rooms,.subtabs,.mw,.datechips,.fbar{padding-left:22px;padding-right:22px}
     .ffilters{padding-left:22px;padding-right:22px}
     .phase-row{padding-left:22px}
     .row,.bc-msg,.drow,.frow{padding-left:24px;padding-right:24px}
     .stat-grid,.sec-lbl,.ctrl-head,.compose,.calhead,.calgrid,.callegend,.dayp-h,.u-grid{padding-left:22px;padding-right:22px}
-    .u-add-form,.rm-add{margin-left:22px;margin-right:22px}
+    .u-add-form,.rm-add,.gtool{margin-left:22px;margin-right:22px}
     .list{padding-bottom:32px}
     /* due colonne: elenco + dettaglio */
     .pane-l{display:block;width:340px;flex:0 0 340px;border-right:0.5px solid var(--line);overflow-y:auto;background:var(--card)}
@@ -785,7 +792,7 @@ let S={screen:'load',pin:'',user:null,tab:'check',area:null,phase:null,err:'',
   room:'comune',bacFilter:'all',
   settore:null,edTurno:null,mentOpen:false,turnoView:null,turnoManage:false,turnoPick:false,turnoFilter:'',asgWeek:null,asgDraft:{},ctrlTurno:null,ctrlSpu:null,_turniErr:null,
   composeTags:[],editTags:[],tagOpen:false,chatSearch:'',chatMenu:false,chatSearchOpen:false,replyTo:null,msgMenu:null,_paneY:null,_chatStick:true,_chatToBottom:true,_newMsgs:0,_newMention:false,editing:null,ctrlDate:null,fq:'',fext:'all',uploading:false,adminTab:'home',
-  pendingFile:null,pendFolder:null,pendVis:'room',pickMode:'library',sending:false,folder:null,
+  pendingFiles:[],pendFolder:null,pendVis:'room',pickMode:'library',sending:false,folder:null,
   accessFor:null,accVis:'all',accU:[],accR:[],accRm:[],pendUploadFiles:null,
   edArea:null,edPhase:null,moveOpen:null,moveArea:null,movePhase:null,
   viewer:null,viewerState:'idle',viewerPages:[],viewerErr:'',logFor:null,
@@ -921,7 +928,7 @@ async function loadFolders(){const {data}=await db.from('folders').select('*').o
 async function loadMessages(){const {data}=await db.from('messages').select('*').order('created_at',{ascending:false});
   MSGS=(data||[]).map(r=>({id:r.id,uid:r.user_id,nm:r.author,ini:r.initials,c:r.color,room:r.room_id||'comune',
     ts:r.created_at,tm:fmt(r.created_at),tsFull:new Date(r.created_at).toLocaleString('it-IT'),
-    tx:r.body,tags:r.tags||[],due:r.due_date||null,edited:!!r.edited_at,fileId:r.file_id||null,deleted:!!r.deleted,replyTo:r.reply_to||null}));}
+    tx:r.body,tags:r.tags||[],due:r.due_date||null,edited:!!r.edited_at,fileId:r.file_id||null,fileIds:r.file_ids||null,deleted:!!r.deleted,replyTo:r.reply_to||null}));}
 async function loadReads(){
   if(!S.user)return;
   const {data,error}=await db.from('message_reads').select('message_id').eq('user_id',S.user.id);
@@ -1003,6 +1010,10 @@ function startLiveFallback(){
   document.addEventListener('visibilitychange',()=>{if(!document.hidden)liveRefresh(true);});
   window.addEventListener('focus',()=>liveRefresh(true));  // riapri l'app -> aggiorna subito
 }
+const DEV_KEY='cg_pin';
+function saveDevicePin(p){try{localStorage.setItem(DEV_KEY,p);}catch(e){}}
+function loadDevicePin(){try{return localStorage.getItem(DEV_KEY)||'';}catch(e){return '';}}
+function clearDevicePin(){try{localStorage.removeItem(DEV_KEY);}catch(e){}}
 async function init(){
   if(SUPABASE_URL.includes('INCOLLA')||SUPABASE_ANON_KEY.includes('INCOLLA')){S.screen='config';render();return;}
   try{
@@ -1032,6 +1043,8 @@ async function init(){
       .subscribe(st=>{if(st==='SUBSCRIBED'){$('live').classList.add('on');$('liveTxt').textContent='dal vivo';}
         else{$('live').classList.remove('on');$('liveTxt').textContent='riconnetto…';}});
     startLiveFallback();
+    const _sp=loadDevicePin();
+    if(_sp&&_sp.length>=4){S.screen='login';S.pin=_sp;render();enter();return;}
     S.screen='login';render();
   }catch(e){S.screen='error';S.err=e.message||String(e);render();}
 }
@@ -1048,24 +1061,27 @@ function loginView(){
       <button class="key util" onclick="tap('c')">Canc</button><button class="key" onclick="tap('0')">0</button>
       <button class="key util" onclick="enter()">Entra</button></div>
     <div class="err">${S.err||''}</div><div class="hint">${S.checking?'Verifico…':'PIN da 4 a 6 cifre'}</div>
+    <label class="remember"><input type="checkbox" ${S.remember!==false?'checked':''} onchange="S.remember=this.checked"><span>Resta connesso su questo dispositivo</span></label>
   </div></div>`;
 }
 function tap(k){if(k==='c')S.pin=S.pin.slice(0,-1);else if(S.pin.length<6)S.pin+=k;
   if(S.pin.length===6)setTimeout(enter,110);render();}
 async function enter(){if(S.pin.length<4||S.checking)return;
+  const pin=S.pin;
   S.checking=true;S.err='';render();
-  const {data,error}=await db.rpc('login_pin',{p_pin:S.pin});
+  const {data,error}=await db.rpc('login_pin',{p_pin:pin});
   S.checking=false;
-  if(error){S.pin='';S.err=error.message||'Errore di verifica';render();return;}
-  if(!data||!data.length){S.pin='';S.err='PIN errato';render();return;}
-  if(data.length>1){S.pin='';S.err='PIN usato da più persone, avvisa la direzione';render();return;}
+  if(error){S.pin='';S.err=error.message||'Errore di verifica';clearDevicePin();render();return;}
+  if(!data||!data.length){S.pin='';S.err='PIN errato';clearDevicePin();render();return;}
+  if(data.length>1){S.pin='';S.err='PIN usato da più persone, avvisa la direzione';clearDevicePin();render();return;}
   const u=USERS.find(x=>x.id===data[0].id)||data[0];
+  if(S.remember!==false)saveDevicePin(pin);else clearDevicePin();
   S.user=u;S.settore=u.settore||'sala';S.tab='bacheca';S.area=(u.areas&&u.areas[0])||Object.keys(AREAS)[0];S.phase=defaultPhaseFor(S.area);
   const _tl=tabsFor(u);S.screen=(_tl.includes('bacheca')&&_tl.includes('check'))?'home':'app';
   S.pin='';S.err='';S.ctrlDate=serviceDate();
   S.room=(myRooms()[0]||{id:'comune'}).id;S._chatToBottom=true;
   S.justRead=[];render();loadReads().then(render);}
-function logout(){S.screen='login';S.user=null;S.pin='';S.err='';S.editing=null;
+function logout(){clearDevicePin();S.screen='login';S.user=null;S.pin='';S.err='';S.editing=null;
   READS=[];S.justRead=[];S.draft={};render();}
 
 /* ---------- shell ---------- */
@@ -1315,30 +1331,31 @@ function bachecaView(){
   const chMenu=(S.chatMenu&&can('bacheca_admin'))?`<div class="chmenu-bd" onclick="S.chatMenu=false;render()"></div><div class="chmenu">
       <button onclick="S.chatMenu=false;exportCsv()"><i class="ti ti-download"></i> Scarica CSV</button>
       <button class="danger" onclick="S.chatMenu=false;clearRoom()"><i class="ti ti-trash"></i> Svuota stanza</button></div>`:'';
-  const pf=S.pendingFile;
+  const pfs=S.pendingFiles||[];
   const isCommon=!(ROOMS.find(r=>r.id===S.room)||{}).private;
   let pend='';
-  if(pf){
-    const [ic,col]=EXT_ICON[(pf.name.split('.').pop()||'').toLowerCase()]||['ti-file','eef0f3|697180'];
-    const fol=FOLDERS.map(f=>`<span class="ctag ${S.pendFolder===f.id?'on':''}" onclick="setPendFolder('${f.id}')">
-      <i class="ti ti-folder" style="font-size:11px;vertical-align:-1px"></i> ${esc(f.name)}</span>`).join('')
+  if(pfs.length){
+    const fol=foldersOrdered().map(o=>`<span class="ctag ${S.pendFolder===o.f.id?'on':''}" onclick="setPendFolder('${o.f.id}')">
+      <i class="ti ti-folder" style="font-size:11px;vertical-align:-1px"></i> ${esc(o.label)}</span>`).join('')
       ||'<span style="font-size:11.5px;color:var(--tx-3)">Nessuna cartella: chiedi alla direzione di crearne una</span>';
     const memb=RMEM.filter(x=>x.room_id===S.room).length;
     const vis=isCommon
       ? `<div class="vopt on"><i class="ti ti-circle-check"></i><div><div class="vt">Tutti gli utenti</div>
-          <div class="vs">Questa è la chat comune: il file è per tutti</div></div></div>`
+          <div class="vs">Questa è la chat comune: ${pfs.length>1?'i file sono':'il file è'} per tutti</div></div></div>`
       : `<div class="vopt ${S.pendVis==='room'?'on':''}" onclick="setPendVis('room')">
           <i class="ti ti-${S.pendVis==='room'?'circle-check':'circle'}"></i><div>
           <div class="vt">Solo chi accede a questa chat</div><div class="vs">${esc(rnOf(S.room))} · ${memb} person${memb===1?'a':'e'}</div></div></div>
         <div class="vopt ${S.pendVis==='all'?'on':''}" onclick="setPendVis('all')">
           <i class="ti ti-${S.pendVis==='all'?'circle-check':'circle'}"></i><div>
           <div class="vt">Tutti gli utenti</div><div class="vs">Compare nell'archivio di chiunque</div></div></div>`;
-    pend=`<div class="pbox">
-      <div class="phdr"><div class="ai" style="${fill(col)}"><i class="ti ${ic}"></i></div>
+    const rows=pfs.map((pf,i)=>{const [ic,col]=EXT_ICON[(pf.name.split('.').pop()||'').toLowerCase()]||['ti-file','eef0f3|697180'];
+      return `<div class="phdr"><div class="ai" style="${fill(col)}"><i class="ti ${ic}"></i></div>
         <div class="an"><div class="t">${esc(pf.name)}</div><div class="s">${kb(pf.size)}</div></div>
-        <button class="px" onclick="clearPending()" aria-label="Togli allegato"><i class="ti ti-x"></i></button></div>
-      <div class="plbl">Salva nella cartella</div><div class="ctags">${fol}</div>
-      <div class="plbl">Chi può vedere il file</div>${vis}</div>`;
+        <button class="px" onclick="clearPendingAt(${i})" aria-label="Togli allegato"><i class="ti ti-x"></i></button></div>`;}).join('');
+    pend=`<div class="pbox">${rows}
+      <button class="pmore" onclick="attachFile()" style="display:inline-flex;align-items:center;gap:6px;margin:4px 0 2px;background:none;border:0.5px dashed var(--line);color:var(--tx-2);border-radius:8px;padding:7px 11px;font:inherit;font-size:12.5px;cursor:pointer"><i class="ti ti-plus"></i> Aggiungi un altro documento</button>
+      <div class="plbl">Salva ${pfs.length>1?'i documenti':'il documento'} nella cartella</div><div class="ctags">${fol}</div>
+      <div class="plbl">Chi può vedere ${pfs.length>1?'i file':'il file'}</div>${vis}</div>`;
   }
   const hintBar='';
   const replyBar=S.replyTo?`<div class="replybar"><div class="rq"><b>${esc(S.replyTo.nm)}</b><span>${esc((S.replyTo.tx||'documento').slice(0,70))}</span></div><button onclick="S.replyTo=null;render()" aria-label="Annulla"><i class="ti ti-x"></i></button></div>`:'';
@@ -1347,7 +1364,7 @@ function bachecaView(){
       <div class="cin">
         <button class="clip" onclick="attachFile()" aria-label="Allega documento"><i class="ti ti-paperclip"></i></button>
         <input id="bcInput" value="${esc(S.draft[S.room]||'')}"
-          placeholder="${pf?'Aggiungi una spiegazione…':'Scrivi un messaggio… usa @ per taggare'}"
+          placeholder="${pfs.length?'Aggiungi una spiegazione…':'Scrivi un messaggio… usa @ per taggare'}"
           oninput="onComposeInput(this)"
           onkeydown="if(event.key==='Enter')postMsg()">
         <button class="send" onclick="postMsg()" aria-label="Invia"><i class="ti ti-${S.sending?'loader-2':'send'}"></i></button></div></div>`;
@@ -1387,8 +1404,8 @@ function bcMsgHtml(m,grouped){
   const canTag=mine||can('bacheca_admin');
   const mention=isMention(m);
   const unread=mention&&S.justRead.includes(m.id);
-  const f=m.fileId?FILES.find(x=>x.id===m.fileId):null;
-  const att=f?attCard(f):'';
+  const files=(m.fileIds&&m.fileIds.length)?m.fileIds.map(id=>FILES.find(x=>x.id===id)).filter(Boolean):(m.fileId?[FILES.find(x=>x.id===m.fileId)].filter(Boolean):[]);
+  const att=files.map(attCard).join('');
   let bodyHtml=esc(m.tx||'');
   (m.tags||[]).forEach(t=>{const lab='@'+(t==='tutti'?'tutti':t.startsWith('u:')?uName(t.slice(2)):t.startsWith('g:')?gName(t.slice(2)):t);
     bodyHtml=bodyHtml.split(esc(lab)).join('<span class="mention">'+esc(lab)+'</span>');});
@@ -1478,7 +1495,7 @@ async function markRead(room){
     render();
   }
 }
-function setRoom(r){S.room=r;S.chatMenu=false;S.editing=null;S.pendingFile=null;S.pendFolder=null;S.pendVis='room';
+function setRoom(r){S.room=r;S.chatMenu=false;S.editing=null;S.pendingFiles=[];S.pendFolder=null;S.pendVis='room';
   S.justRead=[];render();markRead(r);}
 const snippet=t=>{t=(t||'').replace(/\s+/g,' ').trim();return t.length>72?t.slice(0,72)+'…':t;};
 function fmtShort(ts){const d=new Date(ts),now=new Date();const y=new Date(now);y.setDate(y.getDate()-1);
@@ -1508,41 +1525,53 @@ function ctag(t,elc){
   if(i>=0)S.composeTags.splice(i,1);else S.composeTags.push(t);
   if(elc)elc.classList.toggle('on',S.composeTags.includes(t));}
 const rnOf=id=>(ROOMS.find(r=>r.id===id)||{}).name||'';
-function attachFile(){S.pickMode='attach';const el=$('filePick');el.multiple=false;el.value='';el.click();}
-function clearPending(){S.pendingFile=null;render();}
+function attachFile(){S.pickMode='attach';const el=$('filePick');el.multiple=true;el.value='';el.click();}
+function clearPending(){S.pendingFiles=[];render();}
+function clearPendingAt(i){(S.pendingFiles||[]).splice(i,1);render();}
 function setPendFolder(f){S.pendFolder=f;render();}
 function setPendVis(v){S.pendVis=v;render();}
 async function postMsg(force){
-  const el=$('bcInput');const body=((el?el.value:S.draft[S.room])||'').trim();const pf=S.pendingFile;
-  if(!body&&!pf)return;
+  const el=$('bcInput');const body=((el?el.value:S.draft[S.room])||'').trim();const pfs=(S.pendingFiles||[]);
+  if(!body&&!pfs.length)return;
   if(S.sending)return;
   const room=S.room,isCommon=!(ROOMS.find(r=>r.id===room)||{}).private;
-  if(pf&&!S.pendFolder){alert('Scegli in quale cartella salvare il documento.');return;}
+  if(pfs.length&&!S.pendFolder){alert(pfs.length>1?'Scegli in quale cartella salvare i documenti.':'Scegli in quale cartella salvare il documento.');return;}
   const u=S.user,tags=[...S.composeTags];
   const folder=S.pendFolder,vis=isCommon?'all':S.pendVis;
   S.draft[room]=body;
   S.sending=true;render();
-  let fileId=null;
   try{
-    if(pf){
+    let ids=[],j=0;
+    for(const pf of pfs){
       const ext=(pf.name.split('.').pop()||'').toLowerCase();
-      const path=room+'/'+Date.now()+'-'+pf.name.replace(/[^\w.\-]/g,'_');
+      const path=room+'/'+Date.now()+'-'+(j++)+'-'+pf.name.replace(/[^\w.\-]/g,'_');
       const up=await db.storage.from('documenti').upload(path,pf);
       if(up.error)throw up.error;
       const ins=await db.from('files').insert({room_id:room,path,name:pf.name,ext,size:pf.size,
         folder_id:folder,visibility:vis,user_id:u.id,user_name:u.nm}).select().single();
       if(ins.error)throw ins.error;
-      fileId=ins.data.id;await loadFiles();
+      ids.push(ins.data.id);
     }
-    await db.from('messages').insert({room_id:room,user_id:u.id,author:u.nm,initials:u.ini,color:u.c,
-      body,tags,due_date:null,file_id:fileId,level:'normal',reply_to:S.replyTo?S.replyTo.id:null});
+    if(ids.length)await loadFiles();
+    const base={room_id:room,user_id:u.id,author:u.nm,initials:u.ini,color:u.c,
+      body,tags,due_date:null,file_id:ids[0]||null,level:'normal',reply_to:S.replyTo?S.replyTo.id:null};
+    let r=await db.from('messages').insert(ids.length>1?{...base,file_ids:ids}:base).select().single();
+    if(r.error&&/file_ids|column|schema|cache/i.test(r.error.message||'')){r=await db.from('messages').insert(base).select().single();}
+    if(r.error)throw r.error;
     await loadMessages();
-    S.composeTags=[];S.tagOpen=false;S.replyTo=null;S.pendingFile=null;S.pendFolder=null;S.pendVis='room';S.draft[room]='';S._chatToBottom=true;
+    S.composeTags=[];S.tagOpen=false;S.replyTo=null;S.pendingFiles=[];S.pendFolder=null;S.pendVis='room';S.draft[room]='';S._chatToBottom=true;
   }catch(e){alert('Non sono riuscito a inviare: '+(e.message||e)+'\n\nNiente è andato perso: il messaggio è ancora qui, riprova.');}
   S.sending=false;render();
 }
 
 /* ---------- ARCHIVIO ---------- */
+function foldersOrdered(){
+  const vis=f=>can('bacheca_admin')||!f.settore||f.settore==='condivisa'||f.settore===((S.user&&S.user.settore)||'sala');
+  const nameOf=f=>{const p=[];let c=f;while(c){p.unshift(c.name);c=c.parent_id?FOLDERS.find(x=>x.id===c.parent_id):null;}return p;};
+  const out=[];
+  const walk=pid=>FOLDERS.filter(f=>(f.parent_id||null)===(pid||null)&&vis(f)).sort((a,b)=>(a.sort||0)-(b.sort||0)).forEach(f=>{const p=nameOf(f);out.push({f,depth:p.length-1,label:p.join(' \u203a ')});walk(f.id);});
+  walk(null);return out;
+}
 function archiveBody(){
   const q=S.fq.toLowerCase().trim();
   const mine=myFiles();
@@ -1570,7 +1599,13 @@ function archiveBody(){
     const subCards=childFolders(inFolder||null).map(folderCard).join('');
     const addBtn=adm?`<button class="foldadd" onclick="newFolderHere()"><i class="ti ti-folder-plus"></i> ${inFolder?'Nuova sottocartella':'Nuova cartella'}</button>`:'';
     const addBar=addBtn?`<div class="foldbar">${addBtn}</div>`:'';
-    if(inFolder){
+    if(inFolder==='__none__'){
+      const orphans=mine.filter(f=>!f.folder||!FOLDERS.some(x=>x.id===f.folder));
+      const list=orphans.filter(f=>S.fext==='all'||extGroup(f.ext)===S.fext);
+      const crumb=`<div class="crumb"><button onclick="openFolder(null)"><i class="ti ti-arrow-left"></i></button><span class="cpath"><a onclick="openFolder(null)">Archivio</a> / <b>Senza cartella</b></span></div>`;
+      const rows=list.length?list.map(fileRow).join(''):`<div class="empty"><i class="ti ti-folder-off"></i><b>Niente qui</b>Nessun file senza cartella.</div>`;
+      body=crumb+(orphans.length?`<div class="ffilters">${filtersFor(orphans)}</div>`:'')+`<div class="max">${rows}</div><div style="height:20px"></div>`;
+    }else if(inFolder){
       const path=[];let cur=FOLDERS.find(f=>f.id===inFolder);
       while(cur){path.unshift(cur);cur=cur.parent_id?FOLDERS.find(f=>f.id===cur.parent_id):null;}
       const crumb=`<div class="crumb"><button onclick="openFolder(${path.length>1?`'${path[path.length-2].id}'`:'null'})"><i class="ti ti-arrow-left"></i></button>`
@@ -1583,11 +1618,10 @@ function archiveBody(){
       const emptyMsg=(!subCards&&!files.length)?`<div class="empty"><i class="ti ti-folder-off"></i><b>Cartella vuota</b>${adm?'Aggiungi documenti con Carica, o crea una sottocartella.':'Nessun documento qui.'}</div>`:'';
       body=crumb+addBar+subSec+(files.length?`<div class="ffilters">${filtersFor(files)}</div>`:'')+`<div class="max">${fileRows}</div>`+emptyMsg+`<div style="height:20px"></div>`;
     }else{
-      const rootEmpty=!subCards?`<div class="empty"><i class="ti ti-folder-off"></i><b>Nessuna cartella</b>${adm?'Creane una qui sotto.':'La direzione può crearle.'}</div>`:'';
-      const recent=mine.slice(0,5);
-      body=addBar+`<div class="fgrid">${subCards}</div>`+rootEmpty
-        +(recent.length?`<div class="sec-lbl">Aggiunti di recente</div><div class="max">${recent.map(fileRow).join('')}</div>`:'')
-        +`<div style="height:20px"></div>`;
+      const orphans=mine.filter(f=>!f.folder||!FOLDERS.some(x=>x.id===f.folder));
+      const noneCard=orphans.length?`<div class="fold" onclick="openFolder('__none__')"><i class="ti ti-folder-exclamation"></i><div class="fn">Senza cartella</div><div class="fc">${orphans.length} file</div></div>`:'';
+      const rootEmpty=(!subCards&&!noneCard)?`<div class="empty"><i class="ti ti-folder-off"></i><b>Nessuna cartella</b>${adm?'Creane una qui sotto.':'La direzione può crearle.'}</div>`:'';
+      body=addBar+`<div class="fgrid">${subCards}${noneCard}</div>`+rootEmpty+`<div style="height:20px"></div>`;
     }
   }
   return body;
@@ -1615,20 +1649,25 @@ function fileRow(f){
     <div class="fmain" style="cursor:pointer" onclick="openFile('${f.id}')"><div class="fname">${esc(f.name)}</div>
       <div class="fmeta">${esc(f.by||'')} · ${f.tsFull} · ${kb(f.size||0)}${f.folder?' · '+esc(fnOf(f.folder)):''}
         ${priv?' · <i class="ti ti-lock" style="font-size:11px;vertical-align:-1px"></i> riservato':''}</div></div>
-    <button class="fdl" onclick="openFile('${f.id}')" aria-label="Apri"><i class="ti ti-eye"></i></button>
-    ${adm?`<button class="fdl" onclick="openAccess('${f.id}')" aria-label="Chi può vederlo"><i class="ti ti-user-cog"></i></button>
+    <div class="facts"><button class="fdl" onclick="openFile('${f.id}')" aria-label="Apri"><i class="ti ti-eye"></i></button>
+    ${adm?`<button class="fdl" onclick="renameFile('${f.id}')" aria-label="Rinomina"><i class="ti ti-pencil"></i></button>
+      <button class="fdl" onclick="openAccess('${f.id}')" aria-label="Chi può vederlo"><i class="ti ti-user-cog"></i></button>
       <button class="fdl" onclick="showLog('${f.id}')" aria-label="Chi l'ha aperto"><i class="ti ti-history"></i></button>
       <button class="fdl" onclick="dlFile('${f.path}','${esc(f.name)}')" aria-label="Scarica"><i class="ti ti-download"></i></button>
-      <button class="fdl fdel" onclick="delFile('${f.id}','${f.path}')" aria-label="Elimina"><i class="ti ti-trash"></i></button>`:''}
+      <button class="fdl fdel" onclick="delFile('${f.id}','${f.path}')" aria-label="Elimina"><i class="ti ti-trash"></i></button>`:''}</div>
   </div>`;
 }
+async function renameFile(id){const f=FILES.find(x=>x.id===id);if(!f)return;
+  const v=prompt('Nome del documento',f.name||'');if(v===null)return;const nm=v.trim();if(!nm)return;
+  await save(db.from('files').update({name:nm}).eq('id',id),'rinominare il documento');
+  await loadFiles();renderKeepScroll();}
 function setFext(k){S.fext=k;render();}
 function pickFiles(){
   if(!FOLDERS.length){alert('Crea prima una cartella da Gestione.');return;}
   S.pickMode='library';const el=$('filePick');el.multiple=true;el.value='';el.click();}
 async function uploadFiles(files,access){
   if(!files.length)return;
-  const fid=S.folder||FOLDERS[0].id;
+  const fid=(S.folder&&S.folder!=='__none__')?S.folder:FOLDERS[0].id;
   const acc=access||{visibility:'all',allow_users:[],allow_roles:[],allow_rooms:[]};
   S.uploading=true;render();
   for(const f of files){
@@ -1937,7 +1976,7 @@ function turniEditorPane(){
     return `${sw}<div class="te-wrap">${newBtn}<div class="empty"><i class="ti ti-clipboard-off"></i><b>Nessun turno in ${S.settore==='cucina'?'Cucina':'Sala'}</b>Crea il primo turno qui sopra.</div></div>`;
   return `${sw}<div class="te-wrap">${newBtn}
     <div class="te-note"><i class="ti ti-info-circle"></i> I blocchi sono condivisi: modificare le voci di un blocco le cambia in ogni turno che lo usa. Le differenze di un singolo turno vanno nelle «voci extra».</div>
-    <input class="fsearch" id="tq" placeholder="Cerca un turno (codice, reparto, giorni)…" value="${esc(S.tq||'')}" oninput="setTQ(this.value)" style="margin-bottom:12px">
+    <div style="margin-bottom:14px"><input class="gsrch" id="tq" placeholder="Cerca un turno…" value="${esc(S.tq||'')}" oninput="setTQ(this.value)"></div>
     <div id="teList">${turnoCardsHtml()}</div></div>`;
 }
 function setTQ(v){S.tq=v;const g=document.getElementById('teList');if(g)g.innerHTML=turnoCardsHtml();}
@@ -2452,9 +2491,9 @@ function usersPane(){
       <div class="ff-row"><select id="nuRole">${ROLES.map(r=>`<option value="${r.id}">${esc(r.name)}</option>`).join('')}</select><select id="nuSettore"><option value="sala">Sala</option><option value="cucina">Cucina</option></select></div>
       <button class="go" onclick="createUser()">Aggiungi persona</button></div>
     <div class="pinnote"><i class="ti ti-shield-lock"></i> I PIN sono cifrati e non sono visibili a nessuno. Se qualcuno lo dimentica, usa «Reimposta PIN» sulla sua scheda.</div>
-    <div style="display:flex;flex-direction:column;gap:10px;margin-bottom:12px">
+    <div class="gtool">
       <div class="chips">${fchip('','Tutti')}${fchip('sala','Sala')}${fchip('cucina','Cucina')}</div>
-      <input class="fsearch" id="uq" placeholder="Cerca per nome…" value="${esc(S.uq||'')}" oninput="setUQ(this.value)"></div>
+      <input class="gsrch" id="uq" placeholder="Cerca per nome…" value="${esc(S.uq||'')}" oninput="setUQ(this.value)"></div>
     <div class="u-grid" id="ugrid">${userCardsHtml()}</div>`;
 }
 function roomsPane(){
@@ -2498,7 +2537,7 @@ async function delUser(id){
   if(u&&effPowers(u).includes('utenti')&&adminsWith('utenti')<=1){
     alert('Non posso rimuovere l\'unica persona che può gestire l\'app. Dai prima il potere a qualcun altro.');return;}
   if(!confirm('Rimuovere questa persona?'))return;
-  await db.from('app_users').delete().eq('id',id);await loadAll();render();}
+  await db.from('app_users').delete().eq('id',id);await loadAll();renderKeepScroll();}
 async function setUserSettore(uid,sett){const u=USERS.find(x=>x.id===uid);if(u)u.settore=sett;renderKeepScroll();
   await save(db.from('app_users').update({settore:sett}).eq('id',uid),'aggiornare il settore');}
 async function togglePower(uid,p){const u=USERS.find(x=>x.id===uid),has=(u.powers||[]).includes(p);
@@ -2564,7 +2603,7 @@ function renderKeepScroll(){
 $('filePick').addEventListener('change',e=>{
   const files=Array.from(e.target.files||[]);
   if(!files.length)return;
-  if(S.pickMode==='attach'){S.pendingFile=files[0];render();}
+  if(S.pickMode==='attach'){S.pendingFiles=[...(S.pendingFiles||[]),...files];render();}
   else openUploadAccess(files);
 });
 let rt,lastWide=window.innerWidth>=840;
