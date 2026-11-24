@@ -1475,6 +1475,8 @@ function onComposeInput(el){S.draft[S.room]=el.value;runMention(el,'mentionBox',
 function growBox(el){el.style.height='auto';el.style.height=Math.min(el.scrollHeight,120)+'px';}
 function composeKey(e){
   const coarse=window.matchMedia&&matchMedia('(pointer:coarse)').matches;
+  if((e.ctrlKey||e.metaKey)&&!e.altKey){const k=(e.key||'').toLowerCase();
+    if(k==='b'||k==='i'||k==='u'){e.preventDefault();fmtTxt(k);return;}}
   if(e.key==='Enter'&&!e.shiftKey&&!coarse){e.preventDefault();postMsg();}
 }
 function fmtTxt(k){const el=$('bcInput');if(!el)return;const m=k==='b'?'*':k==='i'?'_':'~';
