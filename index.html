@@ -289,10 +289,12 @@
   .tg.area{background:#e7f4ee;color:#0f6e56;font-weight:500}
   .tg.all{background:#eaf1ff;color:#1e4fb0;font-weight:600}
   .tg.date{background:#f2ecfb;color:#6a4bb0;font-weight:500}
-  .bc-editbox textarea{width:100%;border:0.5px solid var(--acc);border-radius:var(--r-s);padding:9px 11px;font:inherit;font-size:14px;resize:vertical;min-height:60px}
+  .bc-editbox textarea{width:100%;border:0.5px solid var(--acc);border-radius:var(--r-s);padding:10px 12px;font:inherit;font-size:14px;resize:none;min-height:96px;max-height:220px;line-height:1.4;overflow-y:auto}
   .bc-editbox .ea{display:flex;gap:8px;margin-top:8px;max-width:320px}
   .bc-editbox .ea button{flex:1;height:34px;border-radius:var(--r-s);font-size:12.5px;cursor:pointer;border:0.5px solid var(--line);background:var(--card);color:var(--tx-2)}
   .bc-editbox .ea button.save{background:var(--ink);color:#fff;border-color:var(--ink)}
+  .bc-editbox{width:100%}
+  .mrow.editing .bub{max-width:100%;width:100%}
   .compose{border-top:0.5px solid var(--line);padding:11px 14px;background:var(--card);flex-shrink:0}
   .panewrap{flex:1;display:flex;flex-direction:column;min-height:0;position:relative}
   .jumpbtn{position:absolute;right:14px;bottom:14px;z-index:5}
@@ -1423,8 +1425,13 @@ function bcMsgHtml(m,grouped){
   let rq='';
   if(m.replyTo){const o=MSGS.find(x=>x.id===m.replyTo);
     rq=`<div class="rquote"><b>${o?esc(o.nm):'Messaggio'}</b><span>${o?esc((o.tx||'documento').slice(0,70)):'non disponibile'}</span></div>`;}
-  if(S.editing===m.id)return `<div class="mrow ${mine?'mine':'other'}" id="msg_${m.id}">${mine?'':`<span class="av" style="${fill(m.c)}">${m.ini}</span>`}
-    <div class="bub"><div class="bc-editbox"><div class="mbox" id="mentionBoxEdit" hidden></div><textarea id="edit_${m.id}" oninput="onEditInput(this)" placeholder="Scrivi… usa @ per taggare">${esc(m.tx)}</textarea>
+  if(S.editing===m.id)return `<div class="mrow editing ${mine?'mine':'other'}" id="msg_${m.id}">${mine?'':`<span class="av" style="${fill(m.c)}">${m.ini}</span>`}
+    <div class="bub"><div class="bc-editbox"><div class="mbox" id="mentionBoxEdit" hidden></div>
+      <div class="fmtbar">
+        <button type="button" class="fmtb" onmousedown="event.preventDefault()" onclick="fmtTxt('b','edit_${m.id}')" title="Grassetto"><b>B</b></button>
+        <button type="button" class="fmtb" onmousedown="event.preventDefault()" onclick="fmtTxt('i','edit_${m.id}')" title="Corsivo"><i>I</i></button>
+        <button type="button" class="fmtb" onmousedown="event.preventDefault()" onclick="fmtTxt('u','edit_${m.id}')" title="Sottolineato"><u>U</u></button></div>
+      <textarea id="edit_${m.id}" oninput="onEditInput(this);growBox(this,220)" onkeydown="editKey(event,'${m.id}')" placeholder="Scrivi… usa @ per taggare">${esc(m.tx)}</textarea>
     <div class="ea"><button onclick="S.editing=null;render()">Annulla</button>
     <button class="save" onclick="saveEdit('${m.id}')">Salva</button></div></div></div>`;
   const tagEditor='';
@@ -1472,23 +1479,31 @@ function runMention(el,boxId,acc){
   box.hidden=false;
 }
 function onComposeInput(el){S.draft[S.room]=el.value;runMention(el,'mentionBox',S.composeTags);}
-function growBox(el){el.style.height='auto';el.style.height=Math.min(el.scrollHeight,120)+'px';}
+function growBox(el,max){max=max||120;el.style.height='auto';el.style.height=Math.min(el.scrollHeight,max)+'px';}
 function composeKey(e){
   const coarse=window.matchMedia&&matchMedia('(pointer:coarse)').matches;
   if((e.ctrlKey||e.metaKey)&&!e.altKey){const k=(e.key||'').toLowerCase();
     if(k==='b'||k==='i'||k==='u'){e.preventDefault();fmtTxt(k);return;}}
   if(e.key==='Enter'&&!e.shiftKey&&!coarse){e.preventDefault();postMsg();}
 }
-function fmtTxt(k){const el=$('bcInput');if(!el)return;const m=k==='b'?'*':k==='i'?'_':'~';
+function fmtTxt(k,id){const el=$(id||'bcInput');if(!el)return;const m=k==='b'?'*':k==='i'?'_':'~';
   const s=el.selectionStart,e=el.selectionEnd,v=el.value,sel=v.slice(s,e);
-  el.value=v.slice(0,s)+m+sel+m+v.slice(e);S.draft[S.room]=el.value;
+  el.value=v.slice(0,s)+m+sel+m+v.slice(e);
+  const edit=id&&id!=='bcInput';
+  if(!edit)S.draft[S.room]=el.value;
   const pos=sel?s+m.length+sel.length+m.length:s+m.length;
-  el.focus();try{el.setSelectionRange(pos,pos);}catch(_){}growBox(el);}
+  el.focus();try{el.setSelectionRange(pos,pos);}catch(_){}growBox(el,edit?220:120);
+  if(edit&&typeof onEditInput==='function')onEditInput(el);}
 function fmtInline(h){return h
   .replace(/(^|[^\w*])\*(?!\s)([^*\n]+?)\*(?!\w)/g,'$1<b>$2</b>')
   .replace(/(^|[^\w_])_(?!\s)([^_\n]+?)_(?!\w)/g,'$1<i>$2</i>')
   .replace(/(^|[^\w~])~(?!\s)([^~\n]+?)~(?!\w)/g,'$1<u>$2</u>');}
 function onEditInput(el){runMention(el,'mentionBoxEdit',S.editTags);}
+function editKey(e,id){
+  const coarse=window.matchMedia&&matchMedia('(pointer:coarse)').matches;
+  if((e.ctrlKey||e.metaKey)&&!e.altKey){const k=(e.key||'').toLowerCase();if(k==='b'||k==='i'||k==='u'){e.preventDefault();fmtTxt(k,'edit_'+id);return;}}
+  if(e.key==='Enter'&&!e.shiftKey&&!coarse){e.preventDefault();saveEdit(id);}
+}
 function pickMention(ev,i){
   ev.preventDefault();
   const o=_ment[i];if(!o||!_mentEl)return;
@@ -1503,7 +1518,7 @@ function pickMention(ev,i){
   _ment=[];el.focus();
 }
 function openEdit(id){const m=MSGS.find(x=>x.id===id);S.msgMenu=null;S.editing=id;S.editTags=m?[...(m.tags||[])]:[];render();
-  setTimeout(()=>{const e=document.getElementById('edit_'+id);if(e){e.focus();e.setSelectionRange(e.value.length,e.value.length);}},40);}
+  setTimeout(()=>{const e=document.getElementById('edit_'+id);if(e){e.focus();growBox(e,220);try{e.setSelectionRange(e.value.length,e.value.length);}catch(_){}}},40);}
 // aggiunge/toglie un tag a un messaggio già inviato: chi viene taggato riceve la segnalazione
 // segna come viste le menzioni della stanza aperta
 async function markRead(room){
