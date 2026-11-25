@@ -606,6 +606,12 @@
     display:flex;flex-wrap:wrap;align-content:center;justify-content:center;gap:90px 70px;
     transform:rotate(-24deg) scale(1.6);opacity:.08}
   .wm span{font-size:12px;font-weight:600;color:#131a27;white-space:nowrap;letter-spacing:.02em}
+  .updbar{position:fixed;left:0;right:0;top:0;z-index:9999;display:flex;align-items:center;justify-content:space-between;gap:10px;
+    background:#2563eb;color:#fff;box-shadow:0 2px 10px rgba(0,0,0,.22);
+    padding:calc(env(safe-area-inset-top,0px) + 9px) max(14px,env(safe-area-inset-right,0px)) 9px max(14px,env(safe-area-inset-left,0px));
+    font-size:13px;font-weight:600}
+  .updbar .ut{display:flex;align-items:center;gap:7px;min-width:0;overflow:hidden;text-overflow:ellipsis}
+  .updbar button{background:#fff;color:#2563eb;border:0;border-radius:8px;padding:7px 14px;font:inherit;font-weight:700;cursor:pointer;white-space:nowrap}
   .vw-foot{flex-shrink:0;display:flex;align-items:center;gap:8px;padding:11px 16px;color:#8b97ab;font-size:11.5px}
   .vw-load{color:#8b97ab;font-size:13px;padding:50px;text-align:center}
   .vw-load i{font-size:26px;display:block;margin-bottom:10px}
@@ -833,7 +839,8 @@
 <script>
 let db=null,AREAS={},USERS=[],MSGS=[],CHECKS=[],ROOMS=[],RMEM=[],FILES=[],FOLDERS=[],ROLES=[],SET={},PHASES=[],READS=[],SDAYS={};
 let REACTIONS=[];
-const APP_VERSION='v83';
+const APP_VERSION='v84';
+const verNum=v=>parseInt(String(v||'').replace(/\D/g,''),10)||0;
 let BLK={},TRN={},ASG={},SPU={};
 let S={screen:'load',pin:'',user:null,tab:'check',area:null,phase:null,err:'',
   room:'comune',bacFilter:'all',
@@ -933,7 +940,7 @@ async function loadAll(){
       '\n\nProbabilmente manca un aggiornamento SQL: rilancia gli script su Supabase (SQL Editor → Run).');
     e.tables=names;throw e;
   }
-  ROLES=ro.data||[];SET={};(se.data||[]).forEach(x=>SET[x.key]=x.value);
+  ROLES=ro.data||[];SET={};(se.data||[]).forEach(x=>SET[x.key]=x.value);checkUpd();
   PHASES=(ph.data||[]);
   AREAS={};a.data.forEach(x=>{const ps={};phaseIds().forEach(id=>ps[id]=[]);
     AREAS[x.id]={id:x.id,nm:x.name,sec:x.sector,sort:x.sort,phases:ps};});
@@ -967,7 +974,7 @@ async function loadTurni(){
 async function loadAssign(){const {data,error}=await db.from('assegnazioni').select('*');if(error)throw error;ASG={};(data||[]).forEach(r=>ASG[r.data+'|'+r.user_id]=r.turno_codice);}
 async function loadSpunte(){const {data,error}=await db.from('spunte').select('*').eq('service_date',serviceDate());if(error)throw error;SPU={};(data||[]).forEach(r=>SPU[r.turno_codice+'|'+r.line_id]={user_name:r.user_name,checked_at:r.checked_at});}
 async function loadSettings(){
-  const {data}=await db.from('settings').select('*');SET={};(data||[]).forEach(x=>SET[x.key]=x.value);}
+  const {data}=await db.from('settings').select('*');SET={};(data||[]).forEach(x=>SET[x.key]=x.value);checkUpd();}
 async function loadServiceDays(){
   const {data}=await db.from('service_days').select('*');
   SDAYS={};(data||[]).forEach(r=>SDAYS[r.date]=r.mode);}
@@ -1052,6 +1059,10 @@ async function liveRefresh(force){
   }catch(e){}
 }
 let _liveTimer=null;
+function checkUpd(){S._upd=verNum(SET.app_version)>verNum(APP_VERSION);}
+async function publishVersion(){try{if(verNum(APP_VERSION)>verNum(SET.app_version)){SET.app_version=APP_VERSION;await db.from('settings').upsert({key:'app_version',value:APP_VERSION},{onConflict:'key'});}}catch(e){}checkUpd();}
+function doUpdate(){try{const u=new URL(location.href);u.searchParams.set('v',String(verNum(SET.app_version)||Date.now()));location.replace(u.toString());}catch(e){location.reload();}}
+function updBar(){return S._upd?`<div class="updbar"><span class="ut"><i class="ti ti-refresh"></i> È disponibile una nuova versione</span><button onclick="doUpdate()">Aggiorna</button></div>`:'';}
 function startLiveFallback(){
   if(_liveTimer)clearInterval(_liveTimer);
   _liveTimer=setInterval(()=>liveRefresh(false),12000);   // ricontrollo periodico
@@ -1066,7 +1077,7 @@ async function init(){
   if(SUPABASE_URL.includes('INCOLLA')||SUPABASE_ANON_KEY.includes('INCOLLA')){S.screen='config';render();return;}
   try{
     db=window.supabase.createClient(SUPABASE_URL,SUPABASE_ANON_KEY);
-    await loadAll();
+    await loadAll();await publishVersion();
     db.channel('rt')
       .on('postgres_changes',{event:'*',schema:'public',table:'checks'},async()=>{await loadChecks();applyChecks();liveRender();})
       .on('postgres_changes',{event:'*',schema:'public',table:'messages'},async()=>{
@@ -2832,9 +2843,9 @@ function render(){
   if(S.screen==='error'){app.innerHTML=`<div class="center"><i class="ti ti-alert-circle"></i><h3>Qualcosa non torna</h3>
     <p style="white-space:pre-line">${esc(S.err)}</p>
     <button onclick="location.reload()" style="margin-top:16px;height:40px;padding:0 20px;border:0.5px solid var(--line);background:var(--card);border-radius:9px;color:var(--tx);font:inherit;font-size:13.5px;cursor:pointer">Riprova</button></div>`;return;}
-  if(S.screen==='home'){app.innerHTML=homeView()+pushPromptHtml()+msgInfoHtml();return;}
+  if(S.screen==='home'){app.innerHTML=homeView()+pushPromptHtml()+msgInfoHtml()+updBar();return;}
   const _vy=(document.querySelector('.vw-body')||{}).scrollTop||0;
-  app.innerHTML=(S.screen==='login'?loginView():appView())+viewerHtml()+logHtml()+accessHtml()+pushPromptHtml()+msgInfoHtml();
+  app.innerHTML=(S.screen==='login'?loginView():appView())+viewerHtml()+logHtml()+accessHtml()+pushPromptHtml()+msgInfoHtml()+updBar();
   if(S.viewer&&_vy){const vb=document.querySelector('.vw-body');if(vb)vb.scrollTop=_vy;
     requestAnimationFrame(()=>{const v2=document.querySelector('.vw-body');if(v2)v2.scrollTop=_vy;});}
   if(S.screen==='app'&&S.tab==='bacheca'){requestAnimationFrame(()=>{const pn=document.querySelector('.pane');if(!pn)return;
