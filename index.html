@@ -2,7 +2,7 @@
 <html lang="it">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover, interactive-widget=resizes-content">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
@@ -32,7 +32,7 @@
   *{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent}
   html,body{height:100%;touch-action:manipulation}
   body{font-family:var(--ff);background:var(--page);color:var(--tx);-webkit-font-smoothing:antialiased;overflow:hidden}
-  #app{height:100dvh;display:flex;flex-direction:column}
+  #app{height:100dvh;width:100%;display:flex;flex-direction:column;overflow-x:hidden}
   button{font:inherit}
 
   .center{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:34px;text-align:center;color:var(--tx-2)}
@@ -294,7 +294,7 @@
   .bc-editbox .ea button{flex:1;height:34px;border-radius:var(--r-s);font-size:12.5px;cursor:pointer;border:0.5px solid var(--line);background:var(--card);color:var(--tx-2)}
   .bc-editbox .ea button.save{background:var(--ink);color:#fff;border-color:var(--ink)}
   .bc-editbox{width:100%}
-  .mrow.editing .bub{max-width:100%;width:100%}
+  .mrow.editing .bub{max-width:none;flex:1 1 auto;min-width:0}
   .compose{border-top:0.5px solid var(--line);padding:11px 14px;background:var(--card);flex-shrink:0}
   .panewrap{flex:1;display:flex;flex-direction:column;min-height:0;position:relative}
   .jumpbtn{position:absolute;right:14px;bottom:14px;z-index:5}
@@ -758,7 +758,7 @@
   .live.on .dl{background:var(--ok)}
 
   /* ============ TABLET / DESKTOP ============ */
-  @media(min-width:840px){
+  @media(min-width:1024px){
     .tabs{display:none}
     .side{display:flex;flex-direction:column;width:var(--sidebar);background:var(--ink);color:#fff;flex-shrink:0;padding:18px 12px 12px}
     .side .sb{font-family:var(--fd);font-weight:600;font-size:11px;letter-spacing:.2em;color:#8b97ab;text-transform:uppercase;padding:0 10px;margin-bottom:16px}
@@ -799,7 +799,7 @@
     .alist{flex-direction:column;overflow:visible}
     .ae{min-width:0;width:100%}
   }
-  @media(min-width:600px) and (max-width:839px){
+  @media(min-width:600px) and (max-width:1023px){
     .stat-grid{grid-template-columns:repeat(auto-fill,minmax(160px,1fr))}
     .u-grid{grid-template-columns:repeat(auto-fill,minmax(280px,1fr))}
     .fgrid{grid-template-columns:repeat(auto-fill,minmax(150px,1fr))}
@@ -833,7 +833,7 @@
 <script>
 let db=null,AREAS={},USERS=[],MSGS=[],CHECKS=[],ROOMS=[],RMEM=[],FILES=[],FOLDERS=[],ROLES=[],SET={},PHASES=[],READS=[],SDAYS={};
 let REACTIONS=[];
-const APP_VERSION='v76';
+const APP_VERSION='v81';
 let BLK={},TRN={},ASG={},SPU={};
 let S={screen:'load',pin:'',user:null,tab:'check',area:null,phase:null,err:'',
   room:'comune',bacFilter:'all',
@@ -1207,14 +1207,17 @@ async function enter(){if(S.pin.length<4||S.checking)return;
   const _tl=tabsFor(u);S.screen=(_tl.includes('bacheca')&&_tl.includes('check'))?'home':'app';
   S.pin='';S.err='';S.ctrlDate=serviceDate();
   S.room=(myRooms()[0]||{id:'comune'}).id;S._chatToBottom=true;
-  S.justRead=[];refreshPushState();S.pushPrompt=shouldAskPush();render();loadReads().then(render);}
+  S.justRead=[];refreshPushState();S.pushPrompt=shouldAskPush();render();loadReads().then(render);
+  // le checklist erano state caricate col settore predefinito prima del login: le ricarico per il settore di chi entra
+  try{await loadTurni();await loadSpunte();S._turniErr=null;}catch(e){S._turniErr=(e&&e.message)||String(e);}
+  render();}
 function logout(){clearDevicePin();S.screen='login';S.user=null;S.pin='';S.err='';S.editing=null;
   READS=[];S.justRead=[];S.draft={};render();}
 
 /* ---------- shell ---------- */
-function tabsFor(u){const off=checklistsOff();const p=effPowers(u);const t=['bacheca'];
-  if(!off)t.push('check');
-  if(!off&&p.includes('controllo'))t.push('controllo');
+function tabsFor(u){const off=checklistsOff();const p=effPowers(u);const nock=(u.powers||[]).includes('no_check');const t=['bacheca'];
+  if(!off&&!nock)t.push('check');
+  if(!off&&!nock&&p.includes('controllo'))t.push('controllo');
   t.push('archivio');
   if(p.includes('utenti'))t.push('utenti');t.push('profilo');return t;}
 const ICO={check:['ti-checklist','Checklist'],bacheca:['ti-message-circle','Chat'],archivio:['ti-folder','Archivio'],
@@ -1607,7 +1610,7 @@ function bcMsgHtml(m,grouped){
         <button type="button" class="fmtb" onmousedown="event.preventDefault()" onclick="fmtTxt('u','edit_${m.id}')" title="Sottolineato"><u>U</u></button></div>
       <textarea id="edit_${m.id}" oninput="onEditInput(this);growBox(this,220)" onkeydown="editKey(event,'${m.id}')" placeholder="Scrivi… usa @ per taggare">${esc(m.tx)}</textarea>
     <div class="ea"><button onclick="S.editing=null;render()">Annulla</button>
-    <button class="save" onclick="saveEdit('${m.id}')">Salva</button></div></div></div>`;
+    <button class="save" onclick="saveEdit('${m.id}')">Salva</button></div></div></div></div>`;
   const tagEditor='';
   const name=(!mine&&!grouped)?`<div class="bname">${esc(m.nm)}</div>`:'';
   const myReact=(REACTIONS.find(r=>r.message_id===m.id&&r.user_id===S.user.id)||{}).emoji;
@@ -2038,8 +2041,8 @@ async function openFile(id){
 }
 function setZoom(on){const mv=document.querySelector('meta[name="viewport"]');if(!mv)return;
   mv.setAttribute('content',on
-    ?'width=device-width, initial-scale=1.0, viewport-fit=cover'
-    :'width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover');}
+    ?'width=device-width, initial-scale=1.0, viewport-fit=cover, interactive-widget=resizes-content'
+    :'width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover, interactive-widget=resizes-content');}
 function closeFile(){setZoom(false);S.viewer=null;S.viewerState='idle';S.viewerPages=[];render();}
 
 function viewerHtml(){
@@ -2688,7 +2691,7 @@ async function delFolder(id){
 function userCardsHtml(){
   const q=(S.uq||'').trim().toLowerCase(),uset=S.uSettore||'';
   return USERS.filter(u=>(!uset||(u.settore||'sala')===uset)&&(!q||(u.nm||'').toLowerCase().includes(q))).map(u=>{
-    const rp=rolePowers(u.role);
+    const rp=rolePowers(u.role);const nock=(u.powers||[]).includes('no_check');
     const pc=POWERS.map(([p,l])=>{const fr=rp.includes(p),on=fr||(u.powers||[]).includes(p);
       return `<span class="chip pow ${on?'on':''} ${fr?'locked':''}" ${fr?'':`onclick="togglePower('${u.id}','${p}')"`}>${l}${fr?' · ruolo':''}</span>`;}).join('');
     const rc=ROOMS.filter(r=>r.private).map(r=>{const on=RMEM.some(x=>x.room_id===r.id&&x.user_id===u.id);
@@ -2703,6 +2706,7 @@ function userCardsHtml(){
         <button class="prs" onclick="doResetPin('${u.id}')">Salva</button>
         <button class="prx" onclick="closeResetPin()">Annulla</button></div>`:''}
       <div class="u-lbl">Settore</div><div class="chips">${[['sala','Sala'],['cucina','Cucina']].map(([k,l])=>`<span class="chip ${((u.settore||'sala')===k)?'on':''}" onclick="setUserSettore('${u.id}','${k}')">${l}</span>`).join('')}</div>
+      <div class="u-lbl">Checklist</div><div class="chips"><span class="chip ${!nock?'on':''}" onclick="setNoCheck('${u.id}',false)">Vede</span><span class="chip ${nock?'on':''}" onclick="setNoCheck('${u.id}',true)">Non vede nessuna</span></div>
       <div class="u-lbl">Poteri</div><div class="chips">${pc}</div>
       <div class="u-lbl">Stanze private</div><div class="chips">${rc}</div></div>`;}).join('')
     ||'<div class="empty" style="grid-column:1/-1"><i class="ti ti-user-off"></i><b>Nessuna persona</b>Nessun risultato con questo filtro.</div>';
@@ -2772,6 +2776,10 @@ async function togglePower(uid,p){const u=USERS.find(x=>x.id===uid),has=(u.power
     alert('Non posso togliere questo potere: resterebbe nessuno in grado di gestire l\'app.');return;}
   u.powers=has?u.powers.filter(x=>x!==p):[...(u.powers||[]),p];renderKeepScroll();
   await db.from('app_users').update({powers:u.powers}).eq('id',uid);}
+async function setNoCheck(uid,v){const u=USERS.find(x=>x.id===uid);if(!u)return;
+  const has=(u.powers||[]).includes('no_check');if(v===has)return;
+  u.powers=v?[...new Set([...(u.powers||[]),'no_check'])]:(u.powers||[]).filter(x=>x!=='no_check');renderKeepScroll();
+  await db.from('app_users').update({powers:u.powers}).eq('id',uid);}
 async function createRoom(){const nm=$('nrNm').value.trim();if(!nm)return;
   const id='r'+Date.now();
   if(!await save(db.from('rooms').insert({id,name:nm,private:true}),'creare la stanza'))return;
@@ -2825,7 +2833,10 @@ function render(){
     <p style="white-space:pre-line">${esc(S.err)}</p>
     <button onclick="location.reload()" style="margin-top:16px;height:40px;padding:0 20px;border:0.5px solid var(--line);background:var(--card);border-radius:9px;color:var(--tx);font:inherit;font-size:13.5px;cursor:pointer">Riprova</button></div>`;return;}
   if(S.screen==='home'){app.innerHTML=homeView()+pushPromptHtml()+msgInfoHtml();return;}
+  const _vy=(document.querySelector('.vw-body')||{}).scrollTop||0;
   app.innerHTML=(S.screen==='login'?loginView():appView())+viewerHtml()+logHtml()+accessHtml()+pushPromptHtml()+msgInfoHtml();
+  if(S.viewer&&_vy){const vb=document.querySelector('.vw-body');if(vb)vb.scrollTop=_vy;
+    requestAnimationFrame(()=>{const v2=document.querySelector('.vw-body');if(v2)v2.scrollTop=_vy;});}
   if(S.screen==='app'&&S.tab==='bacheca'){requestAnimationFrame(()=>{const pn=document.querySelector('.pane');if(!pn)return;
     if(S._chatToBottom||S._chatStick!==false){pn.scrollTop=pn.scrollHeight;S._chatToBottom=false;}
     else if(S._paneY!=null){pn.scrollTop=S._paneY;}});}
@@ -2842,9 +2853,9 @@ $('filePick').addEventListener('change',e=>{
   if(S.pickMode==='attach'){S.pendingFiles=[...(S.pendingFiles||[]),...files];render();}
   else openUploadAccess(files);
 });
-let rt,lastWide=window.innerWidth>=840;
+let rt,lastWide=window.innerWidth>=1024;
 window.addEventListener('resize',()=>{
-  const wide=window.innerWidth>=840;
+  const wide=window.innerWidth>=1024;
   if(wide===lastWide)return;          // la tastiera cambia l'altezza, non la larghezza: non ridisegnare
   lastWide=wide;
   clearTimeout(rt);rt=setTimeout(render,150);
