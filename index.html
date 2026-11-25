@@ -384,6 +384,19 @@
   .pushp-a button{height:40px;padding:0 18px;border-radius:10px;font:inherit;font-size:14px;font-weight:600;cursor:pointer}
   .pp-no{background:var(--card);border:0.5px solid var(--line);color:var(--tx-2)}
   .pp-yes{background:var(--acc);border:0;color:#fff}
+  .mi-card{background:var(--card);border-radius:16px;padding:16px 18px;max-width:380px;width:100%;max-height:72vh;overflow-y:auto;box-shadow:0 12px 40px rgba(0,0,0,.3)}
+  .mi-top{display:flex;align-items:center;justify-content:space-between;margin-bottom:10px}
+  .mi-title{font-weight:700;font-size:16px}
+  .mi-x{background:none;border:none;color:var(--tx-2);font-size:20px;cursor:pointer;line-height:1}
+  .mi-msg{background:var(--page);border-radius:10px;padding:10px 12px;font-size:13.5px;color:var(--tx-2);margin-bottom:6px;white-space:pre-wrap;overflow-wrap:anywhere}
+  .mi-sec{font-size:11.5px;font-weight:600;color:var(--tx-2);text-transform:uppercase;letter-spacing:.04em;display:flex;align-items:center;gap:6px;margin:14px 0 8px}
+  .mi-list{display:flex;flex-direction:column;gap:1px}
+  .mi-row{display:flex;align-items:center;gap:9px;font-size:14px;padding:4px 0}
+  .mi-av{width:26px;height:26px;border-radius:50%;background:var(--acc-bg);color:var(--acc);display:inline-flex;align-items:center;justify-content:center;font-size:12px;font-weight:600;flex:0 0 auto}
+  .mi-empty{font-size:13px;color:var(--tx-3);padding:3px 0}
+  .mi-react{margin-bottom:10px}
+  .mi-react-h{font-size:14px;font-weight:600;margin-bottom:3px}
+  .mi-react-h span{color:var(--tx-2);font-weight:500}
   .mmenu{display:flex;flex-wrap:wrap;gap:4px;margin-top:7px;border-top:0.5px solid var(--line);padding-top:7px}
   .mmenu button{display:flex;align-items:center;gap:5px;background:none;border:0.5px solid var(--line);border-radius:7px;font:inherit;font-size:12px;color:var(--tx-2);padding:5px 9px;cursor:pointer}
   .mmenu button.danger{color:#b5382c;border-color:#e6c3bd}
@@ -820,7 +833,7 @@
 <script>
 let db=null,AREAS={},USERS=[],MSGS=[],CHECKS=[],ROOMS=[],RMEM=[],FILES=[],FOLDERS=[],ROLES=[],SET={},PHASES=[],READS=[],SDAYS={};
 let REACTIONS=[];
-const APP_VERSION='v74';
+const APP_VERSION='v76';
 let BLK={},TRN={},ASG={},SPU={};
 let S={screen:'load',pin:'',user:null,tab:'check',area:null,phase:null,err:'',
   room:'comune',bacFilter:'all',
@@ -1133,6 +1146,36 @@ function pushPromptHtml(){
 }
 function acceptPushPrompt(){S.pushPrompt=false;render();enablePush();}
 function dismissPushPrompt(){S.pushPrompt=false;try{localStorage.setItem('cg_push_ask','no');}catch(e){}render();}
+function miAv(uid){return `<span class="mi-av">${esc((uName(uid)||'?').slice(0,1).toUpperCase())}</span>`;}
+async function openMsgInfo(id){
+  S.msgInfo=id;S.msgInfoReads=null;S.msgMenu=null;render();
+  try{const {data}=await db.from('message_reads').select('user_id').eq('message_id',id);S.msgInfoReads=(data||[]).map(r=>r.user_id);}
+  catch(e){S.msgInfoReads=[];}
+  render();
+}
+function closeMsgInfo(){S.msgInfo=null;S.msgInfoReads=null;render();}
+function msgInfoHtml(){
+  if(!S.msgInfo)return '';
+  const m=MSGS.find(x=>x.id===S.msgInfo);if(!m)return '';
+  const reads=(S.msgInfoReads||[]).filter(uid=>uid!==m.uid);
+  const rx=REACTIONS.filter(r=>r.message_id===m.id);
+  const g={};rx.forEach(r=>{(g[r.emoji]=g[r.emoji]||[]).push(r.user_id);});
+  const readList = S.msgInfoReads===null
+    ? '<div class="mi-empty">Carico…</div>'
+    : (reads.length? reads.map(uid=>`<div class="mi-row">${miAv(uid)}${esc(uName(uid))}</div>`).join('') : '<div class="mi-empty">Ancora nessuno</div>');
+  const reactBlocks = Object.keys(g).length
+    ? Object.keys(g).map(e=>`<div class="mi-react"><div class="mi-react-h">${e} <span>${g[e].length}</span></div>${g[e].map(uid=>`<div class="mi-row">${miAv(uid)}${esc(uName(uid))}</div>`).join('')}</div>`).join('')
+    : '<div class="mi-empty">Nessuna reazione</div>';
+  const snip=(m.tx||'').trim().slice(0,140);
+  return `<div class="pushp" onclick="if(event.target===this)closeMsgInfo()"><div class="mi-card">
+    <div class="mi-top"><div class="mi-title">Info messaggio</div><button class="mi-x" onclick="closeMsgInfo()"><i class="ti ti-x"></i></button></div>
+    <div class="mi-msg">${snip?esc(snip):'Documento'}</div>
+    <div class="mi-sec"><i class="ti ti-checks"></i> Letto da${S.msgInfoReads!==null?' ('+reads.length+')':''}</div>
+    <div class="mi-list">${readList}</div>
+    <div class="mi-sec"><i class="ti ti-mood-smile"></i> Reazioni</div>
+    <div class="mi-list">${reactBlocks}</div>
+  </div></div>`;
+}
 /* ---------- login ---------- */
 function loginView(){
   const dots=[0,1,2,3,4,5].map(i=>`<div class="dot ${i<S.pin.length?'f':''}"></div>`).join('');
@@ -1468,6 +1511,7 @@ function msgActions(m,mine,canEdit,canDelete,canTag){
   const mineE=(REACTIONS.find(r=>r.message_id===m.id&&r.user_id===S.user.id)||{}).emoji;
   const row=`<div class="rpick">${emos.map(e=>`<button class="${mineE===e?'on':''}" onclick="toggleReact('${m.id}','${e}')">${e}</button>`).join('')}</div>`;
   let b=`<button onclick="setReply('${m.id}')"><i class="ti ti-arrow-back-up"></i> Rispondi</button>`;
+  b+=`<button onclick="openMsgInfo('${m.id}')"><i class="ti ti-checks"></i> Chi ha letto</button>`;
   if(canEdit)b+=`<button onclick="openEdit('${m.id}')"><i class="ti ti-pencil"></i> Modifica</button>`;
   if(canDelete)b+=`<button class="danger" onclick="S.msgMenu=null;delMsg('${m.id}')"><i class="ti ti-trash"></i> Elimina</button>`;
   return `<div class="mmenu">${row}${b}</div>`;
@@ -1510,7 +1554,7 @@ function reactsHtml(m){
   if(!rs.length)return '';
   const g={};rs.forEach(r=>{g[r.emoji]=(g[r.emoji]||0)+1;});
   const mineE=(rs.find(r=>r.user_id===S.user.id)||{}).emoji;
-  return `<div class="reacts">`+Object.keys(g).map(e=>`<button class="rchip ${mineE===e?'on':''}" onclick="toggleReact('${m.id}','${e}')">${e} <span>${g[e]}</span></button>`).join('')+`</div>`;
+  return `<div class="reacts">`+Object.keys(g).map(e=>`<button class="rchip ${mineE===e?'on':''}" onclick="openMsgInfo('${m.id}')">${e} <span>${g[e]}</span></button>`).join('')+`</div>`;
 }
 async function toggleReact(mid,emoji){
   const u=S.user;if(!u)return;
@@ -1940,6 +1984,7 @@ async function delFile(id,path){
 // il download resta solo a chi ha il potere di gestione
 const canDownload=()=>can('bacheca_admin');
 
+function fileNoWm(f){if(!f||!f.folder)return false;const fo=FOLDERS.find(x=>x.id===f.folder);return !!(fo&&fo.no_wm);}
 function wmTiles(){
   const u=S.user;
   const now=new Date();
@@ -1999,8 +2044,9 @@ function closeFile(){setZoom(false);S.viewer=null;S.viewerState='idle';S.viewerP
 
 function viewerHtml(){
   const f=S.viewer;if(!f)return '';
+  const wm=fileNoWm(f)?'':wmTiles();
   const pages=S.viewerPages.map((src,i)=>`<div class="vw-page">
-      <img src="${src}" alt="Pagina ${i+1}">${wmTiles()}
+      <img src="${src}" alt="Pagina ${i+1}">${wm}
       ${S.viewerPages.length>1?`<span class="vw-pg">${i+1}</span>`:''}
     </div>`).join('');
   let body=pages;
@@ -2612,7 +2658,8 @@ function foldersPane(){
       <div><div class="u-nm">${esc(f.name)}</div><div class="u-rl">${n} document${n===1?'o':'i'}</div></div>
       <button class="u-key" onclick="renameFolder('${f.id}')" aria-label="Rinomina"><i class="ti ti-pencil"></i></button>
       <button class="u-del" onclick="delFolder('${f.id}')" aria-label="Elimina"><i class="ti ti-trash"></i></button></div>
-      <div class="u-lbl">Visibile a</div><div class="chips">${[['condivisa','Tutti'],['sala','Solo Sala'],['cucina','Solo Cucina']].map(([k,l])=>`<span class="chip ${((f.settore||'condivisa')===k)?'on':''}" onclick="setFolderSettore('${f.id}','${k}')">${l}</span>`).join('')}</div></div>`;}).join('')
+      <div class="u-lbl">Visibile a</div><div class="chips">${[['condivisa','Tutti'],['sala','Solo Sala'],['cucina','Solo Cucina']].map(([k,l])=>`<span class="chip ${((f.settore||'condivisa')===k)?'on':''}" onclick="setFolderSettore('${f.id}','${k}')">${l}</span>`).join('')}</div>
+      <div class="u-lbl">Filigrana anti-screenshot</div><div class="chips"><span class="chip ${!f.no_wm?'on':''}" onclick="setFolderWm('${f.id}',false)">Sì</span><span class="chip ${f.no_wm?'on':''}" onclick="setFolderWm('${f.id}',true)">No</span></div></div>`;}).join('')
     ||'<div class="empty"><i class="ti ti-folder-off"></i><b>Nessuna cartella</b>Creane una qui sopra.</div>';
   return `<div class="rm-add"><input id="nfNm" placeholder="Nome della nuova cartella">
       <button onclick="createFolder()">Crea</button></div>
@@ -2624,6 +2671,8 @@ async function createFolder(){const el=$('nfNm'),nm=el.value.trim();if(!nm)retur
   el.value='';await loadFolders();render();}
 async function setFolderSettore(id,sett){const f=FOLDERS.find(x=>x.id===id);if(f)f.settore=sett;renderKeepScroll();
   await save(db.from('folders').update({settore:sett}).eq('id',id),'aggiornare la cartella');}
+async function setFolderWm(id,off){const f=FOLDERS.find(x=>x.id===id);if(f)f.no_wm=off;renderKeepScroll();
+  await save(db.from('folders').update({no_wm:off}).eq('id',id),'aggiornare la filigrana');}
 async function renameFolder(id){const f=FOLDERS.find(x=>x.id===id);const v=prompt('Nome della cartella',f?f.name:'');if(v===null)return;const nm=v.trim();if(!nm)return;
   if(f)f.name=nm;renderKeepScroll();
   await save(db.from('folders').update({name:nm}).eq('id',id),'rinominare la cartella');}
@@ -2775,8 +2824,8 @@ function render(){
   if(S.screen==='error'){app.innerHTML=`<div class="center"><i class="ti ti-alert-circle"></i><h3>Qualcosa non torna</h3>
     <p style="white-space:pre-line">${esc(S.err)}</p>
     <button onclick="location.reload()" style="margin-top:16px;height:40px;padding:0 20px;border:0.5px solid var(--line);background:var(--card);border-radius:9px;color:var(--tx);font:inherit;font-size:13.5px;cursor:pointer">Riprova</button></div>`;return;}
-  if(S.screen==='home'){app.innerHTML=homeView()+pushPromptHtml();return;}
-  app.innerHTML=(S.screen==='login'?loginView():appView())+viewerHtml()+logHtml()+accessHtml()+pushPromptHtml();
+  if(S.screen==='home'){app.innerHTML=homeView()+pushPromptHtml()+msgInfoHtml();return;}
+  app.innerHTML=(S.screen==='login'?loginView():appView())+viewerHtml()+logHtml()+accessHtml()+pushPromptHtml()+msgInfoHtml();
   if(S.screen==='app'&&S.tab==='bacheca'){requestAnimationFrame(()=>{const pn=document.querySelector('.pane');if(!pn)return;
     if(S._chatToBottom||S._chatStick!==false){pn.scrollTop=pn.scrollHeight;S._chatToBottom=false;}
     else if(S._paneY!=null){pn.scrollTop=S._paneY;}});}
