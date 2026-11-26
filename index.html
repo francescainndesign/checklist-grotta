@@ -512,6 +512,38 @@
   .datechips{display:flex;gap:7px;padding:11px 16px 2px;flex-wrap:wrap}
   .datechips::-webkit-scrollbar{height:0}
   .dc{flex-shrink:0;font-size:12.5px;padding:7px 13px;border-radius:99px;border:0.5px solid var(--line);background:var(--card);color:var(--tx-2);cursor:pointer;white-space:nowrap}
+  .dc-date{flex-shrink:0;display:inline-flex;align-items:center;gap:5px;font-size:12.5px;padding:5px 11px;border-radius:99px;border:0.5px solid var(--line);background:var(--card);color:var(--tx-2)}
+  .dc-date input{border:0;background:transparent;color:var(--tx-2);font:inherit;outline:none;cursor:pointer;width:118px}
+  .drow .dic{width:24px;height:24px;flex:0 0 24px}
+  .d-asg{color:var(--warn);font-size:11.5px;margin-top:3px;display:flex;align-items:center;gap:4px}
+  .d-asg .ti{font-size:13px}
+  .d-meta{text-align:right;flex:0 0 auto;min-width:0}
+  .d-who{display:flex;align-items:center;gap:6px;justify-content:flex-end}
+  .d-who .mini{width:24px;height:24px;font-size:9.5px}
+  .d-who .d-nm{text-align:left}
+  .d-todo{color:var(--warn);font-size:12px;font-weight:700;flex:0 0 auto}
+  .drow.undone .d-tx{color:var(--tx-2)}
+  .ctrl-dl{padding:8px 16px 0}
+  .ctrl-dl button{display:inline-flex;align-items:center;gap:7px;background:var(--card);border:0.5px solid var(--line);color:var(--tx-1,#1a2230);border-radius:10px;padding:9px 14px;font-size:13px;font-weight:600;cursor:pointer}
+  .exp-ov{position:fixed;inset:0;background:rgba(10,15,22,.5);display:flex;align-items:flex-end;justify-content:center;z-index:8000}
+  .exp-card{background:var(--card);width:100%;max-width:460px;border-radius:18px 18px 0 0;padding:18px 18px calc(18px + env(safe-area-inset-bottom,0px));max-height:90vh;overflow-y:auto}
+  .exp-h{display:flex;align-items:center;justify-content:space-between;font-size:17px;font-weight:700;margin-bottom:12px}
+  .exp-h button{background:none;border:0;font-size:22px;line-height:1;color:var(--tx-2);cursor:pointer;padding:0 4px}
+  .exp-opt{display:flex;align-items:center;gap:11px;padding:12px 4px;font-size:14.5px;font-weight:600;cursor:pointer}
+  .exp-rad{width:20px;height:20px;border-radius:50%;border:2px solid #c7ccd4;flex:0 0 20px;position:relative}
+  .exp-opt.on .exp-rad{border-color:#0f1722}
+  .exp-opt.on .exp-rad::after{content:"";position:absolute;inset:3px;border-radius:50%;background:#0f1722}
+  .exp-dates{display:flex;gap:9px;padding:0 4px 8px}
+  .exp-df{flex:1;border:0.5px solid var(--line);border-radius:10px;padding:8px 11px;background:var(--page)}
+  .exp-df .l{font-size:10.5px;color:var(--tx-2);text-transform:uppercase;letter-spacing:.04em}
+  .exp-df input{border:0;background:transparent;font:inherit;font-size:14px;font-weight:600;color:inherit;width:100%;outline:none;margin-top:2px}
+  .exp-lbl{font-size:11.5px;font-weight:700;letter-spacing:.05em;text-transform:uppercase;color:var(--tx-2);margin:10px 4px 7px}
+  .exp-fmt{display:flex;gap:9px;padding:0 4px}
+  .exp-fmt button{flex:1;border:0.5px solid var(--line);border-radius:11px;padding:12px;font-size:14px;font-weight:600;background:var(--card);color:var(--tx-2);cursor:pointer}
+  .exp-fmt button.on{background:#0f1722;color:#fff;border-color:#0f1722}
+  .exp-hint{font-size:12px;color:var(--tx-2);padding:9px 4px 0}
+  .exp-go{width:100%;margin-top:14px;background:#0f1722;color:#fff;border:0;border-radius:12px;padding:14px;font-size:15px;font-weight:700;cursor:pointer}
+  .exp-go[disabled]{opacity:.6}
   .dc.on{background:var(--ink);color:#fff;border-color:var(--ink)}
   .ctrl-head{padding:12px 16px 4px;font-size:12.5px;color:var(--tx-2)}
   .stat-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:10px;padding:8px 16px 6px}
@@ -839,7 +871,7 @@
 <script>
 let db=null,AREAS={},USERS=[],MSGS=[],CHECKS=[],ROOMS=[],RMEM=[],FILES=[],FOLDERS=[],ROLES=[],SET={},PHASES=[],READS=[],SDAYS={};
 let REACTIONS=[];
-const APP_VERSION='v84';
+const APP_VERSION='v87';
 const verNum=v=>parseInt(String(v||'').replace(/\D/g,''),10)||0;
 let BLK={},TRN={},ASG={},SPU={};
 let S={screen:'load',pin:'',user:null,tab:'check',area:null,phase:null,err:'',
@@ -1299,9 +1331,11 @@ const turnoFor=ymd=>ASG[ymd+'|'+S.user.id]||null;
 const turnoCol=code=>{const c=(TRN[code]||{}).colore;return c?'#'+c:'';};
 const turnoDisp=code=>{const t=TRN[code];return t?(t.disp||code):code;};
 const turnoLabel=code=>{const t=TRN[code];if(!t)return code;const d=t.disp||code;const dup=turnoList().filter(x=>(x.disp||x.codice)===d).length>1;return dup&&t.ruolo?d+' · '+t.ruolo:d;};
+const SETTORI=[['sala','Sala'],['cucina','Cucina'],['ordini','Ordini']];
+const settLabel=x=>({sala:'Sala',cucina:'Cucina',ordini:'Ordini'}[x]||x||'Sala');
 const canBothSettori=()=>can('controllo')||can('bacheca_admin');
 function settoreSwitch(){if(!canBothSettori())return '';const a=S.settore||'sala';
-  return `<div class="setsw"><button class="${a==='sala'?'on':''}" onclick="setSettore('sala')">Sala</button><button class="${a==='cucina'?'on':''}" onclick="setSettore('cucina')">Cucina</button></div>`;}
+  return `<div class="setsw">${SETTORI.map(([k,l])=>`<button class="${a===k?'on':''}" onclick="setSettore('${k}')">${l}</button>`).join('')}</div>`;}
 async function setSettore(x){if((S.settore||'sala')===x)return;S.settore=x;S.turnoView=null;S.turnoManage=false;S.ctrlTurno=null;S.turnoPick=false;
   try{await loadTurni();await loadSpunte();}catch(e){BLK={};TRN={};}
   render();}
@@ -1812,7 +1846,7 @@ function archiveBody(){
   const folderVis=f=>can('bacheca_admin')||!f.settore||f.settore==='condivisa'||f.settore===(S.user.settore||'sala');
   const childFolders=pid=>FOLDERS.filter(f=>(f.parent_id||null)===(pid||null)&&folderVis(f)).sort((a,b)=>(a.sort||0)-(b.sort||0));
   const folderCard=f=>{const n=folderFiles(f.id).length,sub=childFolders(f.id).length;
-    const sb=(f.settore&&f.settore!=='condivisa')?`<span class="fsett">${f.settore==='cucina'?'Cucina':'Sala'}</span>`:'';
+    const sb=(f.settore&&f.settore!=='condivisa')?`<span class="fsett">${settLabel(f.settore)}</span>`:'';
     return `<div class="fold" onclick="openFolder('${f.id}')"><i class="ti ti-folder"></i><div class="fn">${esc(f.name)}${sb}</div>
       <div class="fc">${sub?sub+(sub===1?' cartella':' cartelle')+' · ':''}${n} file</div></div>`;};
   const filtersFor=base=>groups.map(([k,l])=>{const n=k==='all'?base.length:base.filter(f=>extGroup(f.ext)===k).length;
@@ -2113,11 +2147,12 @@ function logHtml(){
 }
 
 /* ---------- CONTROLLO ---------- */
-function detailRow(txt,by,tm,late,dl){const s=by?iniFor(by):null,lc=(late&&!by)?'late':'';
-  return `<div class="drow ${lc}">${by?`<span class="mini" style="${fill(s.c)}">${s.ini}</span>`:'<span class="mini none"></span>'}
-    <div class="d-tx">${esc(txt)}${(late&&!by)?`<small>in ritardo${dl?' · '+esc(dl):''}</small>`:''}</div>
-    <div><div class="d-nm">${by?esc(by):'—'}</div><div class="d-tm">${tm||'—'}</div></div>
-    <i class="ti ti-${by?'circle-check':(late?'alert-triangle':'circle')}" style="color:${by?'#1d8a63':(late?'#b5730f':'#c7ccd4')};font-size:19px"></i></div>`;}
+function detailRow(txt,by,tm,asg){const s=by?iniFor(by):null;
+  const okIc='<svg class="dic" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10" fill="#1d8a63"/><path d="M8 12.5l2.5 2.5L16 9" stroke="#fff" stroke-width="2.2" fill="none" stroke-linecap="round" stroke-linejoin="round"/></svg>';
+  const noIc='<svg class="dic" viewBox="0 0 24 24"><circle cx="12" cy="12" r="9" fill="none" stroke="#c99a3a" stroke-width="2"/></svg>';
+  return `<div class="drow${by?'':' undone'}">${by?okIc:noIc}
+    <div class="d-tx">${esc(txt)}${by?'':`<div class="d-asg"><i class="ti ti-user"></i>assegnata a: ${asg?esc(asg):'nessuno'}</div>`}</div>
+    ${by?`<div class="d-meta"><div class="d-who"><span class="mini" style="${fill(s.c)}">${s.ini}</span><span class="d-nm">${esc(by)}</span></div><div class="d-tm">${tm||''}</div></div>`:'<div class="d-todo">da fare</div>'}</div>`;}
 function controlloView(){
   const u=S.user,sd=serviceDate(),isToday=S.ctrlDate===sd;
   const spu=isToday?SPU:(S.ctrlSpu||{});
@@ -2147,20 +2182,104 @@ function controlloView(){
     const rows=turnoLines(code).map(x=>{
       if(x.type==='block')return `<div class="sec-lbl">${esc(x.name)}</div>`;
       if(x.type==='nota')return `<div class="trow-nota"><i class="ti ti-info-circle"></i><span>${esc(x.testo)}</span></div>`;
-      const sp=spu[code+'|'+x.id];return detailRow(x.testo,sp?sp.user_name:null,sp?fmt(sp.checked_at):null);}).join('');
-    det=`<div class="max"><div class="ctrl-head"><b>Turno ${esc(turnoDisp(code))}</b> · assegnato a: ${who.length?esc(who.join(', ')):'nessuno'}</div>${rows}</div>`;
+      const sp=spu[code+'|'+x.id];return detailRow(x.testo,sp?sp.user_name:null,sp?fmt(sp.checked_at):null,who.join(', '));}).join('');
+    det=`<div class="max ctrl-detail"><div class="ctrl-head"><b>Turno ${esc(turnoDisp(code))}</b> · assegnato a: ${who.length?esc(who.join(', ')):'nessuno'}</div>${rows}</div>`;
   }
   return hdr(`<i class="ti ti-eye"></i>Controllo · ${esc(roleName(u.role))}`,isToday?'Stato del servizio':'Archivio',
       isToday?('aggiornato '+fmt(new Date())+' · dal vivo'):('giornata del '+parseYmd(S.ctrlDate).toLocaleDateString('it-IT',{weekday:'long',day:'numeric',month:'long'})))
-    +`<div class="pane">${settoreSwitch()}<div class="datechips">${chips}</div>
+    +`<div class="pane">${settoreSwitch()}<div class="datechips">${chips}<label class="dc-date"><i class="ti ti-calendar"></i><input type="date" max="${sd}" value="${S.ctrlDate}" onchange="selDate(this.value)"></label></div>
+      <div class="ctrl-dl"><button onclick="openExp()"><i class="ti ti-download"></i> Scarica riepilogo</button></div>
       <div class="ctrl-head">Turni del giorno — tocca una scheda per il dettaglio</div>
       ${cards}${det}<div style="height:20px"></div></div>`;
 }
-function openCtrlTurno(c){S.ctrlTurno=S.ctrlTurno===c?null:c;render();}
+function openCtrlTurno(c){S.ctrlTurno=S.ctrlTurno===c?null:c;render();
+  if(S.ctrlTurno)setTimeout(()=>{const d=document.querySelector('.ctrl-detail');if(d)d.scrollIntoView({behavior:'smooth',block:'start'});},60);}
 async function selDate(d){S.ctrlDate=d;S.ctrlTurno=null;
   if(d===serviceDate()){S.ctrlSpu=null;render();}
   else{S.ctrlSpu={};render();const {data}=await db.from('spunte').select('*').eq('service_date',d);
     const m={};(data||[]).forEach(r=>m[r.turno_codice+'|'+r.line_id]={user_name:r.user_name,checked_at:r.checked_at});S.ctrlSpu=m;render();}}
+/* ---- riepilogo scaricabile (PDF / Excel) ---- */
+let _pdfLibP=null;
+function loadScript(src){return new Promise((res,rej)=>{const s=document.createElement('script');s.src=src;s.onload=res;s.onerror=rej;document.head.appendChild(s);});}
+function loadPdfLib(){if(_pdfLibP)return _pdfLibP;_pdfLibP=(async()=>{await loadScript('https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js');await loadScript('https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.8.2/jspdf.plugin.autotable.min.js');})();return _pdfLibP;}
+function dlBlob(b,name){const a=document.createElement('a');a.href=URL.createObjectURL(b);a.download=name;document.body.appendChild(a);a.click();setTimeout(()=>{URL.revokeObjectURL(a.href);a.remove();},1500);}
+const fmtD=ymd=>parseYmd(ymd).toLocaleDateString('it-IT',{day:'numeric',month:'short',year:'numeric'});
+function openExp(){const d=S.ctrlDate||serviceDate();S.exp={mode:'day',day:d,from:ymdOf(new Date(parseYmd(d).getTime()-6*86400000)),to:d,fmt:'pdf',busy:false};render();}
+function closeExp(){S.exp=null;render();}
+function setExpMode(m){if(S.exp){S.exp.mode=m;render();}}
+function setExpFmt(f){if(S.exp){S.exp.fmt=f;render();}}
+function expSet(k,v){if(S.exp)S.exp[k]=v;}
+function expHtml(){const e=S.exp;if(!e)return '';
+  const dayBox=`<div class="exp-dates"><label class="exp-df"><div class="l">Giorno</div><input type="date" max="${serviceDate()}" value="${e.day}" onchange="expSet('day',this.value)"></label></div>`;
+  const rangeBox=`<div class="exp-dates"><label class="exp-df"><div class="l">Dal</div><input type="date" max="${serviceDate()}" value="${e.from}" onchange="expSet('from',this.value)"></label><label class="exp-df"><div class="l">Al</div><input type="date" max="${serviceDate()}" value="${e.to}" onchange="expSet('to',this.value)"></label></div>`;
+  return `<div class="exp-ov" onclick="if(event.target===this)closeExp()"><div class="exp-card">
+    <div class="exp-h">Scarica riepilogo<button onclick="closeExp()" aria-label="Chiudi">&times;</button></div>
+    <div class="exp-opt ${e.mode==='day'?'on':''}" onclick="setExpMode('day')"><span class="exp-rad"></span>Giorno singolo</div>
+    ${e.mode==='day'?dayBox:''}
+    <div class="exp-opt ${e.mode==='range'?'on':''}" onclick="setExpMode('range')"><span class="exp-rad"></span>Intervallo di date</div>
+    ${e.mode==='range'?rangeBox:''}
+    <div class="exp-lbl">Formato</div>
+    <div class="exp-fmt"><button class="${e.fmt==='pdf'?'on':''}" onclick="setExpFmt('pdf')">PDF</button><button class="${e.fmt==='xls'?'on':''}" onclick="setExpFmt('xls')">Excel</button></div>
+    <div class="exp-hint">PDF per stampare o inviare · Excel per filtrare</div>
+    <button class="exp-go" ${e.busy?'disabled':''} onclick="runExport()">${e.busy?'Preparo il file…':'Scarica '+(e.fmt==='pdf'?'PDF':'Excel')}</button>
+  </div></div>`;}
+function buildReportModel(dates,sett,spByDate){
+  return dates.map(d=>{const dw=dowOf(d),spd=spByDate[d]||{};
+    const turni=turnoList().filter(t=>(t.settore||'sala')===sett).filter(t=>(!t.giorni.length||t.giorni.includes(dw))||Object.keys(spd).some(k=>k.lastIndexOf(t.codice+'|',0)===0)||USERS.some(pp=>ASG[d+'|'+pp.id]===t.codice));
+    const td=turni.map(t=>{const asg=USERS.filter(pp=>(pp.settore||'sala')===sett&&ASG[d+'|'+pp.id]===t.codice).map(pp=>pp.nm).join(', ');
+      const lines=turnoLines(t.codice).filter(x=>x.type==='line').map(x=>{const sp=spd[t.codice+'|'+x.id];return{voce:x.testo,by:sp?sp.user_name:'',ora:sp?fmt(sp.checked_at):'',done:!!sp};});
+      return{turno:turnoDisp(t.codice),asg,done:lines.filter(l=>l.done).length,tot:lines.length,lines};});
+    return{date:d,turni:td};});
+}
+async function runExport(){const e=S.exp;if(!e||e.busy)return;const sett=S.settore||'sala';
+  let dates=[];
+  if(e.mode==='day')dates=[e.day];
+  else{let a=parseYmd(e.from),b=parseYmd(e.to);if(a>b){const t=a;a=b;b=t;}for(let d=new Date(a);d<=b;d.setDate(d.getDate()+1))dates.push(ymdOf(d));}
+  if(!dates.length)return;
+  e.busy=true;render();
+  try{
+    const {data:sp}=await db.from('spunte').select('*').gte('service_date',dates[0]).lte('service_date',dates[dates.length-1]);
+    const spByDate={};(sp||[]).forEach(r=>{(spByDate[r.service_date]=spByDate[r.service_date]||{})[r.turno_codice+'|'+r.line_id]={user_name:r.user_name,checked_at:r.checked_at};});
+    const model=buildReportModel(dates,sett,spByDate);
+    const any=model.some(d=>d.turni.some(t=>t.lines.length));
+    if(!any){alert('Nessun turno o dato in questo periodo per il settore '+settLabel(sett)+'.');if(S.exp)S.exp.busy=false;render();return;}
+    if(e.fmt==='xls')exportXls(model,sett);else await exportPdf(model,sett);
+    S.exp=null;render();
+  }catch(err){alert('Non sono riuscito a creare il riepilogo: '+((err&&err.message)||err));if(S.exp)S.exp.busy=false;render();}
+}
+function exportXls(model,sett){
+  let rows='';
+  model.forEach(day=>day.turni.forEach(t=>t.lines.forEach(l=>{
+    rows+=`<tr><td>${day.date}</td><td>${esc(t.turno)}</td><td>${esc(t.asg||'')}</td><td>${esc(l.voce)}</td><td>${l.done?'Fatto':'Non fatto'}</td><td>${esc(l.by||'')}</td><td>${l.ora||''}</td></tr>`;
+  })));
+  const html=`<html><head><meta charset="utf-8"></head><body><table border="1"><thead><tr><th>Data</th><th>Turno</th><th>Assegnato a</th><th>Voce</th><th>Stato</th><th>Fatta da</th><th>Ora</th></tr></thead><tbody>${rows}</tbody></table></body></html>`;
+  const b=new Blob(['﻿'+html],{type:'application/vnd.ms-excel'});
+  dlBlob(b,`riepilogo-${sett}-${model[0].date}${model.length>1?'_'+model[model.length-1].date:''}.xls`);
+}
+async function exportPdf(model,sett){
+  await loadPdfLib();const JS=window.jspdf&&window.jspdf.jsPDF;if(!JS)throw new Error('libreria PDF non caricata');
+  const doc=new JS({unit:'pt',format:'a4'});const M=40;let y=48;
+  doc.setFont('helvetica','bold');doc.setFontSize(16);doc.text('Riepilogo servizio',M,y);y+=17;
+  doc.setFont('helvetica','normal');doc.setFontSize(10);doc.setTextColor(120);
+  const rl=model.length>1?fmtD(model[0].date)+' - '+fmtD(model[model.length-1].date):fmtD(model[0].date);
+  doc.text('Grotta Marcello  ·  '+settLabel(sett)+'  ·  '+rl,M,y);y+=4;doc.setTextColor(0);
+  model.forEach(day=>{
+    if(model.length>1){y+=18;doc.setFont('helvetica','bold');doc.setFontSize(11);doc.text(fmtD(day.date),M,y);doc.setFont('helvetica','normal');}
+    day.turni.forEach(t=>{
+      doc.autoTable({startY:y+12,
+        head:[[t.turno+'  —  '+(t.asg||'non assegnato')+'   ·   '+t.done+'/'+t.tot,'Fatta da','Ora','Stato']],
+        body:t.lines.map(l=>[l.voce+(l.done?'':'\nassegnata a: '+(t.asg||'nessuno')),l.by||'—',l.ora||'—',l.done?'Fatto':'Non fatto']),
+        styles:{fontSize:8,cellPadding:3,valign:'middle'},headStyles:{fillColor:[15,23,34],fontSize:8.5,textColor:255},
+        columnStyles:{0:{cellWidth:300},2:{cellWidth:40,halign:'center'},3:{cellWidth:58,halign:'center'}},
+        margin:{left:M,right:M},
+        didParseCell:function(dc){if(dc.section==='body'&&dc.column.index===3){dc.cell.styles.fontStyle='bold';dc.cell.styles.textColor=dc.cell.raw==='Fatto'?[29,138,99]:[181,115,15];}}
+      });
+      y=doc.lastAutoTable.finalY+8;if(y>770){doc.addPage();y=48;}
+    });
+  });
+  dlBlob(doc.output('blob'),`riepilogo-${sett}-${model[0].date}${model.length>1?'_'+model[model.length-1].date:''}.pdf`);
+}
+
 
 /* ---------- AMMINISTRAZIONE (solo direzione) ---------- */
 const POWERS=[['controllo','Controllo'],['utenti','Gestione utenti'],['bacheca_admin','Bacheca: export/svuota/elimina file']];
@@ -2211,7 +2330,7 @@ function turniEditorPane(){
   const sw=settoreSwitch();
   const newBtn=`<button class="te-newt" onclick="newTurno()"><i class="ti ti-plus"></i> Nuovo turno</button>`;
   if(!turnoList().length)
-    return `${sw}<div class="te-wrap">${newBtn}<div class="empty"><i class="ti ti-clipboard-off"></i><b>Nessun turno in ${S.settore==='cucina'?'Cucina':'Sala'}</b>Crea il primo turno qui sopra.</div></div>`;
+    return `${sw}<div class="te-wrap">${newBtn}<div class="empty"><i class="ti ti-clipboard-off"></i><b>Nessun turno in ${settLabel(S.settore)}</b>Crea il primo turno qui sopra.</div></div>`;
   return `${sw}<div class="te-wrap">${newBtn}
     <div class="te-note"><i class="ti ti-info-circle"></i> I blocchi sono condivisi: modificare le voci di un blocco le cambia in ogni turno che lo usa. Le differenze di un singolo turno vanno nelle «voci extra».</div>
     <div style="margin-bottom:14px"><input class="gsrch" id="tq" placeholder="Cerca un turno…" value="${esc(S.tq||'')}" oninput="setTQ(this.value)"></div>
@@ -2672,7 +2791,7 @@ function foldersPane(){
       <div><div class="u-nm">${esc(f.name)}</div><div class="u-rl">${n} document${n===1?'o':'i'}</div></div>
       <button class="u-key" onclick="renameFolder('${f.id}')" aria-label="Rinomina"><i class="ti ti-pencil"></i></button>
       <button class="u-del" onclick="delFolder('${f.id}')" aria-label="Elimina"><i class="ti ti-trash"></i></button></div>
-      <div class="u-lbl">Visibile a</div><div class="chips">${[['condivisa','Tutti'],['sala','Solo Sala'],['cucina','Solo Cucina']].map(([k,l])=>`<span class="chip ${((f.settore||'condivisa')===k)?'on':''}" onclick="setFolderSettore('${f.id}','${k}')">${l}</span>`).join('')}</div>
+      <div class="u-lbl">Visibile a</div><div class="chips">${[['condivisa','Tutti'],['sala','Solo Sala'],['cucina','Solo Cucina'],['ordini','Solo Ordini']].map(([k,l])=>`<span class="chip ${((f.settore||'condivisa')===k)?'on':''}" onclick="setFolderSettore('${f.id}','${k}')">${l}</span>`).join('')}</div>
       <div class="u-lbl">Filigrana anti-screenshot</div><div class="chips"><span class="chip ${!f.no_wm?'on':''}" onclick="setFolderWm('${f.id}',false)">Sì</span><span class="chip ${f.no_wm?'on':''}" onclick="setFolderWm('${f.id}',true)">No</span></div></div>`;}).join('')
     ||'<div class="empty"><i class="ti ti-folder-off"></i><b>Nessuna cartella</b>Creane una qui sopra.</div>';
   return `<div class="rm-add"><input id="nfNm" placeholder="Nome della nuova cartella">
@@ -2716,7 +2835,7 @@ function userCardsHtml(){
         <input id="rp-${u.id}" type="text" inputmode="numeric" maxlength="6" placeholder="Nuovo PIN (4-6 cifre)">
         <button class="prs" onclick="doResetPin('${u.id}')">Salva</button>
         <button class="prx" onclick="closeResetPin()">Annulla</button></div>`:''}
-      <div class="u-lbl">Settore</div><div class="chips">${[['sala','Sala'],['cucina','Cucina']].map(([k,l])=>`<span class="chip ${((u.settore||'sala')===k)?'on':''}" onclick="setUserSettore('${u.id}','${k}')">${l}</span>`).join('')}</div>
+      <div class="u-lbl">Settore</div><div class="chips">${SETTORI.map(([k,l])=>`<span class="chip ${((u.settore||'sala')===k)?'on':''}" onclick="setUserSettore('${u.id}','${k}')">${l}</span>`).join('')}</div>
       <div class="u-lbl">Checklist</div><div class="chips"><span class="chip ${!nock?'on':''}" onclick="setNoCheck('${u.id}',false)">Vede</span><span class="chip ${nock?'on':''}" onclick="setNoCheck('${u.id}',true)">Non vede nessuna</span></div>
       <div class="u-lbl">Poteri</div><div class="chips">${pc}</div>
       <div class="u-lbl">Stanze private</div><div class="chips">${rc}</div></div>`;}).join('')
@@ -2730,11 +2849,11 @@ function usersPane(){
   return `${S.pinMsg?`<div class="okbanner"><i class="ti ti-check"></i> ${esc(S.pinMsg)}</div>`:''}
     <div class="u-add-form"><div class="ff-row">
       <input id="nuNm" placeholder="Nome"><input id="nuPin" placeholder="PIN (4-6 cifre)" maxlength="6" inputmode="numeric"></div>
-      <div class="ff-row"><select id="nuRole">${ROLES.map(r=>`<option value="${r.id}">${esc(r.name)}</option>`).join('')}</select><select id="nuSettore"><option value="sala">Sala</option><option value="cucina">Cucina</option></select></div>
+      <div class="ff-row"><select id="nuRole">${ROLES.map(r=>`<option value="${r.id}">${esc(r.name)}</option>`).join('')}</select><select id="nuSettore">${SETTORI.map(([k,l])=>`<option value="${k}">${l}</option>`).join('')}</select></div>
       <button class="go" onclick="createUser()">Aggiungi persona</button></div>
     <div class="pinnote"><i class="ti ti-shield-lock"></i> I PIN sono cifrati e non sono visibili a nessuno. Se qualcuno lo dimentica, usa «Reimposta PIN» sulla sua scheda.</div>
     <div class="gtool">
-      <div class="chips">${fchip('','Tutti')}${fchip('sala','Sala')}${fchip('cucina','Cucina')}</div>
+      <div class="chips">${fchip('','Tutti')}${fchip('sala','Sala')}${fchip('cucina','Cucina')}${fchip('ordini','Ordini')}</div>
       <input class="gsrch" id="uq" placeholder="Cerca per nome…" value="${esc(S.uq||'')}" oninput="setUQ(this.value)"></div>
     <div class="u-grid" id="ugrid">${userCardsHtml()}</div>`;
 }
@@ -2813,7 +2932,7 @@ function profiloView(){const u=S.user;
     +`<div class="pane"><div style="padding:20px 16px;max-width:520px">
       <div style="background:var(--card);border-radius:12px;padding:16px;border:0.5px solid var(--line)">
         <div style="font-size:12px;color:var(--tx-2);margin-bottom:8px">Settore</div>
-        <div class="chips"><span class="chip on" style="pointer-events:none">${(u.settore||'sala')==='cucina'?'Cucina':'Sala'}</span></div>
+        <div class="chips"><span class="chip on" style="pointer-events:none">${settLabel(u.settore)}</span></div>
         <div style="font-size:12px;color:var(--tx-2);margin:14px 0 8px">Stanze</div>
         <div class="chips">${myRooms().map(r=>`<span class="chip room on" style="pointer-events:none">${esc(r.name)}</span>`).join('')}</div>
       </div>
@@ -2845,7 +2964,7 @@ function render(){
     <button onclick="location.reload()" style="margin-top:16px;height:40px;padding:0 20px;border:0.5px solid var(--line);background:var(--card);border-radius:9px;color:var(--tx);font:inherit;font-size:13.5px;cursor:pointer">Riprova</button></div>`;return;}
   if(S.screen==='home'){app.innerHTML=homeView()+pushPromptHtml()+msgInfoHtml()+updBar();return;}
   const _vy=(document.querySelector('.vw-body')||{}).scrollTop||0;
-  app.innerHTML=(S.screen==='login'?loginView():appView())+viewerHtml()+logHtml()+accessHtml()+pushPromptHtml()+msgInfoHtml()+updBar();
+  app.innerHTML=(S.screen==='login'?loginView():appView())+viewerHtml()+logHtml()+accessHtml()+pushPromptHtml()+msgInfoHtml()+updBar()+expHtml();
   if(S.viewer&&_vy){const vb=document.querySelector('.vw-body');if(vb)vb.scrollTop=_vy;
     requestAnimationFrame(()=>{const v2=document.querySelector('.vw-body');if(v2)v2.scrollTop=_vy;});}
   if(S.screen==='app'&&S.tab==='bacheca'){requestAnimationFrame(()=>{const pn=document.querySelector('.pane');if(!pn)return;
